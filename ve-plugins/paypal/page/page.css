@@ -1,0 +1,22 @@
+#plugin_paypal_page{position:relative;}
+
+#plugin_paypal_page .list{height:100%;padding-top:80px;position:relative;}
+#plugin_paypal_page .list .header{width:100%;height:79px;position:absolute;top:0;left:0;background:#fff;border-bottom:1px solid #ddd;}
+#plugin_paypal_page .list .header .title{padding:0 40px;overflow:hidden;font-size:24px;line-height:79px;color:#222;text-align:center;white-space:nowrap;text-overflow:ellipsis;}
+
+#plugin_paypal_page .list .wrapper{height:100%;padding:0 40px;overflow:auto;}
+#plugin_paypal_page .list .wrapper .error{margin:40px 0;text-align:center;}
+#plugin_paypal_page .list .wrapper .sections{margin:40px 0;overflow:hidden;}
+#plugin_paypal_page .list .wrapper .sections p{margin-right:40px;float:left;cursor:pointer;font-size:20px;line-height:24px;color:#333;}
+#plugin_paypal_page .list .wrapper .sections p.active{border-bottom:1px solid #333;}
+#plugin_paypal_page .list .wrapper .section{margin:40px 0;display:none;}
+#plugin_paypal_page .list .wrapper .section.active{display:block;}
+#plugin_paypal_page .list .wrapper .section .empty{margin:20px 0;padding:20px;background:#fff;border:1px solid #ddd;overflow:hidden;color:#333;text-align:center;}
+
+#plugin_paypal_page .list .wrapper .section.payments{}
+#plugin_paypal_page .list .wrapper .section.payments .payment{margin:20px 0;padding:20px;background:#fff;border:1px solid #ddd;overflow:hidden;color:#333;}
+#plugin_paypal_page .list .wrapper .section.payments .payment .money{width:140px;margin-right:20px;float:left;text-align:center;color:#23a38f;}
+#plugin_paypal_page .list .wrapper .section.payments .payment .money .amount{font-size:50px;line-height:36px;}
+#plugin_paypal_page .list .wrapper .section.payments .payment .money .currency{margin-top:10px;}
+#plugin_paypal_page .list .wrapper .section.payments .payment .date{line-height:22px;}
+#plugin_paypal_page .list .wrapper .section.payments .payment .person{line-height:22px;}

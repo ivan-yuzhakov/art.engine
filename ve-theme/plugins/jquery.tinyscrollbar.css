@@ -1,0 +1,6 @@
+.scroll .viewport{height:100%;margin-right:20px;position:relative;overflow:hidden;}
+.scroll .overview{width:100%;position:absolute;top:0;left:0;}
+.scroll .scrollbar{width:10px;height:100%;position:absolute;top:0;right:0;}
+.scroll .scrollbar.disable{display:none;}
+.scroll .track{width:100%;height:100%;position:relative;}
+.scroll .thumb{width:100%;height:0;position:absolute;top:0;left:0;cursor:pointer;}

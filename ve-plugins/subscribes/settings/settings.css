@@ -1,0 +1,8 @@
+#plugin_subscribes_settings .group{margin:40px 0;overflow:hidden;}
+#plugin_subscribes_settings .group p{font-weight:bold;}
+#plugin_subscribes_settings .group .cell{height:48px;margin:10px 10px 0 0;padding:10px 20px;background:#fff;border:1px solid #ddd;float:left;cursor:pointer;font-size:16px;line-height:26px;color:#000;}
+#plugin_subscribes_settings .group .cell:hover{background:#eee;}
+#plugin_subscribes_settings .group .cell.active{background:#23a38f;border-color:#1e7568;color:#fff;}
+#plugin_subscribes_settings label{margin:40px 0;display:block;}
+#plugin_subscribes_settings label p{font-weight:bold;}
+#plugin_subscribes_settings label input{width:100%;height:48px;margin-top:10px;padding:10px 20px;background:#fff;border:1px solid #ddd;font-size:16px;}
