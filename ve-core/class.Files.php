@@ -515,8 +515,8 @@ class Files
 
 	public function getPlaceholder($w = 0, $h = 0)
 	{
-		$w = (int) $w; $w = max($w, 0);
-		$h = (int) $h; $h = max($h, 0);
+		$w = (int) $w; $w = max($w, 10); $w = min($w, 5000);
+		$h = (int) $h; $h = max($h, 10); $h = min($h, 5000);
 
 		$canvas = imagecreatetruecolor($w, $h);
 		$background = imagecolorallocate($canvas, 200, 200, 200);

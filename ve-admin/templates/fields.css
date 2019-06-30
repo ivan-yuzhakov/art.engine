@@ -1,0 +1,74 @@
+#fields{height:100%;padding:0 20px;position:relative;display:none;cursor:default;}
+
+#fields .list{width:100%;height:100%;position:relative;overflow:hidden;}
+#fields .list .header{padding:20px;position:absolute;top:0;left:0;right:0;}
+#fields .list .header .create{padding:0 20px;background:#238ba3;float:right;cursor:pointer;font-size:16px;line-height:40px;color:#fff;}
+#fields .list .header .title{overflow:hidden;font-size:22px;line-height:40px;color:#333;text-overflow:ellipsis;white-space:nowrap;}
+
+#fields .list .items{width:50%;height:100%;padding-top:80px;position:relative;float:left;}
+
+#fields .list .scroll{height:100%;position:relative;}
+#fields .list .scroll .thumb{background:#777;opacity:.3;}
+#fields .list .scroll .thumb:hover{opacity:1;}
+#fields .list .overview{width:auto;padding:0 20px 10px;}
+
+#fields .list .item{height:40px;margin-top:10px;background:#fff;border:1px solid #ddd;cursor:pointer;line-height:40px;color:#333;}
+#fields .list .item:first-child{margin:0;}
+#fields .list .item:hover{background:#fdfdfd;}
+#fields .list .item.removed{background:#fbb;color:#fff;}
+#fields .list .item .title{padding:0 20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#fields .list .item .remove{width:10px;height:10px;padding:15px;float:right;}
+#fields .list .item .remove svg{width:100%;height:100%;display:block;fill:#333;}
+#fields .list .item .remove:hover svg{fill:#f00;}
+
+#fields .list .empty{padding:0 20px;background:#fff;border:1px solid #ddd;line-height:40px;color:#333;text-align:center;}
+
+/* overlay */
+
+#fields .overlay{width:100%;height:100%;position:absolute;top:0;left:0;background-color:rgba(0,0,0,.7);opacity:0;visibility:hidden;}
+#fields .overlay.show{opacity:1;visibility:visible;}
+
+/* form */
+
+#fields .form{width:100%;max-width:1000px;height:100%;padding-top:80px;position:absolute;top:0;right:0;background:#f8f8f8;opacity:0;visibility:hidden;transform:translateX(50px);}
+#fields .form.show{opacity:1;visibility:visible;transform:translateX(0);}
+
+#fields .form .header{width:100%;height:79px;position:absolute;top:0;left:0;background:#fff;border-bottom:1px solid #ddd;}
+#fields .form .header .actions{height:40px;margin-top:20px;padding-right:20px;float:right;}
+#fields .form .header .actions div{margin-right:20px;padding:0 20px;background:#238ba3;float:left;cursor:pointer;line-height:40px;color:#fff;}
+#fields .form .header .actions div.close{background:#f55;}
+#fields .form .header .title{padding:0 40px;overflow:hidden;font-size:24px;line-height:79px;color:#222;text-overflow:ellipsis;white-space:nowrap;}
+
+#fields .form .wrapper{height:100%;padding:0 40px;overflow:auto;}
+
+#fields .form .switches{margin:40px 0;}
+#fields .form .switches .switch{font-size:0;line-height:0;}
+#fields .form .switches .switch.image{margin-top:20px;}
+
+#fields .form .fields{}
+#fields .form .fields .add_field{float:left;cursor:pointer;font-size:14px;line-height:20px;}
+#fields .form .fields .add_field:hover{color:#000;}
+#fields .form .fields .langs{float:right;}
+#fields .form .fields .langs .lang{margin-left:20px;float:left;cursor:pointer;font-size:14px;line-height:20px;}
+#fields .form .fields .langs .lang.active{color:#000;text-decoration:underline;}
+#fields .form .fields .langs .lang:hover{color:#000;}
+#fields .form .fields .rows .row{margin-top:20px;}
+#fields .form .fields .rows .row .drag{width:9px;height:24px;padding:12px 20px 12px 0;float:left;cursor:move;}
+#fields .form .fields .rows .row .drag svg{width:100%;height:100%;fill:#aaa;}
+#fields .form .fields .rows .row .remove{width:10px;height:10px;padding:19px;float:right;cursor:pointer;}
+#fields .form .fields .rows .row .remove svg{width:100%;height:100%;display:block;fill:#333;}
+#fields .form .fields .rows .row .remove:hover svg{fill:#f00;}
+#fields .form .fields .rows .row .input{margin:0 48px 0 29px;}
+#fields .form .fields .rows .row .input input{width:100%;height:48px;padding:10px 20px;background:#fff;border:1px solid #ddd;display:block;font-size:16px;color:#333;}
+#fields .form .fields .rows .row .input input:focus{border-color:#999;}
+
+#fields .form .s_items .group .add{position:absolute;top:-30px;right:0;cursor:pointer;color:#333;}
+#fields .form .s_items .group .add:hover{color:#000;}
+#fields .form .s_items .group .row{margin-bottom:20px;}
+#fields .form .s_items .group .row input{width:150px;height:48px;padding:10px 20px;background:#fff;border:1px solid #ddd;display:inline-block;float:left;font-size:16px;color:#333;}
+#fields .form .s_items .group .row input:focus{border-color:#999;}
+#fields .form .s_items .group .row .switch{margin:0 48px 0 170px;padding:12px 0;font-size:0;line-height:0;}
+#fields .form .s_items .group .row .close{width:10px;height:10px;padding:19px;float:right;cursor:pointer;}
+#fields .form .s_items .group .row:only-of-type .close{display:none;}
+#fields .form .s_items .group .row .close svg{width:100%;height:100%;display:block;fill:#222;}
+#fields .form .s_items .group .row .close:hover svg{fill:#f55;}

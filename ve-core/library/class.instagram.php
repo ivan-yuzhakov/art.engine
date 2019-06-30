@@ -20,27 +20,14 @@ class Instagram
 		return $result;
 	}
 
-	public function get_user($username)
+	public function get_feed($count = 10)
 	{
-		if (empty($username)) return 'User name is empty';
 		if (empty($this->access_token)) return 'Instagram Access Token is empty';
 
-		$response = $this->fetch('https://api.instagram.com/v1/users/search?q=' . $username . '&access_token=' . $this->access_token);
-		//dp('https://api.instagram.com/v1/users/search?q=' . $username . '&access_token=' . $this->access_token);
-		$user_info = json_decode($response, true);
-
-		return (int) @$user_info['data'][0]['id'];
-	}
-
-	public function get_feed($user_id = false, $count = 10)
-	{
-		if (empty($user_id)) return 'User id is empty';
-		if (empty($this->access_token)) return 'Instagram Access Token is empty';
-
-		$response = $this->fetch('https://api.instagram.com/v1/users/' . $user_id . '/media/recent?count=' . $count . '&access_token=' . $this->access_token);
+		$response = $this->fetch('https://api.instagram.com/v1/users/self/media/recent/?count=' . $count . '&access_token=' . $this->access_token);
 		$feed = json_decode($response, true);
 
-		return $feed['data'];
+		return $feed;
 	}
 }
 ?>

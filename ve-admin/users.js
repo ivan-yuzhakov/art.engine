@@ -134,7 +134,7 @@ var users = {
 				return '<div id="' + id + '" class="item">\
 					' + (x.logged == 1 && id != 1 ? '<p class="select">' + icons.select_empty + icons.select_checked + '</p>' : '') + '\
 					' + (x.logged == 1 || id == x.logged ? '<p class="edit">' + icons.edit + '</p>' : '') + '\
-					<p class="title' + (x.logged == 1 && id != 1 ? '' : ' padding') + '">' + x.arr[id].name + '</p>\
+					<p class="title' + (x.logged == 1 && id != 1 ? '' : ' padding') + '">' + x.arr[id].fname + '</p>\
 				</div>';
 			}
 		}).join('');
@@ -161,7 +161,7 @@ var users = {
 
 		x.mode = 0;
 
-		var title = (id ? vsprintf(lang['users_edit_user'], [x.arr[id].name]) : lang['users_create_user']);
+		var title = (id ? vsprintf(lang['users_edit_user'], [x.arr[id].fname]) : lang['users_create_user']);
 		var childs = '<div class="field input">\
 			<div class="group">\
 				<input id="f_login" class="box" type="text" value="">\
@@ -176,8 +176,8 @@ var users = {
 		</div>\
 		<div class="field input">\
 			<div class="group">\
-				<input id="name" class="box" type="text" value="">\
-				<label for="name">' + lang['users_input_name'] + '</label>\
+				<input id="fname" class="box" type="text" value="">\
+				<label for="fname">' + lang['users_input_name'] + '</label>\
 			</div>\
 		</div>\
 		<div class="field input">\
@@ -238,7 +238,7 @@ var users = {
 
 		$('#f_login', x.el.forms).val(arr.login);
 		$('#f_password', x.el.forms).attr('placeholder', lang['users_input_password_placeholder']);
-		$('#name', x.el.forms).val(arr.name);
+		$('#fname', x.el.forms).val(arr.fname);
 		$('#mail', x.el.forms).val(arr.mail);
 		$('#phone', x.el.forms).val(arr.phone);
 
@@ -255,7 +255,7 @@ var users = {
 			id: x.mode,
 			login: $('#f_login', x.el.forms).val().trim(),
 			password: $('#f_password', x.el.forms).val().trim(),
-			name: $('#name', x.el.forms).val().trim(),
+			fname: $('#fname', x.el.forms).val().trim(),
 			mail: $('#mail', x.el.forms).val().trim(),
 			phone: $('#phone', x.el.forms).val().trim(),
 			desc: fields.types.tinymce.item_save($('.field.tinymce .group', x.el.forms)),
@@ -276,10 +276,10 @@ var users = {
 			$('#f_password', x.el.forms).focus();
 			return false;
 		}
-		if (!data.name) {
+		if (!data.fname) {
 			alertify.error(lang['users_error_name']);
 			loader.hide();
-			$('#name', x.el.forms).focus();
+			$('#fname', x.el.forms).focus();
 			return false;
 		}
 

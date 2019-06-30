@@ -10,12 +10,12 @@ $html = '<div class="header">
 	<div class="clr"></div>
 </div>
 <div class="content">
-	<div class="title">Invoice # {{invoice_id}}</div>
+	<div class="title">Invoice # 1</div>
 	<div class="to">
 		<span>To: </span>{{address}}
 	</div>';
 foreach ($items as $id => $item) {
-	$text = '<div class="image">{{26}}</div>
+	$text = '<div class="image">{{image}}</div>
 	<div class="left">
 		<div class="desc">
 			<h3>DESCRIPTION:</h3>
@@ -38,8 +38,8 @@ foreach ($items as $id => $item) {
 		</div>
 	</div>';
 	$html .= $replace_item($text, $id, [
-		'discount' => function($item){
-			$discount = isset($_GET['discount']) ? $_GET['discount'] : '';
+		'discount' => function($item) use ($id) {
+			$discount = isset($_POST['local'][$id]['discount']) ? $_POST['local'][$id]['discount'] : '';
 			$discount = str_replace(',', '.', $discount);
 			$discount = str_replace('%', '', $discount);
 			$discount = (float) $discount;
@@ -56,14 +56,14 @@ foreach ($items as $id => $item) {
 				return '<p class="fright">$ ' . number_format($price) . '</p><p>Discount (' . number_format($discount) . '%):</p>';
 			}
 		},
-		'tax_val' => function(){
-			$tax = isset($_GET['tax']) ? $_GET['tax'] : '0';
+		'tax_val' => function() use ($id) {
+			$tax = isset($_POST['local'][$id]['tax']) ? $_POST['local'][$id]['tax'] : '0';
 			$tax = str_replace(',', '.', $tax);
 			$tax = str_replace('%', '', $tax);
 			return $tax;
 		},
-		'tax' => function($item, $fields){
-			$tax = isset($_GET['tax']) ? $_GET['tax'] : '0';
+		'tax' => function($item, $fields) use ($id) {
+			$tax = isset($_POST['local'][$id]['tax']) ? $_POST['local'][$id]['tax'] : '0';
 			$tax = str_replace(',', '.', $tax);
 			$tax = str_replace('%', '', $tax);
 
@@ -72,7 +72,7 @@ foreach ($items as $id => $item) {
 			$price = str_replace('$', '', $price);
 			$price = (float) $price;
 
-			$discount = isset($_GET['discount']) ? $_GET['discount'] : '';
+			$discount = isset($_POST['local'][$id]['discount']) ? $_POST['local'][$id]['discount'] : '';
 			$discount = str_replace(',', '.', $discount);
 			$discount = str_replace('%', '', $discount);
 			$discount = (float) $discount;
@@ -82,8 +82,8 @@ foreach ($items as $id => $item) {
 			$tax = $price * ((float) $tax / 100);
 			return number_format($tax);
 		},
-		'total' => function($item, $fields){
-			$tax = isset($_GET['tax']) ? $_GET['tax'] : '0';
+		'total' => function($item, $fields) use ($id) {
+			$tax = isset($_POST['local'][$id]['tax']) ? $_POST['local'][$id]['tax'] : '0';
 			$tax = str_replace(',', '.', $tax);
 			$tax = str_replace('%', '', $tax);
 
@@ -92,7 +92,7 @@ foreach ($items as $id => $item) {
 			$price = str_replace('$', '', $price);
 			$price = (float) $price;
 
-			$discount = isset($_GET['discount']) ? $_GET['discount'] : '';
+			$discount = isset($_POST['local'][$id]['discount']) ? $_POST['local'][$id]['discount'] : '';
 			$discount = str_replace(',', '.', $discount);
 			$discount = str_replace('%', '', $discount);
 			$discount = (float) $discount;
@@ -168,68 +168,49 @@ $template = [
 	'default_font_size' => 10,
 	'default_font' => 'sans', // sans | sans-serif | serif | monospace | mono
 	'request' => [
-		[
-			'id' => 'tax',
-			'title' => 'Tax (%)',
-			'type' => 'text'
+		'local' => [
+			[
+				'id' => 'tax',
+				'title' => 'Tax (%)',
+				'type' => 'text'
+			],
+			[
+				'id' => 'discount',
+				'title' => 'Discount (%)',
+				'type' => 'text'
+			]
 		],
-		[
-			'id' => 'discount',
-			'title' => 'Discount (%)',
-			'type' => 'text'
-		],
-		[
-			'id' => 'address',
-			'title' => 'Client Name and Address',
-			'type' => 'tinymce'
-		],
-		[
-			'id' => 'bank-info',
-			'title' => 'Bank Information',
-			'type' => 'tinymce'
-		],
-		[
-			'id' => 'terms',
-			'title' => 'Terms',
-			'type' => 'tinymce'
+		'global' => [
+			[
+				'id' => 'address',
+				'title' => 'Client Name and Address',
+				'type' => 'tinymce'
+			],
+			[
+				'id' => 'bank-info',
+				'title' => 'Bank Information',
+				'type' => 'tinymce'
+			],
+			[
+				'id' => 'terms',
+				'title' => 'Terms',
+				'type' => 'tinymce'
+			]
 		]
 	],
 	'processing' => [
 		'address' => function($items){
-			$address = isset($_GET['address']) ? $_GET['address'] : '';
+			$address = isset($_POST['global']['address']) ? $_POST['global']['address'] : '';
 
 			return $address;
 		},
-		'invoice_id' => function($items, $fields){
-			global $db;
-
-			$result = $db->query('SELECT `date`,`number` FROM `ve_pdf_invoice` WHERE `id` = 1');
-			$arr = [];
-			while ($row = $result->fetch_assoc()) {
-				$arr[] = $row;
-			}
-			$item = $arr[0];
-
-			$date = date('Y_m');
-
-			if ($date === $item['date']) {
-				$db->query('UPDATE `ve_pdf_invoice` SET `number` = ' . ($item['number'] + 1) . ' WHERE `id` = 1');
-
-				return $date . '_' . $item['number'];
-			} else {
-				$db->query('UPDATE `ve_pdf_invoice` SET `date` = "' . $date . '", `number` = 1001 WHERE `id` = 1');
-
-				return $date . '_1000';
-			}
-			// 2017_01_1000
-		},
 		'bank-info' => function($items){
-			$bank_info = isset($_GET['bank-info']) ? $_GET['bank-info'] : '';
+			$bank_info = isset($_POST['global']['bank-info']) ? $_POST['global']['bank-info'] : '';
 
 			return $bank_info;
 		},
 		'terms' => function($items){
-			$terms = isset($_GET['terms']) ? $_GET['terms'] : '';
+			$terms = isset($_POST['global']['terms']) ? $_POST['global']['terms'] : '';
 
 			return $terms;
 		},

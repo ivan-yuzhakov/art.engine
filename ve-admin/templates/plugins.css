@@ -1,0 +1,50 @@
+#plugins{height:100%;position:relative;display:none;}
+
+#plugins .list{height:100%;padding-top:80px;position:relative;}
+#plugins .list .header{height:40px;padding:20px 40px 19px;position:absolute;top:0;left:0;right:0;background:#fff;border-bottom:1px solid #ddd;}
+#plugins .list .header .actions{height:40px;float:right;}
+#plugins .list .header .actions div{padding:0 20px;background:#238ba3;cursor:pointer;font-size:16px;line-height:40px;color:#fff;}
+#plugins .list .header .title{font-size:22px;line-height:40px;color:#222;}
+#plugins .list .plugins{height:100%;padding:0 40px;overflow:auto;}
+#plugins .list .plugins .plugin{min-height:90px;margin:40px 0;padding-left:130px;position:relative;}
+#plugins .list .plugins .plugin .image{width:90px;height:90px;position:absolute;top:0;left:0;}
+#plugins .list .plugins .plugin .image svg{width:100%;height:100%;display:block;fill:#222;}
+#plugins .list .plugins .plugin .title{padding-bottom:4px;overflow:hidden;font-size:22px;line-height:20px;white-space:nowrap;text-overflow:ellipsis;}
+#plugins .list .plugins .plugin .desc{height:38px;padding-bottom:4px;overflow:hidden;line-height:38px;color:#999;white-space:nowrap;text-overflow:ellipsis;}
+#plugins .list .plugins .plugin .ui-switch{display:block;float:left;}
+#plugins .list .plugins .plugin .action{width:24px;height:24px;margin-left:20px;float:left;opacity:0;visibility:hidden;cursor:pointer;}
+#plugins .list .plugins .plugin.active .action{opacity:1;visibility:visible;}
+#plugins .list .plugins .plugin .action svg{width:100%;height:100%;display:block;fill:#ccc;}
+#plugins .list .plugins .plugin .action:hover svg{fill:#666;}
+#plugins .list .plugins .plugin .action.active svg{fill:#238ba3;}
+
+#plugins .overlay{width:100%;height:100%;position:absolute;top:0;left:0;background-color:rgba(0,0,0,.7);opacity:0;visibility:hidden;}
+#plugins .overlay.show{opacity:1;visibility:visible;}
+
+#plugins .form{width:100%;max-width:1000px;height:100%;padding-top:80px;position:absolute;top:0;right:0;background:#f8f8f8;opacity:0;visibility:hidden;transform:translateX(50px);box-shadow:-5px 0 10px #333;}
+#plugins .form.show{opacity:1;visibility:visible;transform:translateX(0);}
+#plugins .form .header{width:100%;height:79px;position:absolute;top:0;left:0;background:#fff;border-bottom:1px solid #ddd;}
+#plugins .form .header .title{padding:0 40px;overflow:hidden;font-size:24px;line-height:79px;color:#222;white-space:nowrap;text-overflow:ellipsis;}
+#plugins .form .header .actions{height:40px;margin-top:20px;padding-right:20px;float:right;}
+#plugins .form .header .actions div{margin-right:20px;padding:0 20px;background:#238ba3;float:left;cursor:pointer;line-height:40px;color:#fff;}
+#plugins .form .header .actions div.close{background:#f55;}
+#plugins .form .wrapper{height:100%;padding:0 40px;overflow:auto;}
+
+@media screen and (max-width:1080px){
+	#plugins .form{box-shadow:none;}
+}
+
+#plugins .upload{padding-top:80px;position:absolute;top:20px;bottom:20px;left:20px;right:20px;background:#f8f8f8;overflow:hidden;opacity:0;visibility:hidden;}
+#plugins .upload.show{opacity:1;visibility:visible;}
+#plugins .upload .header{height:40px;padding:20px 40px 19px;position:absolute;top:0;left:0;right:0;background:#fff;border-bottom:1px solid #ddd;}
+#plugins .upload .header .title{font-size:22px;line-height:40px;color:#222;}
+#plugins .upload .header .close{width:20px;height:20px;margin-right:-10px;padding:10px;float:right;cursor:pointer;}
+#plugins .upload .header .close svg{width:100%;height:100%;display:block;fill:#222;}
+#plugins .upload .header .close:hover svg{fill:#f55;}
+#plugins .upload .plugins{height:100%;padding:0 40px;overflow:auto;}
+#plugins .upload .plugins .error{line-height:40px;text-align:center;}
+#plugins .upload .plugins .plugin{min-height:90px;margin:40px 0;padding-left:130px;position:relative;}
+#plugins .upload .plugins .plugin .image{width:90px;height:90px;position:absolute;top:0;left:0;}
+#plugins .upload .plugins .plugin .image svg{width:100%;height:100%;display:block;fill:#222;}
+#plugins .upload .plugins .plugin .title{padding-bottom:4px;overflow:hidden;font-size:22px;line-height:20px;white-space:nowrap;text-overflow:ellipsis;}
+#plugins .upload .plugins .plugin .desc{height:38px;padding-bottom:4px;overflow:hidden;line-height:38px;color:#999;white-space:nowrap;text-overflow:ellipsis;}

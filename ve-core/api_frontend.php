@@ -1,4 +1,105 @@
 <?php
+class Bases
+{
+	public function get_items($fields = '*')
+	{
+		global $db, $settings, $visitor;
+
+		$bases = $db->select('database', $fields, ['del' => 0], __FILE__, __LINE__);
+
+		$l_cur = $visitor->lang;
+		$l_def = $settings['langFrontDefault'];
+
+		foreach ($bases as $i => $v) {
+			if (isset($v['public_title'])) {
+				$t = json_decode($v['public_title'], true);
+
+				if (isset($t[$l_cur]) && !empty($t[$l_cur])) {
+					$t = $t[$l_cur];
+				} else if (isset($t[$l_def])) {
+					$t = $t[$l_def];
+				} else {
+					$t = '';
+				}
+				$bases[$i]['public_title'] = $t;
+			}
+
+			if (isset($v['fields'])) {
+				$f = json_decode($v['fields'], true);
+				if (isset($f[$l_cur]) && !empty($f[$l_cur])) {
+					$f = $f[$l_cur];
+				} else if (isset($f[$l_def])) {
+					$f = $f[$l_def];
+				} else {
+					$f = [];
+				}
+				$bases[$i]['fields'] = $f;
+			}
+		}
+
+		return $bases;
+	}
+
+	public function get_item($id, $fields = '*')
+	{
+		global $db, $settings, $visitor;
+
+		$bases = $db->select('database', $fields, ['id' => $id, 'del' => 0], __FILE__, __LINE__);
+
+		if (empty($bases)) return false;
+
+		$l_cur = $visitor->lang;
+		$l_def = $settings['langFrontDefault'];
+
+		foreach ($bases as $i => $v) {
+			if (isset($v['public_title'])) {
+				$t = json_decode($v['public_title'], true);
+
+				if (isset($t[$l_cur]) && !empty($t[$l_cur])) {
+					$t = $t[$l_cur];
+				} else if (isset($t[$l_def])) {
+					$t = $t[$l_def];
+				} else {
+					$t = '';
+				}
+				$bases[$i]['public_title'] = $t;
+			}
+
+			if (isset($v['fields'])) {
+				$f = json_decode($v['fields'], true);
+				if (isset($f[$l_cur]) && !empty($f[$l_cur])) {
+					$f = $f[$l_cur];
+				} else if (isset($f[$l_def])) {
+					$f = $f[$l_def];
+				} else {
+					$f = [];
+				}
+				$bases[$i]['fields'] = $f;
+			}
+		}
+
+		return $bases[0];
+	}
+
+	public function get_editions($id)
+	{
+		global $db;
+
+		$editions = $db->select('editions', ['id', 'title'], ['item' => $id], __FILE__, __LINE__);
+
+		return $editions;
+	}
+
+	public function get_edition_items($id, $fields = '*')
+	{
+		global $db;
+
+		$items = $db->select('editions_items', $fields, ['edition' => $id], __FILE__, __LINE__);
+
+		return $items;
+	}
+}
+
 class Template
 {
 	public $meta_title = false;
@@ -6,107 +107,61 @@ class Template
 	public $meta_desc = false;
 	public $meta_keys = false;
 
-	private $sorting = [];
 	public $items = [];
 
-	public function get_lang_fields($field, $isJSON = false)
+	public function get_lang_fields($field)
 	{
 		global $settings, $visitor;
 
 		$lang_current = $visitor->lang;
 		$lang_default = $settings['langFrontDefault'];
-		$find_current = false;
-		$find_default = false;
 
-		$fields = explode("\r\n", $field);
+		$fields = json_decode($field, true);
 
-		foreach ($fields as $el) {
-			$pos_current = strpos($el, '{' . $lang_current . '}:');
-			$pos_default = strpos($el, '{' . $lang_default . '}:');
-			if ($pos_current === 0) $find_current = str_replace('{' . $lang_current . '}:', '', $el);
-			if ($pos_default === 0) $find_default = str_replace('{' . $lang_default . '}:', '', $el);
-		}
-
-		if ($find_current !== false && ($isJSON ? $find_current != '{}' : !empty($find_current))) return $find_current;
-		if ($find_default !== false) return $find_default;
+		if (isset($fields[$lang_current]) && !empty($fields[$lang_current])) return $fields[$lang_current];
+		if (isset($fields[$lang_default])) return $fields[$lang_default];
 
 		return $field;
-	}
-
-	public function get_sorting($section)
-	{
-		global $db;
-
-		if (!isset($this->sorting[$section])) {
-			$sorting = $db->select('sorting', '*', ['section' => $section], __FILE__, __LINE__);
-			$sorting = array_column($sorting, 'sorting', 'section');
-			$sorting = array_map(function($v){
-				$sort = explode(';', $v);
-				$sort = array_map(function($s){
-					return explode(':', $s);
-				}, $sort);
-
-				return $sort;
-			}, $sorting);
-
-			$sort = $sorting[$section];
-
-			$sorting = [];
-			foreach ($sort as $s) {
-				$sorting[$s[0]]['parent'] = $s[1];
-				$sorting[$s[1]]['childs'][] = $s[0];
-			}
-
-			$this->sorting[$section] = $sorting;
-		}
-
-		return $this->sorting[$section];
 	}
 
 	public function get_items($parent, $show_disabled = false)
 	{
 		global $db;
 
-		$id = is_array($parent) ? $parent['id'] : $parent;
-		if ($id !== '#') $id = (int) $id;
+		$id = (int) (is_array($parent) ? $parent['id'] : $parent);
 
 		if ($id === 0) return [];
 
-		$sorting = $this->get_sorting('items');
-		$childs = isset($sorting[$id]) && isset($sorting[$id]['childs']) ? $sorting[$id]['childs'] : [];
+		$items = $db->select('items', ['sc'], ['id' => $id], __FILE__, __LINE__);
+		$item = $items[0] ?: false;
+		$childs = [];
+		if ($item !== false) {
+			$childs = explode(',', $item['sc']);
+			$childs = array_filter($childs);
+			$childs = array_map(function($s){
+				return (int) $s;
+			}, $childs);
+		}
 
 		if (empty($childs)) return [];
 
-		$type = [];
-		$args = [];
+		$data = ['id' => $childs, 'show' => 1];
+		if ($show_disabled) unset($data['show']);
 
-		$sql = [];
-		foreach ($childs as $i => $id) {
-			$sql[] = '`id`=?';
-			$type[] = 'i';
-			$args[] = &$childs[$i];
+		$arr = $db->select('items', '*', $data, __FILE__, __LINE__);
+
+		$arr = array_map(function($item){
+			return $this->get_item_parse($item);
+		}, $arr);
+		$arr = array_column($arr, null, 'id');
+
+		foreach ($childs as $i => $v) {
+			$childs[$i] = isset($arr[$v]) ? $arr[$v] : false;
 		}
-		$sql = ' WHERE (' . implode(' OR ', $sql) . ')' . ($show_disabled ? '' : ' AND `show`=1');
+		$childs = array_filter($childs);
+		$childs = array_values($childs);
 
-		$stmt = $db->prepare('SELECT * FROM `prefix_items`' . $sql, $type, $args, __FILE__, __LINE__);
-
-		$result = $stmt->get_result();
-		$stmt->close();
-
-		$arr = [];
-		if ($result->num_rows > 0) {
-			while ($row = $result->fetch_assoc()) {
-				$item = $this->get_item_parse($row);
-				$arr[$item['id']] = $item;
-			}
-		}
-
-		$items = [];
-		foreach ($childs as $i => $id) {
-			if (isset($arr[$id])) $items[] = $arr[$id];
-		}
-
-		return $items;
+		return $childs;
 	}
 
 	public function get_itemById($id, $show_disabled = false)
@@ -143,45 +198,68 @@ class Template
 		return $this->get_item_parse($item);
 	}
 
-	public function get_itemParent($item = false)
+	public function get_itemParent($item = false, $show_disabled = false)
 	{
+		global $db;
+
 		if ($item === false) return $item;
 
-		$sorting = $this->get_sorting('items');
-		$id = (int) $sorting[$item['id']]['parent'];
-		$parent = $this->get_itemById($id, true);
+		$items = $db->select('items', ['sp'], ['id' => $item['id']], __FILE__, __LINE__);
+		$parent = $this->get_itemById($items[0]['sp'], $show_disabled);
 
 		return $parent;
 	}
 
-	public function get_itemPrev($item = false)
+	public function get_itemPrev($item = false, $show_disabled = false)
 	{
+		global $db;
+
 		if ($item === false) return $item;
 
-		$sorting = $this->get_sorting('items');
+		$id_item = (int) $item['id'];
+		$items = $db->select('items', ['sp'], ['id' => $id_item], __FILE__, __LINE__);
+		$id_parent = $items[0]['sp'];
+		$items = $db->select('items', ['sc'], ['id' => $id_parent], __FILE__, __LINE__);
+		$childs = explode(',', $items[0]['sc']);
+		$childs = array_filter($childs);
+		$childs = array_map(function($s){
+			return (int) $s;
+		}, $childs);
 
-		$id_item = $item['id'];
-		$id_parent = $sorting[$id_item]['parent'];
-
-		$childs = $sorting[$id_parent]['childs'];
 		$index = array_search($id_item, $childs);
+		if ($index === 0) return false;
+
 		$prev = $this->get_itemById(@$childs[$index - 1], true);
+		if ($prev !== false && $prev['show'] !== 1 && !$show_disabled) {
+			$prev = $this->get_itemPrev($prev, $show_disabled);
+		}
 
 		return $prev;
 	}
 
-	public function get_itemNext($item = false)
+	public function get_itemNext($item = false, $show_disabled = false)
 	{
+		global $db;
+
 		if (!$item) return false;
 
-		$sorting = $this->get_sorting('items');
+		$id_item = (int) $item['id'];
+		$items = $db->select('items', ['sp'], ['id' => $id_item], __FILE__, __LINE__);
+		$id_parent = $items[0]['sp'];
+		$items = $db->select('items', ['sc'], ['id' => $id_parent], __FILE__, __LINE__);
+		$childs = explode(',', $items[0]['sc']);
+		$childs = array_filter($childs);
+		$childs = array_map(function($s){
+			return (int) $s;
+		}, $childs);
 
-		$id_item = $item['id'];
-		$id_parent = $sorting[$id_item]['parent'];
-
-		$childs = $sorting[$id_parent]['childs'];
 		$index = array_search($id_item, $childs);
+		if ($index === (count($childs) - 1)) return false;
+
 		$next = $this->get_itemById(@$childs[$index + 1], true);
+		if ($next !== false && $next['show'] !== 1 && !$show_disabled) {
+			$next = $this->get_itemNext($next, $show_disabled);
+		}
 
 		return $next;
 	}
@@ -199,12 +277,10 @@ class Template
 			$item['meta_keys'] = $this->get_lang_fields($item['meta_keys']);
 			$item['desc'] = $this->get_lang_fields($item['desc']);
 			$item['image'] = $this->get_lang_fields($item['image']);
-			$item['fields'] = $this->get_lang_fields($item['fields'], true);
+			$item['fields'] = $this->get_lang_fields($item['fields']);
 
 			$item['desc'] = str_replace('~^~', '"', htmlspecialchars_decode($item['desc']));
 
-			$item['fields'] = empty($item['fields']) ? '{}' : $item['fields'];
-			$item['fields'] = json_decode($item['fields'], true);
 			if (is_array($item['fields'])) {
 				foreach ($item['fields'] as $index => $value) {
 					$item['fields'][$index] = str_replace('~^~', '"', htmlspecialchars_decode($value));
@@ -278,23 +354,12 @@ class Template
 
 		$this->instagram_start($access_token);
 
-		$key = 'instagram_user_' . $username;
-		$cache = $core->cache->getCache($key);
-		if ($cache) {
-			$user_id = $cache;
-		} else {
-			$user_id = $this->instagram->get_user($username);
-			$core->cache->setCache($key, $user_id, $cache_minutes * 60);
-		}
-
-		if (empty($user_id)) return 'User undefined';
-
 		$key = 'instagram_feed_' . $username;
 		$cache = $core->cache->getCache($key);
 		if ($cache) {
 			$feed = $cache;
 		} else {
-			$feed = $this->instagram->get_feed($user_id, $count);
+			$feed = $this->instagram->get_feed($count);
 			$core->cache->setCache($key, $feed, $cache_minutes * 60);
 		}
 
@@ -330,13 +395,12 @@ class Template
 	}
 };
 
+$bases = new Bases();
 $cl_template = new Template();
 
 $g_users = $db->select('members', '*', [], __FILE__, __LINE__);
 $g_users = array_column($g_users, null, 'id');
 $g_users = array_map(function($val){
-	$val['name'] = str_replace('^', '"', htmlspecialchars_decode($val['name']));
-	$val['desc'] = str_replace('^', '"', htmlspecialchars_decode($val['desc']));
 	unset($val['password']);
 
 	return $val;
@@ -348,9 +412,7 @@ $g_fields = array_map(function($el){
 	global $cl_template;
 
 	if ($el['type'] == 'multiple_text' || $el['type'] == 'checkbox' || $el['type'] == 'select') {
-		$value = $cl_template->get_lang_fields($el['value'], true);
-		$value = empty($value) ? '{}' : $value;
-		$value = json_decode($value, true);
+		$value = $cl_template->get_lang_fields($el['value']);
 		foreach ($value as $index => $val) {
 			$value[$index] = str_replace('~^~', '"', htmlspecialchars_decode($val));
 		}
@@ -388,25 +450,25 @@ function get_itemByAlias($alias, $show_disabled = false)
 	return $cl_template->get_itemByAlias($alias, $show_disabled);
 };
 
-function get_itemParent($item = false)
+function get_itemParent($item = false, $show_disabled = false)
 {
 	global $cl_template;
 
-	return $cl_template->get_itemParent($item);
+	return $cl_template->get_itemParent($item, $show_disabled);
 };
 
-function get_itemPrev($item = false)
+function get_itemPrev($item = false, $show_disabled = false)
 {
 	global $cl_template;
 
-	return $cl_template->get_itemPrev($item);
+	return $cl_template->get_itemPrev($item, $show_disabled);
 };
 
-function get_itemNext($item = false)
+function get_itemNext($item = false, $show_disabled = false)
 {
 	global $cl_template;
 
-	return $cl_template->get_itemNext($item);
+	return $cl_template->get_itemNext($item, $show_disabled);
 };
 
 function get_value($arr, $key, $default_value = '')
@@ -414,6 +476,7 @@ function get_value($arr, $key, $default_value = '')
 	global $g_fields;
 
 	$arr = (array) $arr;
+	if (isset($arr['fields'])) $arr = $arr['fields'];
 	$type_fields = array_key_exists($key, $g_fields) ? $g_fields[$key]['type'] : 'none';
 	$value = (array_key_exists($key, $arr) && !empty($arr[$key]) ? $arr[$key] : $default_value);
 
@@ -809,7 +872,6 @@ function get_image_matrix($image_scr){
 	];
 };
 
-// get_itemParent($item = false)
 // instagram_getFeed($username = false, $count = 10, $cache_minutes = 1440)
 // send_mail($sender, $to, $subject, $message, $from_mail = MAIL_DEVELOPER_BACKEND, $from_name = 'Admin')
 /*

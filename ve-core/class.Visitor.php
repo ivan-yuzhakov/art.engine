@@ -115,7 +115,8 @@ class Visitor
 
 		$arr = $db->select('members', '*', [
 			'login'    => $login,
-			'password' => sha1($password . SALT)
+			'password' => sha1($password . SALT),
+			'access' => [2, 3, 4]
 		], __FILE__, __LINE__);
 
 		if (!empty($arr)) {
@@ -132,8 +133,6 @@ class Visitor
 	{
 		unset($_SESSION['id']);
 		unset($_SESSION['ip']);
-
-		session_destroy();
   	}
 }
 ?>

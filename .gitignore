@@ -1,6 +1,9 @@
 ve-files/cache/*
 ve-cache/*
 
+vendor/*
+composer.lock
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db

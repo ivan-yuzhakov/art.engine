@@ -116,7 +116,7 @@ var m = {
 			if (callback && typeof callback == 'function') callback(image.get(0));
 		} else {
 			x.preload_array[src] = true;
-			$('<img src="' + src + '" />').load(function(){
+			$('<img src="' + src + '" />').on('load', function(){
 				if (callback && typeof callback == 'function') callback(this);
 			}).appendTo(m.cache.el);
 		}

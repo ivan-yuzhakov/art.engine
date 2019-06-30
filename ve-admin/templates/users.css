@@ -1,0 +1,45 @@
+#users{height:100%;padding:0 20px;position:relative;display:none;cursor:default;}
+
+/* list */
+
+#users .list{width:100%;height:100%;position:relative;overflow:hidden;}
+#users .list .items{width:50%;height:100%;padding-top:80px;position:relative;float:left;}
+#users .list .items .header{padding:20px;position:absolute;top:0;left:0;right:0;}
+#users .list .items .header .create{padding:0 20px;background:#238ba3;float:right;cursor:pointer;font-size:16px;line-height:40px;color:#fff;}
+#users .list .items .header .create.hide{display:none;}
+#users .list .items .header .title{overflow:hidden;font-size:22px;line-height:40px;color:#333;text-overflow:ellipsis;white-space:nowrap;}
+#users .list .items .scroll{height:100%;position:relative;}
+#users .list .items .scroll .overview{width:auto;padding:0 20px 10px;}
+#users .list .items .scroll .thumb{background:#777;opacity:.3;}
+#users .list .items .scroll .thumb:hover{opacity:1;}
+
+#users .list .items .item{height:40px;margin-top:10px;background:#fff;border:1px solid #ddd;cursor:pointer;line-height:40px;color:#333;}
+#users .list .items .item:first-child{margin:0;}
+#users .list .items .item:hover{background:#fdfdfd;}
+#users .list .items .item.removed{background:#fbb;color:#fff;}
+#users .list .items .item .title{padding:0 20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+#users .list .items .item .remove{width:10px;height:10px;padding:15px;float:right;}
+#users .list .items .item .remove svg{width:100%;height:100%;display:block;fill:#333;}
+#users .list .items .item .remove:hover svg{fill:#f00;}
+#users .list .items .item.ui-sortable-helper{transition:none;}
+#users .list .items .item.logged{background:#dfd;}
+#users .list .items .item.ne{cursor:default;}
+#users .list .items .item.nd .remove{display:none;}
+
+/* overlay */
+
+#users .overlay{width:100%;height:100%;position:absolute;top:0;left:0;background-color:rgba(0,0,0,.7);opacity:0;visibility:hidden;}
+#users .overlay.show{opacity:1;visibility:visible;}
+
+/* form */
+
+#users .form{width:100%;max-width:1000px;height:100%;padding-top:80px;position:absolute;top:0;right:0;background:#f8f8f8;opacity:0;visibility:hidden;transform:translateX(50px);}
+#users .form.show{opacity:1;visibility:visible;transform:translateX(0);}
+
+#users .form .header{width:100%;height:79px;position:absolute;top:0;left:0;background:#fff;border-bottom:1px solid #ddd;}
+#users .form .header .actions{height:40px;margin-top:20px;padding-right:20px;float:right;}
+#users .form .header .actions div{margin-right:20px;padding:0 20px;background:#238ba3;float:left;cursor:pointer;line-height:40px;color:#fff;}
+#users .form .header .actions div.close{background:#f55;}
+#users .form .header .title{padding:0 40px;overflow:hidden;font-size:24px;line-height:79px;color:#222;text-overflow:ellipsis;white-space:nowrap;}
+
+#users .form .wrapper{height:100%;padding:0 40px;overflow:auto;}

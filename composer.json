@@ -1,0 +1,6 @@
+{
+    "require": {
+        "cboden/ratchet": "^0.4.1",
+        "mpdf/mpdf": "^8.0"
+    }
+}

@@ -10,64 +10,143 @@
 			'plugins/jquery.tinyscrollbar.css',
 			'plugins/alertify.css',
 			'plugins/jquery.Jcrop.min.css',
-			'index.css',
+			'common.css',
 		];
-		$styles[] = 'templates/search/search.css';
-		$styles[] = 'templates/items/items.css';
-		$styles[] = 'templates/files/files.css';
-		$styles[] = 'templates/settings/settings.css';
-		$styles[] = 'templates/plugins/plugins.css';
+		$styles[] = 'templates/database.css';
+		$styles[] = 'templates/items.css';
+		$styles[] = 'templates/files.css';
+		$styles[] = 'templates/fields.css';
+		$styles[] = 'templates/users.css';
+		$styles[] = 'templates/settings.css';
+		$styles[] = 'templates/plugins.css';
 		foreach ($styles as $style) {
 			echo '<link rel="stylesheet" href="' . $style . '?v=' . VERSION . '">';
 		}
 	?>
 </head>
-<body>
-	<div id="menu">
-		<a class="animate" href="#/search"><?php require_once('templates/search/search.svg'); ?><p><?php echo $lang['section_search']; ?></p></a>
-		<a class="animate" href="#/items"><?php require_once('templates/items/items.svg'); ?><p><?php echo $lang['section_items']; ?></p></a>
-		<a class="animate" href="#/files"><?php require_once('templates/files/files.svg'); ?><p><?php echo $lang['section_files']; ?></p></a>
-		<?php
-			$sections = [];
+<body class="box">
+	<header class="animate2">
+		<div class="burger">
+			<p class="p1 br3"></p>
+			<p class="p2 br3"></p>
+			<p class="p3 br3"></p>
+		</div>
+		<div class="logo br3">
+			
+		</div>
+		<div class="title"></div>
+		<div class="account">
+			<?php
+				$user = $db->select('members', ['fname'], ['id' => $visitor->id]);
+				$user = $user[0]['fname'];
+				echo '<div class="user">' . $user . '</div>';
+			?>
+			<a class="logout" href="index.php?logout" title="<?php echo $lang['section_logout']; ?>">
+				<svg class="animate1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M352.672 544h-257.312v-448h257.28v96h63.36v-96c0-35.2-28.768-64-64-64h-256c-35.2 0-64 28.8-64 64v448c0 35.2 28.8 64 64 64h256c35.232 0 64-28.8 64-64v-64h-63.328v64zM608 336l-127.328-124.8v76.8h-288v96h288v76.8l127.328-124.8z"></path></svg>
+			</a>
+		</div>
+	</header>
 
-			//$sections[] = ['#/statistics', 'menu_statistics', 'Statistics'];
-			//$sections[] = ['#/order', 'menu_order', 'Orders'];
-			switch ($visitor->access) {
-				case '1':
-				case '2':
-				case '3':
-					$sections[] = ['#/users', 'menu_users', $lang['section_users']];
-					break;
-				case '4':
-					$sections[] = ['#/fields', 'menu_fields', $lang['section_fields']];
-					$sections[] = ['#/users', 'menu_users', $lang['section_users']];
-					break;
-			}
-			foreach ($sections as $section) {
-				$isPlugin = isset($section[3]);
-				echo '<a class="animate' . ($isPlugin ? ' hide ' . $section[3] : '') . '" href="' . $section[0] . '">' . $icons[$section[1]] . '<p>' . $section[2] . '</p></a>';
-			}
-		?>
-		<a class="animate" href="#/plugins"><?php require_once('templates/plugins/plugins.svg'); ?><p><?php echo $lang['section_plugins']; ?></p></a>
-		<?php if ($visitor->access === 4) { ?>
-			<a class="animate settings" href="#/settings"><?php require_once('templates/settings/settings.svg'); ?><p><?php echo $lang['section_settings']; ?></p><i class="br10 animate2">!</i></a>
-		<?php } ?>
-		<a class="animate" href="index.php?logout"><?php require_once('templates/logout/logout.svg'); ?><p><?php echo $lang['section_logout']; ?></p></a>
+	<div id="menu">
+		<div class="overlay animate2"></div>
+		<div class="menu animate2">
+			<a class="animate" href="#/database"><?php require_once('templates/database.svg'); ?><p><?php echo $lang['section_database']; ?></p></a>
+			<a class="animate" href="#/items"><?php require_once('templates/items.svg'); ?><p><?php echo $lang['section_items']; ?></p></a>
+			<a class="animate" href="#/files"><?php require_once('templates/files.svg'); ?><p><?php echo $lang['section_files']; ?></p></a>
+			<?php
+				$sections = [];
+
+				//$sections[] = ['#/statistics', 'menu_statistics', 'Statistics'];
+				//$sections[] = ['#/order', 'menu_order', 'Orders'];
+				switch ($visitor->access) {
+					case '1':
+					case '2':
+					case '3':
+						// $sections[] = ['#/users', 'menu_users', $lang['section_users']];
+						break;
+					case '4':
+						$sections[] = ['#/fields', 'menu_fields', $lang['section_fields']];
+						// $sections[] = ['#/users', 'menu_users', $lang['section_users']];
+						break;
+				}
+				foreach ($sections as $section) {
+					$isPlugin = isset($section[3]);
+					echo '<a class="animate' . ($isPlugin ? ' hide ' . $section[3] : '') . '" href="' . $section[0] . '">' . $icons[$section[1]] . '<p>' . $section[2] . '</p></a>';
+				}
+			?>
+			<a class="animate" href="#/users"><?php require_once('templates/users.svg'); ?><p><?php echo $lang['section_users']; ?></p></a>
+			<a class="animate" href="#/plugins"><?php require_once('templates/plugins.svg'); ?><p><?php echo $lang['section_plugins']; ?></p></a>
+			<?php if ($visitor->access === 4) { ?>
+				<a class="animate settings" href="#/settings"><?php require_once('templates/settings.svg'); ?><p><?php echo $lang['section_settings']; ?></p><i class="br10 animate2">!</i></a>
+			<?php } ?>
+		</div>
+		<div class="search animate2">
+			<input class="br3 box" type="text" value="" placeholder="<?php echo $lang['search_input_placeholder']; ?>">
+		</div>
+		<div class="result box animate2">
+			<div class="database">
+				<div class="head"><?php echo $lang['search_database']; ?></div>
+				<div class="scroll">
+					<div class="viewport"><div class="overview animate1">
+						<div class="item" data="{{id}}">
+							<div class="image br3" style="background-image:url({{image}});" title="ID {{id}}"></div>
+							<div class="info br3">
+								<div class="title" title="{{title}}">{{title}}</div>
+							</div>
+						</div>
+					</div></div>
+					<div class="scrollbar animate1"><div class="track"><div class="thumb br3 animate1"></div></div></div>
+				</div>
+			</div>
+			<div class="items">
+				<div class="head"><?php echo $lang['search_items']; ?></div>
+				<div class="scroll">
+					<div class="viewport"><div class="overview animate1">
+						<div class="item" data="{{id}}">
+							<div class="image br3" style="background-image:url({{image}});" title="ID {{id}}"></div>
+							<div class="info br3">
+								<div class="title" title="{{title}}">{{title}}</div>
+								<div class="path">{{path}}</div>
+							</div>
+						</div>
+					</div></div>
+					<div class="scrollbar animate1"><div class="track"><div class="thumb br3 animate1"></div></div></div>
+				</div>
+			</div>
+			<div class="files">
+				<div class="head"><?php echo $lang['search_files']; ?></div>
+				<div class="scroll">
+					<div class="viewport"><div class="overview animate1">
+						<div class="item" data="{{id}}">
+							<div class="image br3" style="background-image:url({{image}});" title="ID {{id}}"></div>
+							<div class="info br3">
+								<div class="title" title="{{title}}">{{title}}</div>
+								<div class="path">{{path}}</div>
+							</div>
+						</div>
+					</div></div>
+					<div class="scrollbar animate1"><div class="track"><div class="thumb br3 animate1"></div></div></div>
+				</div>
+			</div>
+		</div>
 	</div>
 
-	<div id="content">
+	<div id="content" class="animate2">
 		<?php
-			require_once('templates/search/search.php');
-			require_once('templates/items/items.php');
-			require_once('templates/files/files.php');
-			require_once('templates/plugins/plugins.php');
-			require_once('templates/settings/settings.php');
+			require_once('templates/database.php');
+			require_once('templates/items.php');
+			require_once('templates/files.php');
+			require_once('templates/fields.php');
+			require_once('templates/users.php');
+			require_once('templates/plugins.php');
+			require_once('templates/settings.php');
 		?>
 		<div id="overlay" class="loader"></div>
 	</div>
 
 	<div id="cache"></div>
-	<div id="progress" class="animate"></div>
+	<div id="progress" class="animate2"></div>
+	<div id="ws" class="loader animate2"><?php echo $lang['global_ws_error']; ?></div>
 
 	<script>
 		var siteurl = '<?php echo URL_SITE; ?>';
@@ -90,7 +169,7 @@
 	</script>
 	<?php
 		$scripts = [
-			'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js',
+			'https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js',
 			'https://cdn.tinymce.com/4/tinymce.min.js',
 			//'https://www.google.com/jsapi',
 			//<script>google.load('visualization', '1.0', {'packages':['corechart']});</script>
@@ -101,16 +180,16 @@
 			'plugins/jquery.Jcrop.min.js',
 			'plugins/sprintf.min.js',
 			'common.js',
-			'fields.js',
-			'users.js',
 			//'order.js',
 			//'statistics.js',
 		];
-		$scripts[] = 'templates/search/search.js';
-		$scripts[] = 'templates/items/items.js';
-		$scripts[] = 'templates/files/files.js';
-		$scripts[] = 'templates/plugins/plugins.js';
-		$scripts[] = 'templates/settings/settings.js';
+		$scripts[] = 'templates/users.js';
+		$scripts[] = 'templates/fields.js';
+		$scripts[] = 'templates/settings.js';
+		$scripts[] = 'templates/database.js';
+		$scripts[] = 'templates/items.js';
+		$scripts[] = 'templates/files.js';
+		$scripts[] = 'templates/plugins.js';
 
 		foreach ($scripts as $script) {
 			echo '<script src="' . $script . '?v=' . VERSION . '"></script>';

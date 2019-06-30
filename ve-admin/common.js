@@ -42,28 +42,27 @@ String.prototype.lang = function(){
 
 	return lang;
 };
-String.prototype.langs = function(){
-	var lang = {};
+// String.prototype.langs = function(){
+	// var lang = {};
 
-	$.each(this.split(/\r\n|\n/), function(i, el){
-		if (/^{.+}:/.test(el)) {
-			var q = el.match(/^\{(.+)\}:([\s\S]*)$/);
-		} else {
-			var q = [null, settings.arr['langFrontDefault'], el];
-		}
+	// $.each(this.split(/\r\n|\n/), function(i, el){
+		// if (/^{.+}:/.test(el)) {
+			// var q = el.match(/^\{(.+)\}:([\s\S]*)$/);
+		// } else {
+			// var q = [null, settings.arr['langFrontDefault'], el];
+		// }
 
-		try {
-			q[2] = $.parseJSON(q[2]);
-		} catch (e) {}
+		// try {
+			// q[2] = $.parseJSON(q[2]);
+		// } catch (e) {}
 
-		lang[q[1]] = q[2];
-	});
+		// lang[q[1]] = q[2];
+	// });
 
-	return lang;
-};
+	// return lang;
+// };
 
 var hash, oldhash, ww, wh, wwi, whi,
-	menu = $('#menu'),
 	content = $('#content');
 var loader = $('#overlay', content);
 
@@ -204,8 +203,8 @@ var ui = {
 		var options = $.extend({
 			placeholder: false,
 			empty: 'Empty...',
-			fields: [], // [[id, 'title'], ...]
-			selectedItems: [], // [id, ...]
+			fields: [], // [[id, 'title'], ...], id - num or str
+			selectedItems: [], // [id, ...], id - num or str
 			removeSelectedItem: true,
 			onSelect: function(){}
 		}, options);
@@ -215,15 +214,6 @@ var ui = {
 		var ui_input = $('input', elem);
 		var ui_arrow = $('.ui-combobox-arrow', elem);
 		var ui_list = $('.ui-combobox-list', elem);
-
-		if (options.fields.length) {
-			// ui_list.html($.map(options.fields, function(el, i){
-				// if (el) return '<div class="ui-combobox-field br3" data="' + el[0] + '">' + el[1] + '</div>';
-			// }).join('') + '<div class="ui-combobox-field-empty hide">' + options.empty + '</div>');
-		} else {
-			// ui_arrow.addClass('hide');
-			// ui_list.addClass('hide');
-		}
 
 		var status = {hover: false, open: false, selected: 0};
 
@@ -244,9 +234,9 @@ var ui = {
 		var set = function(id){
 			ui_input.val('').focus();
 
-			options.selectedItems.push(+id);
+			options.selectedItems.push(id);
 
-			options.onSelect(+id);
+			options.onSelect(id);
 
 			if (options.removeSelectedItem) {
 				$('.ui-combobox-field[data="' + id + '"]', ui_list).remove();
@@ -315,7 +305,8 @@ var ui = {
 			}
 			if (e.keyCode === 13) { // enter
 				var selected = $('.ui-combobox-field.selected', elem);
-				if (selected.length) set(selected.attr('data'));
+				var data = selected.attr('data');
+				if (selected.length) set(+data || data);
 			} else {
 				update();
 			}
@@ -326,7 +317,8 @@ var ui = {
 		}).on('click', '.ui-combobox-arrow', function(){
 			if (!status.open) ui_input.focus();
 		}).on('click', '.ui-combobox-field', function(){
-			set($(this).attr('data'));
+			var data = $(this).attr('data');
+			set(+data || data);
 		});
 
 		create();
@@ -336,6 +328,18 @@ var ui = {
 			options: options,
 			reset: create
 		};
+	},
+	select: function(parent, options) {
+		var options = $.extend({
+			text: '',
+			fields: [], // [['title', ...], ...]
+			active: 0,
+			onSelect: function(){}
+		}, options);
+
+		parent.addClass('br3 box').empty();
+//TODO
+		// options.onSelect(i); //fields[i]
 	},
 	sortable: function(parent, options){
 		var options = $.extend({
@@ -754,12 +758,86 @@ var sorting = {
 	}
 };
 
+var WS = (function(){
+	var ws;
+	var arr = [];
+	var work = false;
+	var loader = $('#ws');
+
+	var connect = function(){
+		loader.show();
+
+		if (location.protocol === 'https:') {
+			ws = new WebSocket('wss://' + location.host + '/wss2/');
+		} else {
+			ws = new WebSocket('ws://' + location.host + ':1010');
+		}
+
+		ws.onopen = function(e) {
+			// console.log("Connection!");
+			// handler on error connection
+			loader.hide();
+		};
+		ws.onclose = function(e) {
+			if (event.wasClean) {
+				//alert('Соединение закрыто чисто');
+			} else {
+				//alert('Обрыв соединения'); // например, "убит" процесс сервера
+				connect();
+			}
+			//alert('Код: ' + event.code + ' причина: ' + event.reason);
+		};
+		ws.onmessage = function(e) {
+			var obj = e.data.split('/');
+			window[obj[0]].WS(obj[1], obj.slice(2));
+		};
+		ws.onerror = function(error) {
+			// alert("Ошибка " + error.message);
+		};
+	};
+	var send = function(val){
+		ws.send(val);
+	};
+	var start = function(){
+		if (work) return false;
+		work = true;
+		var f = arr[0];
+
+		if (f) {
+			f(function(){
+				arr.splice(0, 1);
+				work = false;
+				start();
+			});
+		} else {
+			work = false;
+		}
+	};
+	var append = function(func){
+		arr.push(func);
+		start();
+	};
+
+	connect();
+	
+	// RECONNECT
+
+	return {
+		send: send,
+		append: append
+	};
+})();
+
 var common = {
+	el: {
+		body: $('body'),
+		header: $('header'),
+		menu: $('#menu'),
+		content: $('#content')
+	},
 	queue: [sorting],
 	init: function()
 	{
-		if (location.hash === '#/search') location.hash = '/items';
-
 		$.ajaxSetup({
 			error: function(jqXHR, status, error){
 				if (jqXHR.responseText === 'AUTH_FAIL') {
@@ -791,6 +869,209 @@ var common = {
 			}
 		};
 		load();
+
+		common.menu.init();
+		common.search.init();
+	},
+	menu: {
+		init: function(){
+			common.el.header.on('click', '.burger', function(){
+				common.menu.open();
+			});
+			common.el.menu.on('click', '.menu a', function(){
+				common.menu.close();
+			}).on('click', '.overlay', function(){
+				common.menu.close();
+			});
+		},
+		open: function(){
+			common.el.menu.addClass('show');
+			common.el.header.addClass('openMenu');
+			common.el.content.addClass('openMenu');
+
+			setTimeout(function(){
+				$('.search input', common.el.menu).focus();
+				common.search.updateScroll();
+			}, 210);
+		},
+		close: function(){
+			common.el.menu.removeClass('show');
+			common.el.header.removeClass('openMenu');
+			common.el.content.removeClass('openMenu');
+		}
+	},
+	search: {
+		el: {},
+		init: function()
+		{
+			var x = this;
+
+			x.el.input = $('.search input', common.el.menu);
+			x.el.result = $('.result', common.el.menu);
+
+			x.template = {
+				database: '',
+				items: '',
+				files: ''
+			};
+			x.template.database = $('.database .overview', x.el.result).html();
+			$('.database .overview', x.el.result).empty();
+			x.template.items = $('.items .overview', x.el.result).html();
+			$('.items .overview', x.el.result).empty();
+			x.template.files = $('.files .overview', x.el.result).html();
+			$('.files .overview', x.el.result).empty();
+
+			x.scrollbars = $('.scroll', x.el.result).map(function(){
+				return $(this).tinyscrollbar().data('plugin_tinyscrollbar');
+			});
+
+			x.handlers();
+		},
+		handlers: function()
+		{
+			var x = this;
+
+			x.el.input.on('keyup', function(){
+				x.val = $(this).val().trim();
+
+				x.el.result.toggleClass('show', x.val.length > 1);
+
+				if (x.val.length > 1) x.submit();
+			});
+			x.el.result.on('click', '.database .item', function(){
+				var th = $(this);
+				var id = +th.attr('data');
+
+				if (id) {
+					common.menu.close();
+					location.hash = '/database';
+					database.openPathToItem(id);
+				}
+			}).on('click', '.items .item', function(){
+				var th = $(this);
+				var id = +th.attr('data');
+
+				if (id) {
+					common.menu.close();
+					location.hash = '/items';
+					items.openPathToItem(id);
+				}
+			}).on('click', '.files .item', function(){
+				var th = $(this);
+				var id = +th.attr('data');
+
+				if (id) {
+					common.menu.close();
+					location.hash = '/files';
+					files.openPathToFile(id);
+				}
+			});
+		},
+		submit: function(val)
+		{
+			var x = this;
+
+			$.post('?search/search', {val: x.val}, function(json){
+				if (x.val !== json.val) return false;
+
+				if (json.database.length) {
+					var html = [];
+
+					$.each(json.database, function(i, id){
+						var template = m.template(x.template.database, {
+							id: id,
+							title: database.arr[id].private_title || lang['search_untitled'],
+							image: '/qrs/getfile/' + database.arr[id].image + '/200/200'
+						});
+
+						html.push(template);
+					});
+
+					$('.database .overview', x.el.result).html(html.join(''));
+					x.updateScroll();
+				} else {
+					$('.database .overview', x.el.result).html('<div class="item empty br3">' + lang['search_empty'] + '</div>');
+				}
+
+				if (json.items.length) {
+					items.loadList(function(arr){
+						var html = [];
+
+						$.each(json.items, function(i, el){
+							var parents = [];
+
+							var get_parents = function(id){
+								var parent = arr[id].parent;
+								parents.unshift(parent);
+								if (parent !== 0) get_parents(parent);
+							};
+							get_parents(el[0]);
+
+							var template = m.template(x.template.items, {
+								id: el[0],
+								title: arr[el[0]].private_title || lang['search_untitled'],
+								image: el[1] || '',
+								path: $.map(parents, function(id){
+									return arr[id].private_title;
+								}).join(' / ')
+							});
+
+							html.push(template);
+						});
+
+						$('.items .overview', x.el.result).html(html.join(''));
+						x.updateScroll();
+					});
+				} else {
+					$('.items .overview', x.el.result).html('<div class="item empty br3">' + lang['search_empty'] + '</div>');
+				}
+
+				if (json.files.length) {
+					files.loadList(function(arr){
+						var html = [];
+
+						$.each(json.files, function(i, el){
+							var parents = [];
+
+							var get_parents = function(id){
+								parents.unshift(id);
+								if (id !== '#') {
+									var parent = arr.groups[id].parent;
+									get_parents(parent);
+								}
+							};
+							get_parents(arr.files[el[0]].parent);
+
+							var template = m.template(x.template.files, {
+								id: el[0],
+								title: arr.files[el[0]].title || lang['search_untitled'],
+								image: el[1],
+								path: $.map(parents, function(id){
+									return arr.groups[id].title;
+								}).join(' / ')
+							});
+
+							html.push(template);
+						});
+
+						$('.files .overview', x.el.result).html(html.join(''));
+						x.updateScroll();
+					});
+				} else {
+					$('.files .overview', x.el.result).html('<div class="item empty br3">' + lang['search_empty'] + '</div>');
+				}
+
+				x.updateScroll();
+			}, 'json');
+		},
+		updateScroll: function()
+		{
+			var x = this;
+
+			$.each(x.scrollbars, function(i, el){
+				el.update('relative');
+			});
+		}
 	},
 	check_update: function()
 	{
@@ -862,16 +1143,13 @@ var common = {
 
 		var x = window[hash[0]];
 		if (typeof x === 'object') {
+			$('.title', common.el.header).text(lang['section_' + hash[0]]);
+
 			x.start();
 			common.resize();
-
-			if (hash[0] === 'search') {
-				window[oldhash[0]].el.parent.addClass('blur');
-			} else {
-				x.el.parent.removeClass('blur');
-			}
+			common.menu.close();
 		} else {
-			location.hash = '/items';
+			location.hash = '/database';
 		}
 		$('a[href="#/' + hash.join('/') + '"]', menu).addClass('active').siblings().removeClass('active');
 	},
@@ -882,8 +1160,9 @@ var common = {
 		wwi = window.innerWidth;
 		whi = window.innerHeight;
 
-		if (hash[0] && window[hash[0]]) window[hash[0]].resize();
+		if (hash && hash[0] && window[hash[0]]) window[hash[0]].resize();
 		if (files.openFiles) files.resize();
+		common.search.updateScroll();
 	}
 };
 
