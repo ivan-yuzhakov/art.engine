@@ -875,7 +875,7 @@ var common = {
 	},
 	menu: {
 		init: function(){
-			common.el.header.on('click', '.burger', function(){
+			common.el.header.on('click', '.logo', function(){
 				common.menu.open();
 			});
 			common.el.menu.on('click', '.menu a', function(){
@@ -1143,7 +1143,7 @@ var common = {
 
 		var x = window[hash[0]];
 		if (typeof x === 'object') {
-			$('.title', common.el.header).text(lang['section_' + hash[0]]);
+			$('.logo p', common.el.header).text(settings.arr.siteTitle + ' / ' + lang['section_' + hash[0]]);
 
 			x.start();
 			common.resize();
@@ -1207,6 +1207,24 @@ var m = {
 		},
 		get: function(id){
 			return $('#' + id, this.el);
+		}
+	},
+	preload_array: {},
+	preload: function(src, callback, error){
+		var x = this;
+
+		if (!src) return false;
+
+		if (x.preload_array[src]) {
+			var image = $('img', m.cache.el).filter('[src="' + src + '"]');
+			if (callback && typeof callback == 'function') callback(image.get(0));
+		} else {
+			$('<img src="' + src + '" />').on('load', function(){
+				x.preload_array[src] = true;
+				if (callback && typeof callback == 'function') callback(this);
+			}).on('error', function(e){
+				if (error && typeof error == 'function') error(e);
+			}).appendTo(m.cache.el);
 		}
 	},
 	log: (function(){

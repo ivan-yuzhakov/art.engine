@@ -41,8 +41,9 @@ var database = {
 			x.arr = {};
 
 			$.each(json.items, function(i, el){
-				x.arr[el[0]] = {
-					id: el[0],
+				var id = el[0];
+				x.arr[id] = {
+					id: id,
 					image: el[1],
 					uid: el[2],
 					type: el[3],
@@ -51,7 +52,7 @@ var database = {
 					fields: el[6],
 					date_added: el[7],
 					date_change: el[8],
-					edited: el[9]
+					edited: x.mode == id ? 0 : el[9]
 				};
 			});
 
@@ -311,6 +312,8 @@ var database = {
 
 			x.filter.set([items.length, items_full.length]);
 
+			x.selected();
+
 			if (callback) callback();
 		};
 
@@ -326,6 +329,12 @@ var database = {
 	{
 		var x = this;
 
+		x.selected = function(){
+			var selected = $('.item.selected', x.el.list);
+			var length = selected.length;
+
+			$('.header .remove', x.el.list).toggle(!!length);
+		};
 		x.filter = {
 			text: '',
 			use: false,
@@ -407,6 +416,18 @@ var database = {
 
 		x.el.list.on('click', '.header .create_item', function(){
 			x.add_items();
+		}).on('click', '.header .remove', function(){
+			var selected = [];
+			$('.item.selected', x.el.list).addClass('r').each(function(){
+				var th = $(this);
+				var id = +th.attr('data');
+
+				selected.push(id);
+			});
+
+			x.remove_items(selected, function(){
+				x.draw_items();
+			});
 		}).on('click', '.header .pdf', function(){
 			x.pdf.init();
 		}).on('keyup', '.header .filter input', function(){
@@ -439,15 +460,27 @@ var database = {
 			});
 
 			return false;
-		}).on('click', '.table .item:not(.head)', function(){
+		}).on('click', '.table .item:not(.head)', function(e){
 			var th = $(this);
 			var id = +th.attr('data');
 
+			if (e.ctrlKey) {
+				th.toggleClass('selected');
+				x.selected();
+				return false;
+			}
+
 			th.addClass('edited').siblings().removeClass('edited');
 			x.edit_items(id);
-		}).on('click', '.grid .inner', function(){
+		}).on('click', '.grid .inner', function(e){
 			var th = $(this).parent();
 			var id = +th.attr('data');
+
+			if (e.ctrlKey) {
+				th.toggleClass('selected');
+				x.selected();
+				return false;
+			}
 
 			th.addClass('edited').siblings().removeClass('edited');
 			x.edit_items(id);
@@ -474,9 +507,9 @@ var database = {
 			x.save_items(true);
 		}).on('click', '.header .close', function(){
 			x.close_items();
-		}).on('blur', '.wrapper #private_title', function(){
+		}).on('blur', '.wrapper #db_pr_title', function(){
 			var val = $(this).val().trim();
-			var public_title = $('#public_title', x.el.form);
+			var public_title = $('#db_pu_title', x.el.form);
 			var public_title_val = public_title.val().trim();
 			if (!public_title_val) public_title.val(val);
 		}).on('click', '.container.system .select p', function(){
@@ -534,7 +567,7 @@ var database = {
 				});
 			}
 
-			$('#public_title', s.el.form).val(arr.public_title);
+			$('#db_pu_title', s.el.form).val(arr.public_title);
 
 			$('.container.custom', s.el.form).remove();
 			$.each(database.config.fields, function(i, id){
@@ -545,7 +578,7 @@ var database = {
 		{
 			var x = this;
 
-			var public_title = $('#public_title', s.el.form).val().trim();
+			var public_title = $('#db_pu_title', s.el.form).val().trim();
 
 			var json = {};
 			$('.container.custom .field', s.el.form).each(function(){
@@ -590,7 +623,7 @@ var database = {
 		x.el.form.html(template).addClass('show');
 
 		setTimeout(function(){
-			$('#private_title', x.el.form).focus();
+			$('#db_pr_title', x.el.form).focus();
 			$('.container.system .select p[data="' + x.config.type + '"]', x.el.form).addClass('active');
 
 			fields.types.file.item_add($('.container.system .field.file .group', x.el.form), '', null, 'database');
@@ -634,7 +667,7 @@ var database = {
 				x.el.form.html(template).addClass('show');
 
 				setTimeout(function(){
-					$('#private_title', x.el.form).val(x.arr[id].private_title);
+					$('#db_pr_title', x.el.form).val(x.arr[id].private_title);
 					$('.container.system .select p[data="' + x.arr[id].type + '"]', x.el.form).addClass('active');
 
 					fields.types.file.item_add($('.container.system .field.file .group', x.el.form), x.arr[id].image, null, 'database');
@@ -680,7 +713,7 @@ var database = {
 				setTimeout(function(){
 					if (!x.arr[x.mode].edited) x.edition.init();
 
-					$('#private_title', x.el.form).val(item.private_title);
+					$('#db_pr_title', x.el.form).val(item.private_title);
 					$('.container.system .select p[data="' + item.type + '"]', x.el.form).addClass('active');
 
 					fields.types.file.item_add($('.container.system .field.file .group', x.el.form), item.image, null, 'database');
@@ -730,7 +763,7 @@ var database = {
 				setTimeout(function(){
 					x.edition.init();
 
-					$('#private_title', x.el.form).val(x.arr[id].private_title);
+					$('#db_pr_title', x.el.form).val(x.arr[id].private_title);
 					$('.container.system .select p[data="' + x.arr[id].type + '"]', x.el.form).addClass('active');
 
 					fields.types.file.item_add($('.container.system .field.file .group', x.el.form), x.arr[id].image, null, 'database');
@@ -827,7 +860,7 @@ var database = {
 				setTimeout(function(){
 					if (!el[9]) x.edition.init();
 
-					$('#private_title', x.el.form).val(item.private_title);
+					$('#db_pr_title', x.el.form).val(item.private_title);
 					$('.container.system .select p[data="' + item.type + '"]', x.el.form).addClass('active');
 
 					fields.types.file.item_add($('.container.system .field.file .group', x.el.form), item.image, null, 'database');
@@ -851,8 +884,6 @@ var database = {
 	append_fields: function(id)
 	{
 		var x = this;
-
-		var required = false;
 
 		var required = x.config.uid && x.config.uid.use && ($.inArray(id, x.config.uid.template) + 1);
 
@@ -975,7 +1006,7 @@ var database = {
 
 		x.language.set(x);
 
-		var private_title = $('#private_title', x.el.form).val().trim();
+		var private_title = $('#db_pr_title', x.el.form).val().trim();
 		var image = fields.types.file.item_save($('.container.system .field.file .group', x.el.form)) || 0;
 		var type = +$('.container.system .select p.active', x.el.form).attr('data');
 		var public_title = {};
@@ -1122,6 +1153,9 @@ var database = {
 				var html = th.html();
 				th.parent().prev().html(html);
 				th.parent().remove();
+			}).on('click', '.childs .i .c .button', function(){
+				var th = $(this);
+				x.item_captions(th);
 			}).on('blur', '.childs .i .nt', function(){
 				var th = $(this);
 				x.item_note(th);
@@ -1145,7 +1179,7 @@ var database = {
 
 			var items = [];
 			$.each(x.editions, function(i, el){
-				items.push('<div class="item animate1 br3 box" data="' + el.id + '">\
+				items.push('<div class="item animate1 br3 box" data="' + el.id + '" c="' + el.captions + '">\
 					<div class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>\
 					<div class="edit"><svg viewBox="0 0 32 32"><path d="M 30.122,30.122L 28.020,23.778L 11.050,6.808L 10,7.858L 6.808,11.050L 23.778,28.020 zM 3.98,8.222L 8.222,3.98l-2.1-2.1c-1.172-1.172-3.070-1.172-4.242,0c-1.172,1.17-1.172,3.072,0,4.242 L 3.98,8.222z"></path></svg></div>\
 					<div class="title">' + el.title + '</div>\
@@ -1159,9 +1193,12 @@ var database = {
 		edition_create: function(){
 			var x = this;
 
+			x.mode = 0;
+
 			x.d.el.form.removeClass('show');
 			setTimeout(function(){
 				var template = m.template(x.template.form, {
+					q: '',
 					p: x.d.arr[x.d.mode].type === 1 ? 'show' : 'hide',
 					d: x.d.arr[x.d.mode].type === 2 ? 'show' : 'hide',
 					password: x.d.arr[x.d.mode].type === 2 ? '' : 'hide'
@@ -1169,58 +1206,166 @@ var database = {
 
 				x.el.form.html(template).addClass('show');
 
+				// add parent fields
+				var captions = $('.captions', x.el.form);
+				$('.container.custom .field', x.d.el.form).each(function(){
+					var th = $(this);
+					var id = +th.attr('data');
+					var field = fields.arr.fields[id];
+					var val = fields.types[field.type].item_save(th.find('.group'));
+
+					var container = $('<div class="container custom">\
+						<div class="field ' + field.type + '" data="' + id + '">\
+							<div class="head">' + ui.switch.html() + '</div>\
+							<div class="group"></div>\
+						</div>\
+					</div>').appendTo(captions);
+
+					var sw = $('.ui-switch', container);
+
+					ui.switch.init(sw, {
+						status: false,
+						text: field.private_title,
+						change: function(status){
+							$('.group', container).toggle(status);
+							container.toggleClass('show', status)
+						}
+					});
+
+					fields.types[field.type].item_add($('.group', container), val, field.value, 'database', x.d.language.active);
+				});
+
 				setTimeout(function(){
-					$('#title', x.el.form).focus();
+					$('#ed_title', x.el.form).focus();
 				}, 210);
 			}, 210);
-		},
-		edition_save: function(){
-			var x = this;
-
-			var data = {
-				title: $('#title', x.el.form).val().trim(),
-				count: +$('#count', x.el.form).val().trim() || 0,
-				type: x.d.arr[x.d.mode].type,
-				status: +$('.select.status.show p.active', x.el.form).attr('data'),
-				password: +$('.select.password p.active', x.el.form).attr('data'),
-				item: x.d.mode
-			};
-
-			if (data.count === 0) {
-				alertify.error(lang['database_edition_f_error_count']);
-				$('#count', x.el.form).focus();
-				return false;
-			}
-
-			loader.show();
-
-			$.post('?database/edition_create_edition', data, function(json){
-				x.editions.push({id: json.id, item: x.d.mode, title: data.title});
-				x.draw();
-				x.form_close();
-				loader.hide();
-			}, 'json');
 		},
 		edition_edit: function(el){
 			var x = this;
 
 			var title = $('.title', el).text();
 			var id = +el.attr('data');
+			var captions = el.attr('c').split(';');
 
-			alertify.prompt(vsprintf(lang['database_edition_list_edit_item'], [title]), function(e, str){
-				if (!e) return false;
+			x.mode = id;
 
-				loader.show();
+			x.d.el.form.removeClass('show');
+			setTimeout(function(){
+				var template = m.template(x.template.form, {
+					q: 'hide',
+					p: 'hide',
+					d: 'hide',
+					password: 'hide'
+				});
 
-				$.post('?database/edition_edit_edition', {id: id, title: str}, function(json){
-					$('.title', el).text(str);
-					loader.hide();
+				x.el.form.html(template).addClass('show');
+
+				// add parent fields
+				var capt = $('.captions', x.el.form);
+				$('.container.custom .field', x.d.el.form).each(function(){
+					var th = $(this);
+					var id = th.attr('data');
+					var field = fields.arr.fields[id];
+					var val = fields.types[field.type].item_save(th.find('.group'));
+
+					var container = $('<div class="container custom">\
+						<div class="field ' + field.type + '" data="' + id + '">\
+							<div class="head">' + ui.switch.html() + '</div>\
+							<div class="group"></div>\
+						</div>\
+					</div>').appendTo(capt);
+
+					var sw = $('.ui-switch', container);
+
+					ui.switch.init(sw, {
+						status: $.inArray(id, captions) + 1 ? true : false,
+						text: field.private_title,
+						change: function(status){
+							$('.group', container).toggle(status);
+							container.toggleClass('show', status)
+						}
+					});
+
+					fields.types[field.type].item_add($('.group', container), val, field.value, 'database', x.d.language.active);
+				});
+
+				setTimeout(function(){
+					$('#ed_title', x.el.form).val(title).focus();
+				}, 210);
+			}, 210);
+		},
+		edition_save: function(){
+			var x = this;
+
+			if (x.mode) {
+				var data = {
+					id: x.mode,
+					title: $('#ed_title', x.el.form).val().trim(),
+					captions: (function(){
+						var json = {};
+
+						$('.captions .container.show', x.el.form).each(function(){
+							var th = $(this);
+							var id = +$('.field', th).attr('data');
+							var field = fields.arr.fields[id];
+							json[id] = fields.types[field.type].item_save(th.find('.group'));
+						});
+
+						return JSON.stringify(json);
+					})()
+				};
+			} else {
+				var data = {
+					title: $('#ed_title', x.el.form).val().trim(),
+					count: +$('#count', x.el.form).val().trim() || 0,
+					type: x.d.arr[x.d.mode].type,
+					status: +$('.select.status.show p.active', x.el.form).attr('data'),
+					password: +$('.select.password p.active', x.el.form).attr('data'),
+					item: x.d.mode,
+					captions: (function(){
+						var json = {};
+
+						$('.captions .container.show', x.el.form).each(function(){
+							var th = $(this);
+							var id = +$('.field', th).attr('data');
+							var field = fields.arr.fields[id];
+							json[id] = fields.types[field.type].item_save(th.find('.group'));
+						});
+
+						return JSON.stringify(json);
+					})()
+				};
+
+				if (data.count === 0) {
+					alertify.error(lang['database_edition_f_error_count']);
+					$('#count', x.el.form).focus();
+					return false;
+				}
+			}
+
+			loader.show();
+
+			$.post('?database/edition_' + (x.mode ? 'edit' : 'create') + '_edition', data, function(json){
+				if (x.mode) {
+					var item = $('.editions .item[data="' + x.mode + '"]', x.d.el.form);
+					item.attr('c', json.captions).data('load', false);
+					$('.title', item).text(data.title);
+					item.next('.childs').remove();
 
 					$.each(x.editions, function(i, el){
-						if (el.id === id) x.editions[i].title = str;
+						if (el.id === x.mode) {
+							x.editions[i].title = data.title;
+							x.editions[i].captions = json.captions;
+						}
 					});
-				}, 'json');
-			}, title);
+				} else {
+					x.editions.push({id: json.id, item: x.d.mode, title: data.title});
+					x.draw();
+				}
+
+				x.form_close();
+				loader.hide();
+			}, 'json');
 		},
 		edition_remove: function(el){
 			var x = this;
@@ -1252,6 +1397,7 @@ var database = {
 			var x = this;
 
 			var id = +th.attr('data');
+			var ids = th.attr('c'); ids = ids.length ? ids.split(';') : [];
 			var load = th.data('load');
 
 			if (load) {
@@ -1263,13 +1409,15 @@ var database = {
 			th.addClass('l');
 
 			$.post('?database/edition_get_items', {id: id}, function(json){
-				var items = [];
-				var fields = {};
-				var type = false;
+				var fi = {};
+				var type = json.items[0][2] || false;
+				var childs = $('<div class="childs" t="' + type + '"></div>');
+
+				th.removeClass('l').data('load', true).after(childs);
+
 				$.each(json.items, function(i, el){
-					if (type === false) type = el[2];
-					fields[el[0]] = el[4] || '{}';
-					var width = 100 / (5 - (el[5] ? 0 : 1));
+					fi[el[0]] = el[4] || '{}';
+					var width = 100 / (6 - (el[6] ? 0 : 1));
 					var status = '';
 					if (type === 1) {
 						status += '<option value="1"' + (el[3] === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
@@ -1287,9 +1435,9 @@ var database = {
 						status += '<option value="4"' + (el[3] === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
 					}
 
-					items.push('<div class="i" data="' + el[0] + '">\
+					var item = $('<div class="i" data="' + el[0] + '">\
 						<div class="box n" style="width:' + width + '%">' + el[1] + '</div>\
-						' + (el[5] ? '<div class="box p" style="width:' + width + '%">' + el[5] + '</div>' : '') + '\
+						' + (el[6] ? '<div class="box p" style="width:' + width + '%">' + el[6] + '</div>' : '') + '\
 						<div class="box s t' + (type === 1 ? '1' : '2') + '" style="width:' + width + '%"><select>' + status + '</select></div>\
 						<div class="box f" style="width:' + width + '%">\
 							<div data="seller" content="' + lang['database_edition_childs_seller'] + '" contenteditable="true" style="display:none;"></div>\
@@ -1300,16 +1448,35 @@ var database = {
 							<div data="location" content="' + lang['database_edition_childs_location'] + '" contenteditable="true" style="display:none;"></div>\
 							<span class="no">' + lang['database_edition_childs_nof'] + '</span>\
 						</div>\
-						<div class="box nt" style="width:' + width + '%" contenteditable="true" content="' + lang['database_edition_childs_note'] + '">' + el[6] + '</div>\
+						<div class="box c" style="width:' + width + '%"></div>\
+						<div class="box nt" style="width:' + width + '%" contenteditable="true" content="' + lang['database_edition_childs_note'] + '">' + el[7] + '</div>\
 					</div>');
+
+					childs.append(item);
+
+					var captions = $.parseJSON(el[5] || '{}');
+					$.each(ids, function(i, v){
+						var capt = captions[v];
+						if (!capt) return true;
+						var field = fields.arr.fields[v];
+						if (!field) return true;
+						var container = $('<div class="container">\
+							<div class="field ' + field.type + '" data="' + v + '">\
+								<div class="head"><p>' + field.private_title + '</p></div>\
+								<div class="group"></div>\
+							</div>\
+						</div>').appendTo($('.c', item));
+
+						fields.types[field.type].item_add($('.group', container), capt, field.value, 'database', x.d.language.active);
+					});
+					if ($('.c', item).html() !== '') $('.c', item).append('<div class="button br3">' + lang['database_edition_childs_captions_save'] + '</div><div class="loader"></div>');
 				});
-				th.removeClass('l').data('load', true).after('<div class="childs" t="' + type + '">' + items.join('') + '</div>');
 
 				$('.i', th.next()).each(function(){
 					var i = $(this);
 					var id = i.attr('data');
-					i.attr('f', fields[id]);
-					var f = $.parseJSON(fields[id]);
+					i.attr('f', fi[id]);
+					var f = $.parseJSON(fi[id]);
 					var val = +$('select', i).val();
 
 					$.each(f, function(k, v){
@@ -1395,6 +1562,26 @@ var database = {
 			var id = +parent_i.attr('data');
 			parent_i.attr('f', f_old);
 			$.post('?database/edition_set_item_fields', {id: id, fields: f_old}, function(){}, 'json');
+		},
+		item_captions: function(el){
+			var x = this;
+
+			var parent = el.parent();
+			var item = +el.parents('.i').attr('data');
+			var json = {};
+
+			el.next().addClass('show');
+
+			$('.container', parent).each(function(){
+				var th = $(this);
+				var id = +$('.field', th).attr('data');
+				var field = fields.arr.fields[id];
+				json[id] = fields.types[field.type].item_save(th.find('.group'));
+			});
+
+			$.post('?database/edition_set_item_captions', {id: item, captions: JSON.stringify(json)}, function(){
+				el.next().removeClass('show');
+			}, 'json');
 		},
 		item_note: function(th){
 			var x = this;
@@ -2185,6 +2372,34 @@ var database = {
 						loader.hide();
 						$('.item.r', x.el.list).removeClass('r');
 					}
+				}, 'json');
+			} else {
+				$('.item.r', x.el.list).removeClass('r');
+			}
+		});
+	},
+	remove_items: function(ids, callback)
+	{
+		var x = this;
+
+		alertify.confirm(lang['database_list_remove_items'], function(e){
+			if (e) {
+				loader.show();
+
+				var url = '?database/items_delete', data = {ids: ids};
+				$.post(url, data, function(json){
+					loader.hide();
+
+					if (json.edited.length) {
+						alertify.error(lang['database_list_remove_items_edited']);
+					}
+
+					$.each(json.remove, function(i, id){
+						delete x.arr[id];
+					});
+
+					if (callback) callback();
+					WS.send('database/item_remove/');
 				}, 'json');
 			} else {
 				$('.item.r', x.el.list).removeClass('r');

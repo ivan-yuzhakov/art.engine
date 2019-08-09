@@ -77,7 +77,7 @@ if ($section === 'files')
 			], 'variable', 'lastUpdateFilesSorting', __FILE__, __LINE__);
 		}
 
-		json(['status' => 'OK']);
+		json(['status' => true]);
 	}
 
 	if ($query === 'get_file')
@@ -119,6 +119,23 @@ if ($section === 'files')
 		if ($result) $core->cache->clearCache('theme_');
 
 		json($json);
+	}
+
+	if ($query === 'edit_files')
+	{
+		$ids = $_POST['ids'];
+		$info = $_POST['info'];
+
+		foreach ($ids as $i => $id) {
+			$data = [
+				'desc'  => $info[$i][1],
+				'title' => $info[$i][0]
+			];
+
+			$db->update('files', $data, 'id', $id, __FILE__, __LINE__);
+		}
+
+		json(['status' => true]);
 	}
 
 	if ($query === 'file_delete')

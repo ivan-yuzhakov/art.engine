@@ -33,6 +33,7 @@
 #database .list .header .actions{height:40px;float:right;}
 #database .list .header .actions > div{margin-left:20px;padding:0 10px;background:#333;float:left;cursor:pointer;font-size:16px;line-height:40px;color:#fff;}
 #database .list .header .actions .create{padding:0 20px;background:#238ba3;}
+#database .list .header .actions .remove{padding:0 20px;background:#f55;display:none;}
 #database .list .header .actions .menu{height:40px;position:relative;}
 #database .list .header .actions .menu .icon{width:20px;height:100%;position:relative;cursor:pointer;}
 #database .list .header .actions .menu .icon p{width:100%;height:2px;margin-top:-1px;position:absolute;top:50%;left:0;background:#fff;}
@@ -60,6 +61,7 @@
 #database .list .items .table .item{border-top:1px solid #ddd;display:flex;justify-content:space-between;cursor:pointer;}
 #database .list .items .table .item.nr{background:#eee;}
 #database .list .items .table .item.edited{background:#bfb;}
+#database .list .items .table .item.selected{background:#ddd;}
 #database .list .items .table .item.r{background:#fcc;}
 #database .list .items .table .item.database_finded{-webkit-animation:database_finded .5s linear infinite;animation:database_finded .5s linear infinite;}
 #database .list .items .table .item > div{padding:20px;border-left:1px solid #ddd;flex-grow:1;}
@@ -68,10 +70,12 @@
 #database .list .items .table .item > div.image .image{width:100px;height:100px;background-position:center;background-repeat:no-repeat;background-size:cover;}
 #database .list .items .table .item > div.actions{width:80px !important;height:140px;flex-grow:0;}
 #database .list .items .table .item > div.actions .clone{width:16px;height:16px;padding:12px;background:#333;}
+#database .list .items .table .item.selected > div.actions .clone{display:none;}
 #database .list .items .table .item > div.actions .clone:hover{background:#238ba3;}
 #database .list .items .table .item > div.actions .clone svg{width:100%;display:block;fill:#fff;}
 #database .list .items .table .item > div.actions .remove{width:10px;height:10px;margin-top:20px;padding:15px;background:#333;}
 #database .list .items .table .item.nr > div.actions .remove{display:none;}
+#database .list .items .table .item.selected > div.actions .remove{display:none;}
 #database .list .items .table .item > div.actions .remove:hover{background:#f55;}
 #database .list .items .table .item > div.actions .remove svg{width:100%;display:block;fill:#fff;}
 #database .list .items .table .item.head{cursor:default;font-weight:bold;}
@@ -84,6 +88,7 @@
 #database .list .items .grid .item .inner{margin:0 20px;position:relative;background:#fff;border:1px solid #ddd;overflow:hidden;cursor:pointer;}
 #database .list .items .grid .item.nr .inner{background:#eee;}
 #database .list .items .grid .item.edited .inner{background:#bfb;}
+#database .list .items .grid .item.selected .inner{background:#ddd;}
 #database .list .items .grid .item.r .inner{background:#fcc;}
 #database .list .items .grid .item.database_finded .inner{-webkit-animation:database_finded .5s linear infinite;animation:database_finded .5s linear infinite;}
 #database .list .items .grid .item .image{padding-top:100%;background-position:center;background-repeat:no-repeat;background-size:cover;}
@@ -158,9 +163,9 @@
 #database .form .wrapper .w{padding:0 40px;position:relative;overflow:hidden;}
 #database .form .wrapper .w .editions{margin:40px 0;position:relative;clear:both;}
 #database .form .wrapper .w .editions.hide{display:none;}
-#database .form .wrapper .w .editions .head{margin:0 -40px;padding:19px 0;background:#fff;border-top:1px solid #ddd;border-bottom:1px solid #ddd;}
-#database .form .wrapper .w .editions .head .create{margin-right:40px;padding:0 20px;background:#238ba3;cursor:pointer;float:right;line-height:40px;color:#fff;}
-#database .form .wrapper .w .editions .head .title{padding:0 40px;overflow:hidden;font-size:22px;line-height:40px;color:#222;white-space:nowrap;text-overflow:ellipsis;}
+#database .form .wrapper .w .editions > .head{margin:0 -40px;padding:19px 0;background:#fff;border-top:1px solid #ddd;border-bottom:1px solid #ddd;}
+#database .form .wrapper .w .editions > .head .create{margin-right:40px;padding:0 20px;background:#238ba3;cursor:pointer;float:right;line-height:40px;color:#fff;}
+#database .form .wrapper .w .editions > .head .title{padding:0 40px;overflow:hidden;font-size:22px;line-height:40px;color:#222;white-space:nowrap;text-overflow:ellipsis;}
 #database .form .wrapper .w .editions .items .item{margin-top:40px;padding:15px 10px 15px 20px;position:relative;background:#fff;border:1px solid #ddd;overflow:hidden;cursor:pointer;line-height:30px;}
 #database .form .wrapper .w .editions .items .item.l{cursor:default;}
 #database .form .wrapper .w .editions .items .item.remove{background:#f55;color:#fff;}
@@ -175,15 +180,15 @@
 #database .form .wrapper .w .editions .items .item.l .loader{display:block;}
 #database .form .wrapper .w .editions .items .loader{position:absolute;top:0;bottom:-40px;left:-40px;right:-40px;background-color:rgba(0,0,0,.5);}
 #database .form .wrapper .w .editions .items .empty{margin-top:40px;padding:15px 10px 15px 20px;background:#fff;border:1px solid #ddd;line-height:30px;text-align:center;}
-#database .form .wrapper .w .editions .items .childs{margin:0 20px;background:#fff;border:1px solid #ddd;border-top:0;border-radius:0 0 3px 3px;}
+#database .form .wrapper .w .editions .items .childs{margin:0 10px;background:#fff;border:1px solid #ddd;border-top:0;border-radius:0 0 3px 3px;}
 #database .form .wrapper .w .editions .items .childs .i{border-top:1px solid #ddd;display:flex;justify-content:space-between;}
 #database .form .wrapper .w .editions .items .childs .i:first-child{border:none;}
 #database .form .wrapper .w .editions .items .childs .i > div{padding:20px;position:relative;border-left:1px solid #ddd;flex-grow:1;}
 #database .form .wrapper .w .editions .items .childs .i > div:first-child{border:none;}
-#database .form .wrapper .w .editions .items .childs .i > div.n{width:66px !important;flex-grow:0;font-family:monospace;text-align:center;}
+#database .form .wrapper .w .editions .items .childs .i > div.n{width:46px !important;padding:20px 10px;flex-grow:0;font-family:monospace;text-align:center;}
 #database .form .wrapper .w .editions .items .childs .i > div.p{width:96px !important;flex-grow:0;font-family:monospace;text-align:center;}
-#database .form .wrapper .w .editions .items .childs .i > div.s{padding:10px 20px;flex-grow:0;}
-#database .form .wrapper .w .editions .items .childs .i > div.s.t1{width:155px !important;}
+#database .form .wrapper .w .editions .items .childs .i > div.s{padding:10px;flex-grow:0;}
+#database .form .wrapper .w .editions .items .childs .i > div.s.t1{width:135px !important;}
 #database .form .wrapper .w .editions .items .childs .i > div.s.t2{width:110px !important;}
 #database .form .wrapper .w .editions .items .childs .i > div.s select{height:40px;border:none;display:block;font:normal 16px/20px 'PT Sans', sans-serif;}
 #database .form .wrapper .w .editions .items .childs .i > div.f{padding:0;}
@@ -194,6 +199,13 @@
 #database .form .wrapper .w .editions .items .childs .i > div.f .popup .v{padding:10px 20px;cursor:pointer;}
 #database .form .wrapper .w .editions .items .childs .i > div.f .popup .v:nth-child(even){background:#eee;}
 #database .form .wrapper .w .editions .items .childs .i > div.f .popup .v:hover{background:#333;color:#fff;}
+#database .form .wrapper .w .editions .items .childs .i > div.c{padding:10px 20px;}
+#database .form .wrapper .w .editions .items .childs .i > div.c .container{margin:20px 0 0;}
+#database .form .wrapper .w .editions .items .childs .i > div.c .container:first-child{margin:0;}
+#database .form .wrapper .w .editions .items .childs .i > div.c .button{margin-top:20px;background:#238ba3;cursor:pointer;line-height:40px;color:#fff;text-align:center;}
+#database .form .wrapper .w .editions .items .childs .i > div.c .loader{width:100%;height:100%;position:absolute;top:0;left:0;display:none;}
+#database .form .wrapper .w .editions .items .childs .i > div.c .loader.show{display:block;}
+#database .form .wrapper .w .editions .items .childs .i > div.nt{width:5% !important;}
 #database .form .wrapper .w .editions .items .childs .i > div.nt:empty:after{position:absolute;top:20px;left:20px;content:attr(content);cursor:text;color:#999;}
 
 #database .form .wrapper .w .lock{width:100%;height:100%;position:absolute;top:0;left:0;z-index:1;background:rgba(0,0,0,.1);display:none;}
@@ -212,6 +224,8 @@
 
 #database .edition_form .wrapper{height:100%;overflow:auto;}
 #database .edition_form .wrapper .w{padding:0 40px;position:relative;overflow:hidden;}
+#database .edition_form .wrapper .w .captions{margin:0 -40px;padding:0 40px;background:#fff;border-top:1px solid #ddd;overflow:hidden;}
+#database .edition_form .wrapper .w .captions .head{font-weight:bold;}
 #database .edition_form .wrapper .w .lock{width:100%;height:100%;position:absolute;top:0;left:0;z-index:1;background:rgba(0,0,0,.1);display:none;}
 #database .edition_form .wrapper .w .lock.show{display:block;}
 #database .edition_form .wrapper .w .field.hide{display:none;}

@@ -12,6 +12,7 @@ var files = {
 		x.el.list = $('.list', x.el.parent);
 		x.el.form = $('.form', x.el.parent);
 		x.el.overlay = $('.overlay', x.el.parent);
+		x.el.upload = $('.upload', x.el.parent);
 
 		x.template = {};
 		x.template.list_item_group = $('.groups', x.el.list).html();
@@ -230,6 +231,49 @@ var files = {
 				x.parent = th.attr('data');
 				x.addFile(e.originalEvent.dataTransfer.files);
 			}
+		});
+
+		x.el.upload.on('click', '.save_close', function(){
+			x.el.upload.removeClass('show');
+
+			setTimeout(function(){
+				$('.progress', x.el.upload).removeClass('hide').css({width: 0});
+				$('.save_close', x.el.upload).hide();
+
+				var ids = [];
+				var info = [];
+
+				$('.item', x.el.upload).each(function(){
+					var th = $(this);
+					var id = +th.attr('i');
+
+					if (th.hasClass('disabled')) return true;
+
+					var title = $('input[name="title"]').val().trim();
+					var desc = $('input[name="desc"]').val().trim();
+
+					ids.push(id);
+					info.push([title, desc]);
+					x.arr.files[id].title = title;
+				});
+
+				if (ids.length) {
+					$.post('?files/file_upload_sorting', {ids: ids, parent: x.parent}, function(json){
+						$.post('?files/edit_files', {ids: ids, info: info}, function(json){
+							var parent = $('.items[parent="' + x.parent + '"]', x.el.list);
+							parent.nextAll().remove();
+							parent.remove();
+
+							x.input.get(0).value = '';
+							x.drawList();
+
+							x.el.overlay.removeClass('show');
+						}, 'json');
+					}, 'json');
+				}
+			}, 210);
+		}).on('click', '.remove', function(){
+			// TODO
 		});
 	},
 	handlers_form: function()
@@ -787,60 +831,25 @@ var files = {
 		var length = files.length;
 		if (!length) return false;
 
-		x.el.overlay.addClass('show');
-
-		common.progress.create(
-			lang['files_upload_progress_title'],
-			vsprintf(lang['files_upload_progress_desc'], [fileformats.join(', '), maxfilesize / 1024 / 1024]),
-			length
-		);
-
-		var count = 0;
-		var ids = [];
 		var end = function(){
-			if (++count === length) {
-				if (ids.length) {
-					var url = '?files/file_upload_sorting', data = {ids: ids, parent: x.parent};
-					$.post(url, data, function(json){
-						if (json.status === 'OK') {
-							var parent = $('.items[parent="' + x.parent + '"]', x.el.list);
-							parent.nextAll().remove();
-							parent.remove();
-
-							x.input.get(0).value = '';
-							x.drawList();
-
-							x.el.overlay.removeClass('show');
-						} else {
-							m.report(url, data, JSON.stringify(json));
-						}
-					}, 'json');
-				} else {
-					x.el.overlay.removeClass('show');
-				}
-			}
+			$('.progress', x.el.upload).addClass('hide');
+			$('.save_close', x.el.upload).show();
 		};
-		var sendFile = function(i){
-			var file = files[i];
-			if (!file) return false;
-
-			var filename = file.name.split('.');
-			var ext = filename[filename.length - 1].toLowerCase();
-
-			// error fileformat
-			if ($.inArray(ext, fileformats) < 0) {
-				alertify.error(vsprintf(lang['files_upload_error_fileformat'], [file.name, fileformats.join(', ')]));
-				common.progress.set(i, 1);
+		var n = 0;
+		var sendFile = function(el){
+			if (!el.length) {
 				end();
-				sendFile(i + 1);
 				return false;
 			}
-			// error filesize
-			if (file.size > maxfilesize) {
-				alertify.error(vsprintf(lang['files_upload_error_filesize'], [file.name, maxfilesize / 1024 / 1024]));
-				common.progress.set(i, 1);
-				end();
-				sendFile(i + 1);
+
+			var i = el.addClass('load').attr('i');
+			var file = files[i];
+			var old = 0;
+
+			if (el.hasClass('disabled')) {
+				$('.progress', x.el.upload).css({width: ++n / length * 100 + '%'});
+				var next = el.next();
+				sendFile(next);
 				return false;
 			}
 
@@ -849,7 +858,10 @@ var files = {
 
 			var xhr = new XMLHttpRequest();
 			xhr.upload.addEventListener('progress', function(e){
-				common.progress.set(i, e.loaded / e.total);
+				var p = e.loaded / e.total;
+				n += p - old;
+				old = p;
+				$('.progress', x.el.upload).css({width: n / length * 100 + '%'});
 			}, false);
 			xhr.onreadystatechange = function(e){
 				var q = e.target;
@@ -857,30 +869,95 @@ var files = {
 
 				var json = $.parseJSON(q.responseText);
 				if (json.error) {
-					m.report('files/file_upload', file, q.responseText);
-					end();
+					el.addClass('disabled br3').html(vsprintf(lang['files_upload_error'], [file.name, json.error]));
 				} else {
-					$.each(json, function(index, el){
+					$.each(json, function(index, elem){
 						var id = +index;
 
 						x.arr.files[id] = {
 							id: id,
-							title: el.title,
-							type: x.get_typeFile(el.ext),
+							title: elem.title,
+							type: x.get_typeFile(elem.ext),
 							parent: x.parent
 						};
 						x.arr.groups[x.parent].childs.files.unshift(id);
-						ids.unshift(id);
-						end();
 
-						sendFile(i + 1);
+						el.attr('i', id);
 					});
 				}
+
+				el.removeClass('load').addClass('loaded');
+				var next = el.next();
+				sendFile(next);
 			};
 			xhr.open('POST', '?files/file_upload');
 			xhr.send(fd);
 		};
-		sendFile(0);
+
+		x.el.overlay.addClass('show');
+
+		setTimeout(function(){
+			var html = $.map(files, function(el, i){
+				var valid = true;
+
+				var title = el.name.replace(/_/g, ' ').split('.');
+				var ext = '';
+				if (title.length > 1) ext = title.splice(-1, 1)[0].toLowerCase();
+				var type = x.get_typeFile(ext);
+
+				if (type === 'undefined') valid = false;
+				if (el.size > maxfilesize) valid = false;
+
+				if (valid) {
+					return '<div class="item" i="' + i + '" t="' + type + '">\
+						<div class="image box br3">' + (type === 'image' ? '' : icons['format_' + type]) + '</div>\
+						<div class="info">\
+							<div class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>\
+							<div class="title">' + el.name + '</div>\
+							<input class="br3 box animate1" type="text" value="' + title.join('.') + '" name="title" placeholder="' + lang['files_upload_i_title'] + '">\
+							<input class="br3 box animate1" type="text" value="" name="desc" placeholder="' + lang['files_upload_i_desc'] + '">\
+						</div>\
+						<div class="clr"></div>\
+					</div>';
+				} else {
+					var error = vsprintf(lang[type === 'undefined' ? 'files_upload_error_fileformat' : 'files_upload_error_filesize'], [el.name]);
+					return '<div class="item disabled br3" i="' + i + '">\
+						' + error + '\
+					</div>';
+				}
+
+			}).join('');
+
+			$('.wrapper', x.el.upload).html(html);
+			$('.footer', x.el.upload).html(vsprintf(lang['files_upload_footer'], [fileformats.join(', '), maxfilesize / 1024 / 1024]));
+
+			$('.item', x.el.upload).each(function(){
+				var th = $(this);
+				var i = th.attr('i');
+				var t = th.attr('t');
+
+				if (t !== 'image') return true;
+
+				var r = new FileReader();
+				r.readAsDataURL(files[i]);
+				r.onloadend = function() {
+					m.preload(r.result, function(img){
+						var w = img.width;
+						var h = img.height;
+						$('.image', th).toggleClass('big', w > 200 || h > 200).css({backgroundImage: 'url("' + r.result + '")'});
+					}, function(e){
+						th.addClass('disabled br3').html(vsprintf(lang['files_upload_error_fileformat'], [$('.title', th).text()]));
+					});
+				}
+			});
+
+			x.el.upload.addClass('show');
+
+			setTimeout(function(){
+				var el = $('.item', x.el.upload).eq(0);
+				sendFile(el);
+			}, 210);
+		}, 210);
 	},
 	editFile: function(id)
 	{

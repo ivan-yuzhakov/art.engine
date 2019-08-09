@@ -209,6 +209,30 @@ if ($section === 'database')
 		json(['status' => $status]);
 	}
 
+	if ($query === 'items_delete')
+	{
+		$ids = $_POST['ids'];
+		$items = $db->select('database', ['id', 'edited'], ['id' => $ids, 'del' => 0], __FILE__, __LINE__);
+
+		$edited = [];
+		$remove = [];
+		foreach ($items as $item) {
+			if ($item['edited'] > 0) {
+				$edited[] = $item['id'];
+			} else {
+				$remove[] = $item['id'];
+				$core->cache->clearCache('theme_');
+				$db->update('database', ['del' => 1], 'id', $item['id'], __FILE__, __LINE__);
+
+				$draft = $db->select('drafts', ['id'], ['section' => 'database', 'item' => $item['id']], __FILE__, __LINE__);
+				$draft = count($draft) ? $draft[0] : false;
+				if ($draft) $db->delete('drafts', 'id', $draft['id'], __FILE__, __LINE__);
+			}
+		}
+
+		json(['status' => true, 'edited' => $edited, 'remove' => $remove]);
+	}
+
 	if ($query === 'item_draft_create')
 	{
 		$data = [
@@ -659,10 +683,12 @@ if ($section === 'database')
 		$status = (int) $_POST['status'];
 		$password = (int) $_POST['password'];
 		$item = (int) $_POST['item'];
+		$captions = $_POST['captions'];
 
 		$id = $db->insert('editions', [
 			'item' => $item,
-			'title' => $title
+			'title' => $title,
+			'captions' => implode(';', array_keys(json_decode($captions, true))),
 		], __FILE__, __LINE__);
 
 		function generate(){
@@ -695,6 +721,7 @@ if ($section === 'database')
 				'type' => $type,
 				'status' => $status,
 				'fields' => '',
+				'captions' => $captions,
 				'password' => $pass,
 				'note' => '',
 			], __FILE__, __LINE__);
@@ -708,11 +735,30 @@ if ($section === 'database')
 	{
 		$id = (int) $_POST['id'];
 		$title = $_POST['title'];
+		$captions = json_decode($_POST['captions'], true);
 
-		$db->update('editions', ['title' => $title], 'id', $id, __FILE__, __LINE__);
+		$db->update('editions', [
+			'title' => $title,
+			'captions' => implode(';', array_keys($captions)),
+		], 'id', $id, __FILE__, __LINE__);
+
+		$items = $db->select('editions_items', ['id', 'captions'], ['edition' => $id], __FILE__, __LINE__);
+		foreach ($items as $item) {
+			$c = $item['captions'];
+			if (empty($c)) $c = '{}';
+			$c = json_decode($c, true);
+			foreach ($captions as $id => $val) {
+				if (!isset($c[$id])) $c[$id] = $val;
+			}
+			$db->update('editions_items', [
+				'captions' => json_encode($c),
+			], 'id', $item['id'], __FILE__, __LINE__);
+		}
 
 		json([
-			'status' => true
+			'status' => true,
+			'captions' => implode(';', array_keys($captions)),
+			
 		]);
 	}
 	if ($query === 'edition_remove_edition')
@@ -739,6 +785,7 @@ if ($section === 'database')
 				$item['type'],
 				$item['status'],
 				$item['fields'],
+				$item['captions'],
 				$item['password'],
 				$item['note']
 			];
@@ -779,6 +826,15 @@ if ($section === 'database')
 		$note = $_POST['note'];
 
 		$db->update('editions_items', ['note' => $note], 'id', $id, __FILE__, __LINE__);
+
+		json(['status' => true]);
+	}
+	if ($query === 'edition_set_item_captions')
+	{
+		$id = (int) $_POST['id'];
+		$captions = $_POST['captions'];
+
+		$db->update('editions_items', ['captions' => $captions], 'id', $id, __FILE__, __LINE__);
 
 		json(['status' => true]);
 	}

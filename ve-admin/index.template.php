@@ -26,15 +26,15 @@
 </head>
 <body class="box">
 	<header class="animate2">
-		<div class="burger">
+		<!--div class="burger">
 			<p class="p1 br3"></p>
 			<p class="p2 br3"></p>
 			<p class="p3 br3"></p>
+		</div-->
+		<div class="logo">
+			<img src="/favicon.png">
+			<p><?php echo $settings['siteTitle']; ?></p>
 		</div>
-		<div class="logo br3">
-			
-		</div>
-		<div class="title"></div>
 		<div class="account">
 			<?php
 				$user = $db->select('members', ['fname'], ['id' => $visitor->id]);

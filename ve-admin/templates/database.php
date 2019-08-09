@@ -19,6 +19,7 @@
 			</div>
 			<div class="actions">
 				<div class="br3 animate1 create create_item"><?php echo $lang['database_list_header_create_item']; ?></div>
+				<div class="br3 animate1 remove"><?php echo $lang['database_list_header_remove']; ?></div>
 				<div class="br3 animate1 create pdf"><?php echo $lang['database_list_header_pdf']; ?></div>
 				<div class="br3 menu">
 					<div class="icon"><p class="p1 br3"></p><p class="p2 br3"></p><p class="p3 br3"></p></div>
@@ -58,13 +59,13 @@
 				<label class="field box left text">
 					<div class="head"><p><?php echo $lang['database_form_input_title']; ?></p></div>
 					<div class="group">
-						<input id="private_title" class="br3 box animate1" type="text" value="">
+						<input id="db_pr_title" class="br3 box animate1" type="text" value="">
 					</div>
 				</label>
 				<label class="field box right text">
 					<div class="head"><p><?php echo $lang['database_form_input_public_title']; ?></p></div>
 					<div class="group">
-						<input id="public_title" class="br3 box animate1" type="text" value="">
+						<input id="db_pu_title" class="br3 box animate1" type="text" value="">
 					</div>
 				</label>
 				<div class="clr"></div>
@@ -117,10 +118,10 @@
 				<label class="field box left text">
 					<div class="head"><p><?php echo $lang['database_edition_f_title']; ?></p></div>
 					<div class="group">
-						<input id="title" class="br3 box animate1" type="text" value="<?php echo $lang['database_edition_f_title_def']; ?>">
+						<input id="ed_title" class="br3 box animate1" type="text" value="<?php echo $lang['database_edition_f_title_def']; ?>">
 					</div>
 				</label>
-				<label class="field box right text">
+				<label class="field box right text {{q}}">
 					<div class="head"><p><?php echo $lang['database_edition_f_count']; ?></p></div>
 					<div class="group">
 						<input id="count" class="br3 box animate1" type="text" value="">
@@ -162,6 +163,7 @@
 				</div>
 				<div class="clr"></div>
 			</div>
+			<div class="captions"></div>
 		</div></div>
 	</div>
 

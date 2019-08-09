@@ -82,4 +82,16 @@
 			{{childs}}
 		</div>
 	</div>
+
+	<div class="upload box br3 animate2">
+		<div class="header">
+			<div class="progress animate2"></div>
+			<div class="actions">
+				<div class="br3 save_close"><?php echo $lang['files_upload_save_and_close']; ?></div>
+			</div>
+			<div class="title"><?php echo $lang['files_upload_title']; ?></div>
+		</div>
+		<div class="wrapper"></div>
+		<div class="footer"></div>
+	</div>
 </div>
