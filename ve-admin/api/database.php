@@ -13,6 +13,7 @@ if ($section === 'database')
 				(int) $item['image'],
 				$item['uid'],
 				$item['type'],
+				$item['unique'],
 				$item['private_title'],
 				$item['public_title'],
 				$item['fields'],
@@ -24,8 +25,37 @@ if ($section === 'database')
 
 		json([
 			'config' => $config,
-			'items' => $items,
+			'items' => $items
 		]);
+	}
+	if ($query === 'get_itemEditions')
+	{
+		$id = (int) $_POST['id'];
+		$ed = [];
+		
+		$item = $db->select('database', ['id'], ['id' => $id, 'del' => 0, 'unique' => 0], __FILE__, __LINE__);
+		if (!empty($item)) {
+			$editions = $db->select('editions', ['id'], ['item' => $id], __FILE__, __LINE__);
+			if (!empty($editions)) {
+				$editions = array_column($editions, 'id');
+				$editions_items = $db->select('editions_items', ['captions'], ['edition' => $editions], __FILE__, __LINE__);
+				foreach ($editions_items as $el) {
+					$json = json_decode($el['captions'], true);
+					foreach ($json as $i => $v) {
+						if (!isset($ed[$i])) $ed[$i] = [];
+						$ed[$i][] = $v;
+					}
+				}
+				foreach ($ed as $i => $v) {
+					$val = array_unique($v);
+					$val = array_filter($val);
+					$val = array_values($val);
+					$ed[$i] = $val;
+				}
+			}
+		}
+
+		json(['edition' => $ed]);
 	}
 
 	if ($query === 'get_config')
@@ -63,6 +93,7 @@ if ($section === 'database')
 			'public_title'  => $_POST['public_title'],
 			'image'         => (int) $_POST['image'],
 			'type'          => (int) $_POST['type'],
+			'unique'        => (int) $_POST['unique'],
 			'fields'        => $_POST['fields'],
 			'date_added'    => time(),
 			'date_change'   => time(),
@@ -117,6 +148,7 @@ if ($section === 'database')
 				$item['image'],
 				$item['uid'],
 				$item['type'],
+				$item['unique'],
 				$item['private_title'],
 				$item['public_title'],
 				$item['fields'],
@@ -128,15 +160,15 @@ if ($section === 'database')
 		$status = @$items[0][0] === $id;
 		$item = $items[0];
 
-		if ($item[9] > 0) {
+		if ($item[10] > 0) {
 			if ($draft) {
-				if ($draft['time'] + $interval < time()) $item[9] = 0;
+				if ($draft['time'] + $interval < time()) $item[10] = 0;
 			} else {
-				if ($item[9] + $interval < time()) $item[9] = 0;
+				if ($item[10] + $interval < time()) $item[10] = 0;
 			}
 		}
 
-		if ($item[9] === 0) {
+		if ($item[10] === 0) {
 			$db->update('database', ['edited' => time()], 'id', $id, __FILE__, __LINE__);
 			$db->update('drafts', ['time' => time()], 'id', $draft['id'], __FILE__, __LINE__);
 		}
@@ -168,6 +200,7 @@ if ($section === 'database')
 			'public_title'  => $_POST['public_title'],
 			'image'         => (int) $_POST['image'],
 			'type'          => (int) $_POST['type'],
+			'unique'        => (int) $_POST['unique'],
 			'fields'        => $_POST['fields'],
 			'date_change'   => time(),
 			'edited'        => time()
@@ -687,8 +720,7 @@ if ($section === 'database')
 
 		$id = $db->insert('editions', [
 			'item' => $item,
-			'title' => $title,
-			'captions' => implode(';', array_keys(json_decode($captions, true))),
+			'title' => $title
 		], __FILE__, __LINE__);
 
 		function generate(){
@@ -738,8 +770,7 @@ if ($section === 'database')
 		$captions = json_decode($_POST['captions'], true);
 
 		$db->update('editions', [
-			'title' => $title,
-			'captions' => implode(';', array_keys($captions)),
+			'title' => $title
 		], 'id', $id, __FILE__, __LINE__);
 
 		$items = $db->select('editions_items', ['id', 'captions'], ['edition' => $id], __FILE__, __LINE__);
@@ -757,7 +788,6 @@ if ($section === 'database')
 
 		json([
 			'status' => true,
-			'captions' => implode(';', array_keys($captions)),
 			
 		]);
 	}

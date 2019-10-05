@@ -71,7 +71,7 @@
 				<div class="clr"></div>
 			</div>
 			<div class="container system">
-				<div class="field box left select">
+				<div class="field box left select type">
 					<div class="head"><p><?php echo $lang['database_form_type_title']; ?></p></div>
 					<div class="group">
 						<p class="br3 animate1" data="1"><?php echo $lang['database_form_type_physical']; ?></p>
@@ -79,19 +79,27 @@
 						<div class="clr"></div>
 					</div>
 				</div>
+				<div class="field box right select unique">
+					<div class="head"><p><?php echo $lang['database_form_unique']; ?></p></div>
+					<div class="group">
+						<p class="br3 animate1" data="1"><?php echo $lang['database_form_unique_y']; ?></p>
+						<p class="br3 animate1" data="0"><?php echo $lang['database_form_unique_n']; ?></p>
+						<div class="clr"></div>
+					</div>
+				</div>
+				<div class="clr"></div>
+			</div>
+			<div class="container system">
+				<div class="field box left file">
+					<div class="head"><p><?php echo $lang['database_form_input_image']; ?></p></div>
+					<div class="group"></div>
+				</div>
 				<label class="field box right text">
 					<div class="head"><p>UID</p></div>
 					<div class="group">
 						<input id="uid" class="br3 box animate1" type="text" value="{{uid}}" {{uid_disabled}}>
 					</div>
 				</label>
-				<div class="clr"></div>
-			</div>
-			<div class="container system">
-				<div class="field file">
-					<div class="head"><p><?php echo $lang['database_form_input_image']; ?></p></div>
-					<div class="group"></div>
-				</div>
 				<div class="clr"></div>
 			</div>
 			<div class="editions {{editions}}">
@@ -167,6 +175,14 @@
 		</div></div>
 	</div>
 
+	<div class="edition_modal box animate2 br3">
+		<div class="header">
+			<div class="title">{{title}}</div>
+			<div class="close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>
+		</div>
+		<div class="wrapper box">{{editions}}</div>
+	</div>
+
 	<div class="settings box animate2">
 		<div class="header">
 			<div class="actions">
@@ -185,8 +201,8 @@
 					</div>
 				</div>
 			</div>
-			<div class="container view">
-				<div class="field select">
+			<div class="container">
+				<div class="field box left select view">
 					<div class="head"><p><?php echo $lang['database_settings_view_title']; ?> <span title="<?php echo $lang['database_settings_view_desc']; ?>">( ? )</span></p></div>
 					<div class="group">
 						<p class="br3" data="table"><?php echo $lang['database_settings_view_table']; ?></p>
@@ -195,9 +211,7 @@
 						<div class="clr"></div>
 					</div>
 				</div>
-			</div>
-			<div class="container type">
-				<div class="field select">
+				<div class="field box right select type">
 					<div class="head"><p><?php echo $lang['database_settings_type_title']; ?></p></div>
 					<div class="group">
 						<p class="br3" data="1"><?php echo $lang['database_settings_type_physical']; ?></p>
@@ -205,12 +219,21 @@
 						<div class="clr"></div>
 					</div>
 				</div>
+				<div class="clr"></div>
+			</div>
+			<div class="container fields">
+				<div class="field items s">
+					<div class="head"><p><?php echo $lang['database_settings_fields_title']; ?></p></div>
+					<div class="group">
+						<div class="ui-combobox"></div>
+					</div>
+				</div>
 			</div>
 			<div class="container fields">
 				<div class="field box left items f">
-					<div class="head"><p><?php echo $lang['database_settings_fields_title']; ?> <span title="<?php echo $lang['database_settings_fields_desc']; ?>">( ? )</span></p></div>
+					<div class="head"><p><?php echo $lang['database_settings_sfields_title']; ?> <span title="<?php echo $lang['database_settings_sfields_desc']; ?>">( ? )</span></p></div>
 					<div class="group">
-						<div class="left box"><div class="ui-combobox"></div></div><div class="right box"><div class="elems"></div></div><div class="clr"></div><div class="loading br3"></div>
+						<div class="elems"></div>
 					</div>
 				</div>
 				<div class="field box right items d">

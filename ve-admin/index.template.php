@@ -169,7 +169,7 @@
 	</script>
 	<?php
 		$scripts = [
-			'https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js',
+			'https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js',
 			'https://cdn.tinymce.com/4/tinymce.min.js',
 			//'https://www.google.com/jsapi',
 			//<script>google.load('visualization', '1.0', {'packages':['corechart']});</script>

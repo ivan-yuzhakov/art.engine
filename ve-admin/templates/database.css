@@ -61,23 +61,29 @@
 #database .list .items .table .item{border-top:1px solid #ddd;display:flex;justify-content:space-between;cursor:pointer;}
 #database .list .items .table .item.nr{background:#eee;}
 #database .list .items .table .item.edited{background:#bfb;}
-#database .list .items .table .item.selected{background:#ddd;}
+#database .list .items .table .item.selected{background:#eee;}
 #database .list .items .table .item.r{background:#fcc;}
 #database .list .items .table .item.database_finded{-webkit-animation:database_finded .5s linear infinite;animation:database_finded .5s linear infinite;}
 #database .list .items .table .item > div{padding:20px;border-left:1px solid #ddd;flex-grow:1;}
 #database .list .items .table .item > div:first-child{border:none;}
 #database .list .items .table .item > div.image{width:140px !important;height:140px;flex-grow:0;}
-#database .list .items .table .item > div.image .image{width:100px;height:100px;background-position:center;background-repeat:no-repeat;background-size:cover;}
-#database .list .items .table .item > div.actions{width:80px !important;height:140px;flex-grow:0;}
+#database .list .items .table .item > div.image .bg{width:100px;height:100px;background-position:center;background-repeat:no-repeat;background-size:cover;}
+#database .list .items .table .item > div.actions{width:140px !important;height:140px;display:flex;justify-content:space-between;flex-wrap:wrap;align-content:space-between;flex-grow:0;}
 #database .list .items .table .item > div.actions .clone{width:16px;height:16px;padding:12px;background:#333;}
-#database .list .items .table .item.selected > div.actions .clone{display:none;}
+#database .list .items .table .item.selected > div.actions .clone{visibility:hidden;}
 #database .list .items .table .item > div.actions .clone:hover{background:#238ba3;}
 #database .list .items .table .item > div.actions .clone svg{width:100%;display:block;fill:#fff;}
-#database .list .items .table .item > div.actions .remove{width:10px;height:10px;margin-top:20px;padding:15px;background:#333;}
-#database .list .items .table .item.nr > div.actions .remove{display:none;}
-#database .list .items .table .item.selected > div.actions .remove{display:none;}
+#database .list .items .table .item > div.actions .remove{width:10px;height:10px;padding:15px;background:#333;}
+#database .list .items .table .item.nr > div.actions .remove{visibility:hidden;}
+#database .list .items .table .item.selected > div.actions .remove{visibility:hidden;}
 #database .list .items .table .item > div.actions .remove:hover{background:#f55;}
 #database .list .items .table .item > div.actions .remove svg{width:100%;display:block;fill:#fff;}
+#database .list .items .table .item > div.actions .editions{width:16px;height:16px;padding:12px;background:#333;}
+#database .list .items .table .item.selected > div.actions .editions{visibility:hidden;}
+#database .list .items .table .item.unique > div.actions .editions{visibility:hidden;}
+#database .list .items .table .item > div.actions .editions:hover{background:#238ba3;}
+#database .list .items .table .item > div.actions .editions svg{width:100%;display:block;fill:#fff;}
+
 #database .list .items .table .item.head{cursor:default;font-weight:bold;}
 #database .list .items .table .item.head > div.image{height:auto;}
 #database .list .items .table .item.head > div.actions{height:auto;}
@@ -91,14 +97,23 @@
 #database .list .items .grid .item.selected .inner{background:#ddd;}
 #database .list .items .grid .item.r .inner{background:#fcc;}
 #database .list .items .grid .item.database_finded .inner{-webkit-animation:database_finded .5s linear infinite;animation:database_finded .5s linear infinite;}
-#database .list .items .grid .item .image{padding-top:100%;background-position:center;background-repeat:no-repeat;background-size:cover;}
+#database .list .items .grid .item .image{padding-top:100%;position:relative;}
+#database .list .items .grid .item .image .bg{width:100%;height:100%;position:absolute;top:0;left:0;background-position:center;background-repeat:no-repeat;background-size:cover;}
 #database .list .items .grid .item .title{padding:10px;font-size:18px;line-height:24px;text-align:center;}
 #database .list .items .grid .item .info{padding:0 10px 10px;}
 #database .list .items .grid .item .clone{width:16px;height:16px;padding:12px;position:absolute;top:10px;left:10px;background:#333;opacity:.4;}
+#database .list .items .grid .item.selected .clone{display:none;}
 #database .list .items .grid .item:hover .clone{opacity:1;}
 #database .list .items .grid .item .clone:hover{background:#238ba3;}
 #database .list .items .grid .item .clone svg{width:100%;display:block;fill:#fff;}
+#database .list .items .grid .item .editions{width:16px;height:16px;margin-left:-20px;padding:12px;position:absolute;top:10px;left:50%;background:#333;opacity:.4;}
+#database .list .items .grid .item.unique .editions{display:none;}
+#database .list .items .grid .item.selected .editions{display:none;}
+#database .list .items .grid .item:hover .editions{opacity:1;}
+#database .list .items .grid .item .editions:hover{background:#238ba3;}
+#database .list .items .grid .item .editions svg{width:100%;display:block;fill:#fff;}
 #database .list .items .grid .item .remove{width:10px;height:10px;padding:15px;position:absolute;top:10px;right:10px;background:#333;opacity:.4;}
+#database .list .items .grid .item.selected .remove{display:none;}
 #database .list .items .grid .item.nr .remove{display:none;}
 #database .list .items .grid .item:hover .remove{opacity:1;}
 #database .list .items .grid .item .remove:hover{background:#f55;}
@@ -230,6 +245,26 @@
 #database .edition_form .wrapper .w .lock.show{display:block;}
 #database .edition_form .wrapper .w .field.hide{display:none;}
 
+/* edition modal */
+
+#database .edition_modal{padding-top:80px;position:absolute;top:20px;bottom:20px;left:20px;right:20px;z-index:3;background:#f8f8f8;opacity:0;visibility:hidden;overflow:hidden;cursor:default;}
+#database .edition_modal.show{opacity:1;visibility:visible;}
+#database .edition_modal .header{width:100%;height:79px;position:absolute;top:0;left:0;background:#fff;border-bottom:1px solid #ddd;display:flex;justify-content:space-between}
+#database .edition_modal .header .title{padding-left:40px;font-size:24px;line-height:79px;color:#222;}
+#database .edition_modal .header .close{width:20px;padding:0 40px;cursor:pointer;}
+#database .edition_modal .header .close svg{width:100%;height:100%;display:block;fill:#222;}
+#database .edition_modal .header .close:hover svg{fill:#f55;}
+#database .edition_modal .wrapper{height:100%;padding:20px 40px 40px;overflow:hidden;overflow-y:auto;}
+#database .edition_modal .wrapper .e{margin-top:20px;padding:0 20px;position:relative;background:#fff;border:1px solid #ddd;cursor:pointer;line-height:58px;}
+#database .edition_modal .wrapper .e .loader{width:100%;height:100%;position:absolute;top:0;left:0;background-color:rgba(0,0,0,.1);}
+#database .edition_modal .wrapper .empty{margin-top:20px;background:#fff;border:1px solid #ddd;line-height:58px;text-align:center;}
+#database .edition_modal .wrapper .childs{margin:0 20px;background:#fff;border:1px solid #ddd;border-top:none;border-radius:0 0 3px 3px;}
+#database .edition_modal .wrapper .childs .c{border-top:1px solid #ddd;display:flex;}
+#database .edition_modal .wrapper .childs .c:first-child{border:none;}
+#database .edition_modal .wrapper .childs .c > div{width:20%;padding:20px;position:relative;border-left:1px solid #ddd;flex-grow:1;}
+#database .edition_modal .wrapper .childs .c > div:first-child{border:none;}
+#database .edition_modal .wrapper .childs .c .n{width:46px;padding:20px 10px;flex-grow:0;font-family:monospace;text-align:center;}
+#database .edition_modal .wrapper .childs .c .s{width:115px;padding:20px 10px;flex-grow:0;overflow:hidden;text-overflow:ellipsis;}
 
 /* settings */
 
@@ -254,16 +289,22 @@
 #database .settings .wrapper .pdf .i .title{width:50%;padding-right:20px;float:left;}
 #database .settings .wrapper .pdf .i .path{width:50%;padding-left:20px;float:right;}
 
-#database .settings .wrapper .container.fields .field.left{width:70%;}
-#database .settings .wrapper .container.fields .field.right{width:30%;}
-#database .settings .wrapper .container.fields .field.items .group .elems .item{padding-right:74px;}
+#database .settings .wrapper .container.fields .field.left{width:60%;}
+#database .settings .wrapper .container.fields .field.right{width:40%;}
+#database .settings .wrapper .container.fields .field.items .group .elems .item{padding-right:109px;}
 #database .settings .wrapper .container.fields .field.items .group .elems .item.lock{background:#f8f8f8;}
 #database .settings .wrapper .container.fields .field.items .group .elems .item .remove{padding-left:9px;}
 #database .settings .wrapper .container.fields .field.items .group .elems .item.lock .remove{display:none;}
 #database .settings .wrapper .container.fields .field.items .group .elems .item .show{width:16px;height:16px;padding:15px 9px 15px 12px;position:absolute;top:0;right:37px;cursor:pointer;}
 #database .settings .wrapper .container.fields .field.items .group .elems .item .show svg{width:100%;height:100%;display:block;fill:#ccc;}
+#database .settings .wrapper .container.fields .field.items .group .elems .item .show:hover svg{fill:#555;}
 #database .settings .wrapper .container.fields .field.items .group .elems .item .show.active svg{fill:#222;}
-#database .settings .wrapper .container.fields .field.items .group .elems .item .show:hover svg{fill:#222;}
+
+#database .settings .wrapper .container.fields .field.items .group .elems .item .star{width:16px;height:16px;padding:15px 7px 15px 12px;position:absolute;top:0;right:74px;cursor:pointer;}
+#database .settings .wrapper .container.fields .field.items .group .elems .item.lock .star{display:none;}
+#database .settings .wrapper .container.fields .field.items .group .elems .item .star svg{width:100%;height:100%;display:block;fill:#ccc;}
+#database .settings .wrapper .container.fields .field.items .group .elems .item .star:hover svg{fill:#555;}
+#database .settings .wrapper .container.fields .field.items .group .elems .item .star.active svg{fill:#222;}
 
 #database .settings .wrapper .container.fields .field.d .group .empty{width:100%;margin-top:10px;padding:13px 20px;background:#fff;border:1px solid #ddd;cursor:default;text-align:center;}
 #database .settings .wrapper .container.fields .field.d .group .item{width:100%;margin-top:10px;padding:13px 46px 13px 20px;position:relative;background:#fff;border:1px solid #ddd;cursor:default;}

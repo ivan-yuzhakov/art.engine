@@ -828,6 +828,36 @@ var WS = (function(){
 	};
 })();
 
+var Tasks = (function(){
+	var task = [];
+	var work = false;
+
+	var start = function(){
+		if (work) return false;
+		work = true;
+		var f = task[0];
+
+		if (f) {
+			f(function(){
+				task.splice(0, 1);
+				work = false;
+				start();
+			});
+		} else {
+			work = false;
+		}
+	};
+	var add = function(func){
+		task.push(func);
+		start();
+	};
+
+	return {
+		task: task,
+		add: add
+	};
+})();
+
 var common = {
 	el: {
 		body: $('body'),
@@ -1169,7 +1199,7 @@ var common = {
 var m = {
 	report: function(ajax_url, ajax_data, ajax_response, alertOff){
 		if (!alertOff) alertify.error(lang['global_error_report']);
-		$.post(siteurl + 'qrs/report_error/', {message: 'Page: ' + location.href + '\nAjax URL: ' + ajax_url + '\nAjax Data: ' + JSON.stringify(ajax_data || {}) + '\nAjax Response: ' + (typeof ajax_response == 'string' ? ajax_response : $(ajax_response)[0].documentElement.innerHTML.trim()) + '\nLogged user: ' + users.arr[users.logged].name + ' (Login: ' + users.arr[users.logged].login + ', Permissions: ' + users.arr[users.logged].access + ')'});
+		$.post(siteurl + 'qrs/report_error/', {message: 'Page: ' + location.href + '\nAjax URL: ' + ajax_url + '\nAjax Data: ' + JSON.stringify(ajax_data || {}) + '\nAjax Response: ' + (typeof ajax_response == 'string' ? ajax_response : $(ajax_response)[0].documentElement.innerHTML.trim()) + '\nLogged user: ' + users.arr[users.logged].fname + ' (Login: ' + users.arr[users.logged].login + ', Permissions: ' + users.arr[users.logged].access + ')'});
 	},
 	storage: {
 		support: function(){

@@ -13,10 +13,12 @@ var database = {
 		x.el.form = $('.form', x.el.parent);
 		x.el.settings = $('.settings', x.el.parent);
 
+		x.ed = {};
 		x.template = {};
 		x.template.form = x.el.form.html();
 		x.template.settings = x.el.settings.html();
 
+		x.edition_modal.init();
 		x.settings.init();
 		x.handlers_items();
 
@@ -47,12 +49,13 @@ var database = {
 					image: el[1],
 					uid: el[2],
 					type: el[3],
-					private_title: el[4],
-					public_title: el[5],
-					fields: el[6],
-					date_added: el[7],
-					date_change: el[8],
-					edited: x.mode == id ? 0 : el[9]
+					unique: el[4],
+					private_title: el[5],
+					public_title: el[6],
+					fields: el[7],
+					date_added: el[8],
+					date_change: el[9],
+					edited: x.mode == id ? 0 : el[10]
 				};
 			});
 
@@ -63,267 +66,268 @@ var database = {
 	{
 		var x = this;
 
-		var load_items = x.config.display.some(function(id){
-			return (typeof id === 'number' && fields.arr.fields[id].type === 'items');
+		var button_c = '<div class="br3 clone" title="' + lang['database_list_clone'] + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488.3 488.3"><path d="M314.25 85.4h-227c-21.3 0-38.6 17.3-38.6 38.6v325.7c0 21.3 17.3 38.6 38.6 38.6h227c21.3 0 38.6-17.3 38.6-38.6V124c-.1-21.3-17.4-38.6-38.6-38.6zm11.5 364.2c0 6.4-5.2 11.6-11.6 11.6h-227c-6.4 0-11.6-5.2-11.6-11.6V124c0-6.4 5.2-11.6 11.6-11.6h227c6.4 0 11.6 5.2 11.6 11.6v325.6z"/><path d="M401.05 0h-227c-21.3 0-38.6 17.3-38.6 38.6 0 7.5 6 13.5 13.5 13.5s13.5-6 13.5-13.5c0-6.4 5.2-11.6 11.6-11.6h227c6.4 0 11.6 5.2 11.6 11.6v325.7c0 6.4-5.2 11.6-11.6 11.6-7.5 0-13.5 6-13.5 13.5s6 13.5 13.5 13.5c21.3 0 38.6-17.3 38.6-38.6V38.6c0-21.3-17.3-38.6-38.6-38.6z"/></svg></div>';
+		var button_r = '<div class="br3 remove" title="' + lang['database_list_remove'] + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>';
+		var button_e = '<div class="br3 editions" title="' + lang['database_list_editions'] + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 331.331 331.331"><path d="M30.421 317.462l4.422-17.661-12.194-4.814-8.376 13.804s4.618 12.526-.511 22.539c.004.001 6.422-10.931 16.659-13.868zm-8.192-8.104c1.501-.615 3.231.087 3.851 1.561.625 1.474-.087 3.171-1.588 3.786-1.501.615-3.231-.087-3.851-1.561-.631-1.48.082-3.177 1.588-3.786zM158.353 112.621c-35.115 28.8-81.086 88.124-120.073 157.423l-.022-.027-6.815 12.026 7.267 2.796 3.84-10.117c20.799-37.491 77.224-135.4 180.397-200.451 0 0 38.411-22.877 76.256-54.516-9.214 7.702-27.391 17.356-37.247 23.584-25.868 16.344-57.79 31.704-103.603 69.282z"/><path d="M33.2 215.365c-7.985 28.223-7.528 49.718-4.438 55.625h4.83c13.337-27.625 77.572-127.693 117.554-159.016 41.424-32.455 73.378-51.339 100.253-65.111 9.437-4.835 19.118-11.384 27.848-17.949 10.601-8.36 21.348-17.302 30.758-26.053L282.728 20.75 294.89 2.148l-23.22 23.611L286.78 0c-35.746 3.225-68.918 21.109-68.918 21.109-13.271 15.741-23.959 40.782-23.959 40.782-.37-12.521 8.11-31.481 8.11-31.481-6.266 2.861-30.073 16.459-30.073 16.459-11.645 9.66-15.262 35.06-15.262 35.06-2.214-10.019 5.526-29.333 5.526-29.333-33.543 19.32-57.502 52.231-57.502 52.231-16.584 32.553-2.948 57.953-8.11 51.872-5.162-6.081-4.052-28.261-4.052-28.261-35.017 33.63-38.699 49.724-38.699 49.724-5.896 14.31-11.058 52.59-11.058 52.59-3.318-3.579 0-23.611 0-23.611-8.479 17.889-4.422 34.701-4.422 34.701-4.052-1.435-5.161-26.477-5.161-26.477z"/><path d="M310.01 14.191s-13.483 13.065-30.758 26.053c-27.081 21.359-53.156 38.819-53.156 38.819C123.945 139.425 67.025 237.932 48.212 271.708h10.002c3.535-2.834 8.844-4.971 31.014-11.389 28.011-8.11 44.72-25.041 44.72-25.041s-25.553 14.31-37.595 12.88-28.223 3.1-28.223 3.1-6.179-2.861 24.291-7.392 80.596-38.634 80.596-38.634-19.167 7.87-28.011 7.152c-8.844-.718-30.714 0-30.714 0 14.495-3.34 28.011-1.43 50.126-9.779s20.886-7.631 20.886-7.631c25.063-8.349 35.474-34.342 35.474-34.342-4.335 1.67-37.443 5.722-51.176 1.67-13.734-4.052-37.132 0-37.132 0 22.115-7.392 27.032-4.052 32.433-4.291 5.406-.239 22.855 1.191 57.502-10.731s44.475-26.711 44.475-26.711l-23.366 3.122c15.257-2.567 32.455-12.662 32.455-12.662-10.568 2.861-27.032 4.291-27.032 4.291 19.412-4.291 30.225-10.253 30.225-10.253 18.183-13.832 22.36-34.342 22.36-34.342-25.803 8.822-46.194 4.77-46.194 4.77 35.387-2.382 45.215-11.449 50.126-13.592 4.917-2.148 6.94-11.03 6.94-11.03-17.878 6.44-38.15 7.511-38.15 7.511 21.93-3.399 40.722-14.49 40.722-14.49V32.792c-8.479 4.83-23.399 8.588-23.399 8.588l23.219-15.023c1.305-7.516-4.776-12.166-4.776-12.166zM23.551 290.571l13.81 5.532 2.572-6.114-13.809-5.531zM177.036 285.458c-45.628 21.936-89.462 36.888-147.758 38.846-5.439.185-5.466 5.624 0 5.439 52.15-1.751 95.543-12.961 137.391-32.575 46.618-21.854 89.435-40.167 147.828-46.39 5.385-.577 3.095-5.814-2.252-5.243-51.714 5.516-93.731 19.984-135.209 39.923z"/></svg></div>';
+		var date = function(str){
+			var date = new Date(str * 1000);
+			var day = date.getDate(); day = (day < 10 ? '0' : '') + day;
+			var month = date.getMonth() + 1; month = (month < 10 ? '0' : '') + month;
+			var year = date.getFullYear();
+			var hours = date.getHours(); hours = (hours < 10 ? '0' : '') + hours;
+			var minutes = date.getMinutes(); minutes = (minutes < 10 ? '0' : '') + minutes;
+
+			return day + '.' + month + '.' + year + ' ' + hours + ':' + minutes;
+		};
+
+		var items_full = $.map(x.arr, function(el){
+			var el = $.extend({}, el);
+			el.fields = $.parseJSON(el.fields || '{}')[settings.arr['langFrontDefault']];
+			return el;
 		});
 
-		var start = function(){
-			var items_full = $.map(x.arr, function(el){
-				var el = $.extend({}, el);
-				el.fields = $.parseJSON(el.fields || '{}')[settings.arr['langFrontDefault']];
-				return el;
-			});
-
-			// filter start
-			if (x.filter.use) {
-				var items = items_full.filter(function(el) {
-					var valid = true;
-					var vars = $.map(x.config.display, function(id){
-						if (id) {
-							if (typeof id === 'number') {
-								if (fields.arr.fields[id]) {
-									var type = fields.arr.fields[id].type;
-									return fields.types[type].bases.view(el.fields[id] || '', id);
-								}
-							} else {
-								if (id === 'id') return el.id;
-								if (id === 'image') return el.image;
-								if (id === 'uid') return el.uid;
-								if (id === 'title') return el.private_title + ' ' + el.public_title;
+		// filter start
+		if (x.filter.use) {
+			var items = items_full.filter(function(el) {
+				var valid = true;
+				var vars = $.map(x.config.display, function(id){
+					if (id) {
+						if (typeof id === 'number' && $.inArray(el, x.config.unique) < 0) {
+							if (fields.arr.fields[id]) {
+								var type = fields.arr.fields[id].type;
+								return fields.types[type].bases.view(el.fields[id] || '', id);
 							}
+						} else {
+							if (id === 'id') return el.id;
+							if (id === 'image') return el.image;
+							if (id === 'uid') return el.uid;
+							if (id === 'title') return el.private_title + ' ' + el.public_title;
 						}
-					}).join(' ').toLowerCase();
+					}
+				}).join(' ').toLowerCase();
 
-					$.each(x.filter.text.split(' '), function(i, text){
-						if (vars.indexOf(text) === -1) valid = false;
-					});
-
-					return valid;
+				$.each(x.filter.text.split(' '), function(i, text){
+					if (vars.indexOf(text) === -1) valid = false;
 				});
-			} else {
-				var items = items_full;
-			}
-			// filter end
 
-			// sorting start
-			items.sort(function(a, b){
-				if (x.sorting.param == 'id') {
-					var a = a.id;
-					var b = b.id;
-				} else if (x.sorting.param == 'image') {
-					var a = a.image;
-					var b = b.image;
-				} else if (x.sorting.param == 'uid') {
-					var a = a.uid;
-					var b = b.uid;
-				} else if (x.sorting.param == 'title') {
-					var a = a.private_title;
-					var b = b.private_title;
-				} else if (x.sorting.param == 'date') {
-					var a = a.date_added;
-					var b = b.date_added;
-				} else {
-					var type = fields.arr.fields[x.sorting.param].type;
-					var a = fields.types[type].bases.sort(a.fields[x.sorting.param] || '', x.sorting.param);
-					var b = fields.types[type].bases.sort(b.fields[x.sorting.param] || '', x.sorting.param);
-				}
-
-				if (x.sorting.direction == 'ASC') {
-					if (a > b) return 1;
-					if (a < b) return -1;
-				}
-				if (x.sorting.direction == 'DESC') {
-					if (a > b) return -1;
-					if (a < b) return 1;
-				}
-				return 0;
+				return valid;
 			});
-			// sorting end
+		} else {
+			var items = items_full;
+		}
+		// filter end
 
-			// template start
-			if (x.config.view === 'table') {
-				var width = 100 / (x.config.display.length + 1);
-				var template = '<div class="box {{type}}" style="width:' + width + '%">{{value}}</div>';
+		// sorting start
+		items.sort(function(a, b){
+			if (x.sorting.param == 'id') {
+				var a = a.id;
+				var b = b.id;
+			} else if (x.sorting.param == 'image') {
+				var a = a.image;
+				var b = b.image;
+			} else if (x.sorting.param == 'uid') {
+				var a = a.uid;
+				var b = b.uid;
+			} else if (x.sorting.param == 'title') {
+				var a = a.private_title;
+				var b = b.private_title;
+			} else if (x.sorting.param == 'date') {
+				var a = a.date_added;
+				var b = b.date_added;
+			} else {
+				var type = fields.arr.fields[x.sorting.param].type;
+				var a = fields.types[type].bases.sort(a.fields[x.sorting.param] || '', x.sorting.param);
+				var b = fields.types[type].bases.sort(b.fields[x.sorting.param] || '', x.sorting.param);
+			}
 
-				var head = '<div class="item head">\
+			if (x.sorting.direction == 'ASC') {
+				if (a > b) return 1;
+				if (a < b) return -1;
+			}
+			if (x.sorting.direction == 'DESC') {
+				if (a > b) return -1;
+				if (a < b) return 1;
+			}
+			return 0;
+		});
+		// sorting end
+
+		// template start
+		if (x.config.view === 'table') {
+			var width = 100 / (x.config.display.length + 1);
+			var template = '<div class="box {{type}}" style="width:' + width + '%" data="{{attr}}">{{value}}</div>';
+
+			var head = '<div class="item head">\
+				' + $.map(x.config.display, function(id){
+					if (typeof id === 'number') {
+						if (fields.arr.fields[id]) {
+							return m.template(template, {
+								type: 'f f_' + id + ' f_' + fields.arr.fields[id].type,
+								value: fields.arr.fields[id].private_title
+							});
+						}
+					} else {
+						if (id === 'id')
+							return m.template(template, {
+								type: 'id',
+								value: 'ID'
+							});
+						if (id === 'image')
+							return m.template(template, {
+								type: 'image',
+								value: lang['database_list_table_image']
+							});
+						if (id === 'uid')
+							return m.template(template, {
+								type: 'uid',
+								value: 'UID'
+							});
+						if (id === 'title')
+							return m.template(template, {
+								type: 'title',
+								value: lang['database_list_table_title']
+							});
+						if (id === 'date_added')
+							return m.template(template, {
+								type: 'date_added',
+								value: lang['database_list_table_date_added']
+							});
+					}
+				}).join('') + '\
+				<div class="box actions" style="width:' + width + '%"></div>\
+			</div>';
+
+			var body = '';
+			$.each(items, function(i, el){
+				var edited = x.mode == el.id ? ' edited' : '';
+				var nr = el.edited ? ' nr' : '';
+				var unique = !!el.unique ? ' unique' : '';
+
+				body += '<div class="item' + edited + nr + unique + '" data="' + el.id + '">\
 					' + $.map(x.config.display, function(id){
 						if (typeof id === 'number') {
 							if (fields.arr.fields[id]) {
+								var type = fields.arr.fields[id].type;
+								var value = $.inArray(id, x.config.unique) < 0 ? fields.types[type].bases.view(el.fields[id] || '', id) : '';
+
 								return m.template(template, {
-									type: 'f f_' + id + ' f_' + fields.arr.fields[id].type,
-									value: fields.arr.fields[id].private_title
+									type: 'f f_' + id + ' f_' + type,
+									value: value,
+									attr: ''
 								});
 							}
 						} else {
 							if (id === 'id')
 								return m.template(template, {
 									type: 'id',
-									value: 'ID'
+									value: el.id,
+									attr: ''
 								});
 							if (id === 'image')
 								return m.template(template, {
-									type: 'image',
-									value: lang['database_list_table_image']
+									type: 'image loader',
+									value: '<div class="bg br3"></div>',
+									attr: ''
 								});
 							if (id === 'uid')
 								return m.template(template, {
 									type: 'uid',
-									value: 'UID'
+									value: el.uid,
+									attr: ''
 								});
 							if (id === 'title')
 								return m.template(template, {
 									type: 'title',
-									value: lang['database_list_table_title']
+									value: el.private_title,
+									attr: ''
 								});
 							if (id === 'date_added')
 								return m.template(template, {
 									type: 'date_added',
-									value: lang['database_list_table_date_added']
+									value: date(el.date_added),
+									attr: ''
 								});
 						}
 					}).join('') + '\
-					<div class="box actions" style="width:' + width + '%"></div>\
+					<div class="box actions" style="width:' + width + '%">' + button_c + button_r + button_e + '</div>\
 				</div>';
-
-				var body = '';
-				$.each(items, function(i, el){
-					var edited = x.mode == el.id ? ' edited' : '';
-					var nr = el.edited ? ' nr' : '';
-
-					var date = new Date(el.date_added * 1000);
-					var day = date.getDate(); day = (day < 10 ? '0' : '') + day;
-					var month = date.getMonth() + 1; month = (month < 10 ? '0' : '') + month;
-					var year = date.getFullYear();
-					var hours = date.getHours(); hours = (hours < 10 ? '0' : '') + hours;
-					var minutes = date.getMinutes(); minutes = (minutes < 10 ? '0' : '') + minutes;
-
-					body += '<div class="item' + edited + '' + nr + '" data="' + el.id + '">\
-						' + $.map(x.config.display, function(id){
-							if (typeof id === 'number') {
-								if (fields.arr.fields[id]) {
-									var type = fields.arr.fields[id].type;
-									return m.template(template, {
-										type: 'f f_' + id + ' f_' + type,
-										value: fields.types[type].bases.view(el.fields[id] || '', id)
-									});
-								}
-							} else {
-								if (id === 'id')
-									return m.template(template, {
-										type: 'id',
-										value: el.id
-									});
-								if (id === 'image')
-									return m.template(template, {
-										type: 'image',
-										value: fields.types.file.bases.view(el.image)
-									});
-								if (id === 'uid')
-									return m.template(template, {
-										type: 'uid',
-										value: el.uid
-									});
-								if (id === 'title')
-									return m.template(template, {
-										type: 'title',
-										value: el.private_title
-									});
-								if (id === 'date_added')
-									return m.template(template, {
-										type: 'date_added',
-										value: day + '.' + month + '.' + year + ' ' + hours + ':' + minutes
-									});
-							}
-						}).join('') + '\
-						<div class="box actions" style="width:' + width + '%">\
-							<div class="br3 clone" title="' + lang['database_list_clone'] + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488.3 488.3"><path d="M314.25 85.4h-227c-21.3 0-38.6 17.3-38.6 38.6v325.7c0 21.3 17.3 38.6 38.6 38.6h227c21.3 0 38.6-17.3 38.6-38.6V124c-.1-21.3-17.4-38.6-38.6-38.6zm11.5 364.2c0 6.4-5.2 11.6-11.6 11.6h-227c-6.4 0-11.6-5.2-11.6-11.6V124c0-6.4 5.2-11.6 11.6-11.6h227c6.4 0 11.6 5.2 11.6 11.6v325.6z"/><path d="M401.05 0h-227c-21.3 0-38.6 17.3-38.6 38.6 0 7.5 6 13.5 13.5 13.5s13.5-6 13.5-13.5c0-6.4 5.2-11.6 11.6-11.6h227c6.4 0 11.6 5.2 11.6 11.6v325.7c0 6.4-5.2 11.6-11.6 11.6-7.5 0-13.5 6-13.5 13.5s6 13.5 13.5 13.5c21.3 0 38.6-17.3 38.6-38.6V38.6c0-21.3-17.3-38.6-38.6-38.6z"/></svg></div>\
-							<div class="br3 remove" title="' + lang['database_list_remove'] + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>\
-						</div>\
-					</div>';
-				});
-
-				var empty = items.length ? '' : '<div class="empty">' + lang['database_list_table_empty'] + '</div>';
-
-				$('.items', x.el.list).html('<div class="table br3">' + (items.length ? head + body : empty) + '</div>');
-			}
-
-			if (x.config.view === 'grid') {
-				var template = '<div class="item{{edited}}{{nr}}" data="{{id}}"><div class="inner br3">\
-					<div class="image" style="background-image:url({{image}});"></div>\
-					<div class="title">{{title}}</div>\
-					<div class="info">{{info}}</div>\
-					<div class="br3 clone" title="' + lang['database_list_clone'] + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488.3 488.3"><path d="M314.25 85.4h-227c-21.3 0-38.6 17.3-38.6 38.6v325.7c0 21.3 17.3 38.6 38.6 38.6h227c21.3 0 38.6-17.3 38.6-38.6V124c-.1-21.3-17.4-38.6-38.6-38.6zm11.5 364.2c0 6.4-5.2 11.6-11.6 11.6h-227c-6.4 0-11.6-5.2-11.6-11.6V124c0-6.4 5.2-11.6 11.6-11.6h227c6.4 0 11.6 5.2 11.6 11.6v325.6z"/><path d="M401.05 0h-227c-21.3 0-38.6 17.3-38.6 38.6 0 7.5 6 13.5 13.5 13.5s13.5-6 13.5-13.5c0-6.4 5.2-11.6 11.6-11.6h227c6.4 0 11.6 5.2 11.6 11.6v325.7c0 6.4-5.2 11.6-11.6 11.6-7.5 0-13.5 6-13.5 13.5s6 13.5 13.5 13.5c21.3 0 38.6-17.3 38.6-38.6V38.6c0-21.3-17.3-38.6-38.6-38.6z"/></svg></div>\
-					<div class="br3 remove" title="' + lang['database_list_remove'] + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>\
-				</div></div>';
-				var template_info = '<p><b>{{title}}</b>: {{value}}</p>';
-				var body = '';
-				$.each(items, function(i, el){
-					var date = new Date(el.date_added * 1000);
-					var day = date.getDate(); day = (day < 10 ? '0' : '') + day;
-					var month = date.getMonth() + 1; month = (month < 10 ? '0' : '') + month;
-					var year = date.getFullYear();
-					var hours = date.getHours(); hours = (hours < 10 ? '0' : '') + hours;
-					var minutes = date.getMinutes(); minutes = (minutes < 10 ? '0' : '') + minutes;
-
-					var info = $.map(x.config.display, function(id){
-						if (typeof id === 'number') {
-							if (fields.arr.fields[id]) {
-								var type = fields.arr.fields[id].type;
-								return m.template(template_info, {
-									title: fields.arr.fields[id].private_title,
-									value: fields.types[type].bases.view(el.fields[id] || '', id)
-								});
-							}
-						} else {
-							if (id === 'id')
-								return m.template(template_info, {
-									title: 'ID',
-									value: el.id
-								});
-							if (id === 'uid')
-								return m.template(template_info, {
-									title: 'UID',
-									value: el.uid
-								});
-							if (id === 'date_added')
-								return m.template(template_info, {
-									title: lang['database_list_table_date_added'],
-									value: day + '.' + month + '.' + year + ' ' + hours + ':' + minutes
-								});
-						}
-						return '';
-					}).join('');
-
-					body += m.template(template, {
-						edited: x.mode == el.id ? ' edited' : '',
-						nr: el.edited ? ' nr' : '',
-						image: '/qrs/getfile/' + (el.image || 0) + '/200/200/0',
-						title: el.private_title,
-						info: info,
-						id: el.id
-					});
-				});
-
-				var empty = items.length ? '' : '<div class="empty">' + lang['database_list_grid_empty'] + '</div>';
-
-				$('.items', x.el.list).html('<div class="grid">' + (items.length ? body : empty) + '</div>');
-			}
-			// template end
-
-			x.filter.set([items.length, items_full.length]);
-
-			x.selected();
-
-			if (callback) callback();
-		};
-
-		if (load_items) { // TODO убрать, когда переделаю обновление контента на WS
-			items.loadList(function(){ // обновляем итемы чтоб правильно формировлся показ списка (если итемы используются)
-				start();
 			});
-		} else {
-			start();
+
+			var empty = items.length ? '' : '<div class="empty">' + lang['database_list_table_empty'] + '</div>';
+
+			$('.items', x.el.list).html('<div class="table br3">' + (items.length ? head + body : empty) + '</div>');
+			x.list_items = $('.items .item:not(.head)', x.el.list);
+			common.resize();
 		}
+
+		if (x.config.view === 'grid') {
+			var template = '<div class="item{{edited}}{{nr}}{{unique}}" data="{{id}}"><div class="inner br3">\
+				<div class="image"><div class="bg"></div></div>\
+				<div class="title">{{title}}</div>\
+				<div class="info">{{info}}</div>\
+				' + button_c + button_e + button_r + '\
+			</div></div>';
+			var template_info = '<p><b>{{title}}</b>: <span class="f f_{{id}}">{{value}}</span></p>';
+			var body = '';
+			$.each(items, function(i, el){
+				var info = $.map(x.config.display, function(id){
+					if (typeof id === 'number') {
+						if (fields.arr.fields[id]) {
+							var type = fields.arr.fields[id].type;
+							var value = $.inArray(id, x.config.unique) < 0 ? fields.types[type].bases.view(el.fields[id] || '', id) : '';
+
+							return m.template(template_info, {
+								title: fields.arr.fields[id].private_title,
+								value: value,
+								id: id
+							});
+						}
+					} else {
+						if (id === 'id')
+							return m.template(template_info, {
+								title: 'ID',
+								value: el.id,
+								id: id
+							});
+						if (id === 'uid')
+							return m.template(template_info, {
+								title: 'UID',
+								value: el.uid,
+								id: id
+							});
+						if (id === 'date_added')
+							return m.template(template_info, {
+								title: lang['database_list_table_date_added'],
+								value: date(el.date_added),
+								id: id
+							});
+					}
+					return '';
+				}).join('');
+
+				body += m.template(template, {
+					edited: x.mode == el.id ? ' edited' : '',
+					nr: el.edited ? ' nr' : '',
+					unique: !!el.unique ? ' unique' : '',
+					title: el.private_title,
+					info: info,
+					id: el.id
+				});
+			});
+
+			var empty = items.length ? '' : '<div class="empty">' + lang['database_list_grid_empty'] + '</div>';
+
+			$('.items', x.el.list).html('<div class="grid">' + (items.length ? body : empty) + '</div>');
+			x.list_items = $('.items .item:not(.head)', x.el.list);
+			common.resize();
+		}
+		// template end
+
+		x.filter.set([items.length, items_full.length]);
+
+		x.selected();
+
+		if (callback) callback();
 	},
 	handlers_items: function()
 	{
@@ -370,6 +374,7 @@ var database = {
 
 					$.each(['id'].concat(x.config.display), function(i, el){
 						if (el === 'image') return true;
+						if ($.inArray(el, x.config.unique) + 1) return true;
 
 						var title = 'Undefined';
 						if (typeof el === 'number') {
@@ -413,6 +418,52 @@ var database = {
 			}
 		};
 		x.sorting.init();
+
+		$('.items', x.el.list).on('scroll', function(){
+			if (!x.list_items || !x.list_items_p) return false;
+
+			var ws = $(this).scrollTop() + x.list_items_h;
+
+			$.each(x.list_items_p, function(i, el){
+				if (el[1]) return true;
+
+				if (ws > el[0]) {
+					x.list_items_p[i][1] = true;
+					el[2].data('load', true);
+
+					Tasks.add(function(callback){
+						var id = +el[2].attr('data');
+
+						// image
+						var bg = $('.bg', el[2]);
+						var src = '/qrs/getfile/' + x.arr[id].image + '/200/200/0';
+						m.preload(src, function(){
+							bg.css({backgroundImage: 'url(' + src + ')'});
+							callback();
+						});
+
+						// unique field
+						if (x.ed[id]) {
+							$.each(x.ed[id], function(i, v){
+								$('.f.f_' + i, el[2]).html(v);
+							});
+						} else {
+							$.post('?database/get_itemEditions', {id: id}, function(json){
+								x.ed[id] = {};
+								$.each(json.edition, function(i, v){
+									var type = fields.arr.fields[i].type;
+									value = $.map(v, function(el){
+										return fields.types[type].bases.view(el || '', i);
+									}).join(x.config.view === 'table' ? '<br>' : ', ');
+									$('.f.f_' + i, el[2]).html(value);
+									x.ed[id][i] = value;
+								});
+							}, 'json');
+						}
+					});
+				}
+			});
+		});
 
 		x.el.list.on('click', '.header .create_item', function(){
 			x.add_items();
@@ -458,6 +509,12 @@ var database = {
 			x.remove_item(id, function(){
 				x.draw_items();
 			});
+
+			return false;
+		}).on('click', '.items .editions', function(){
+			var id = +$(this).parents('.item').attr('data');
+
+			x.edition_modal.open(id);
 
 			return false;
 		}).on('click', '.table .item:not(.head)', function(e){
@@ -512,8 +569,17 @@ var database = {
 			var public_title = $('#db_pu_title', x.el.form);
 			var public_title_val = public_title.val().trim();
 			if (!public_title_val) public_title.val(val);
-		}).on('click', '.container.system .select p', function(){
+		}).on('click', '.container.system .select.type p', function(){
 			$(this).addClass('active').siblings().removeClass('active');
+		}).on('click', '.container.system .select.unique p', function(){
+			var th = $(this);
+			var data = +th.attr('data');
+			th.addClass('active').siblings().removeClass('active');
+			if (x.mode === 0) return false;
+			$('.editions', x.el.form).toggleClass('hide', !!data);
+			$.each(x.config.unique, function(i, id){
+				$('.container.custom .field[data="' + id + '"]', x.el.form).parent().toggleClass('hide', !data);
+			});
 		});
 	},
 	language:
@@ -624,7 +690,8 @@ var database = {
 
 		setTimeout(function(){
 			$('#db_pr_title', x.el.form).focus();
-			$('.container.system .select p[data="' + x.config.type + '"]', x.el.form).addClass('active');
+			$('.container.system .select.type p[data="' + x.config.type + '"]', x.el.form).addClass('active');
+			$('.container.system .select.unique p[data="1"]', x.el.form).addClass('active');
 
 			fields.types.file.item_add($('.container.system .field.file .group', x.el.form), '', null, 'database');
 
@@ -640,6 +707,7 @@ var database = {
 		x.mode = id;
 
 		if (e === 'vo') {
+			x.edit_status = 'vo';
 			x.draft.clear();
 			x.el.form.removeClass('show');
 
@@ -668,7 +736,8 @@ var database = {
 
 				setTimeout(function(){
 					$('#db_pr_title', x.el.form).val(x.arr[id].private_title);
-					$('.container.system .select p[data="' + x.arr[id].type + '"]', x.el.form).addClass('active');
+					$('.container.system .select.type p[data="' + x.arr[id].type + '"]', x.el.form).addClass('active');
+					$('.container.system .select.unique p[data="' + x.arr[id].unique + '"]', x.el.form).addClass('active');
 
 					fields.types.file.item_add($('.container.system .field.file .group', x.el.form), x.arr[id].image, null, 'database');
 
@@ -683,6 +752,7 @@ var database = {
 		}
 
 		if (e === 'vd') {
+			x.edit_status = 'vd';
 			x.el.form.removeClass('show');
 
 			setTimeout(function(){
@@ -705,7 +775,7 @@ var database = {
 					uid: item.uid || '',
 					uid_disabled: '',
 					lock: x.arr[x.mode].edited ? 'show' : '',
-					editions: x.arr[x.mode].edited ? 'hide' : ''
+					editions: x.arr[x.mode].edited || item.unique ? 'hide' : ''
 				});
 
 				x.el.form.html(template).addClass('show');
@@ -714,7 +784,8 @@ var database = {
 					if (!x.arr[x.mode].edited) x.edition.init();
 
 					$('#db_pr_title', x.el.form).val(item.private_title);
-					$('.container.system .select p[data="' + item.type + '"]', x.el.form).addClass('active');
+					$('.container.system .select.type p[data="' + item.type + '"]', x.el.form).addClass('active');
+					$('.container.system .select.unique p[data="' + item.unique + '"]', x.el.form).addClass('active');
 
 					fields.types.file.item_add($('.container.system .field.file .group', x.el.form), item.image, null, 'database');
 
@@ -733,6 +804,7 @@ var database = {
 		}
 
 		if (e === 'rd') {
+			x.edit_status = 'vo';
 			x.el.form.removeClass('show');
 
 			setTimeout(function(){
@@ -755,7 +827,7 @@ var database = {
 					uid: x.arr[id].uid || '',
 					uid_disabled: '',
 					lock: '',
-					editions: ''
+					editions: x.arr[id].unique ? 'hide' : ''
 				});
 
 				x.el.form.html(template).addClass('show');
@@ -764,7 +836,8 @@ var database = {
 					x.edition.init();
 
 					$('#db_pr_title', x.el.form).val(x.arr[id].private_title);
-					$('.container.system .select p[data="' + x.arr[id].type + '"]', x.el.form).addClass('active');
+					$('.container.system .select.type p[data="' + x.arr[id].type + '"]', x.el.form).addClass('active');
+					$('.container.system .select.unique p[data="' + x.arr[id].unique + '"]', x.el.form).addClass('active');
 
 					fields.types.file.item_add($('.container.system .field.file .group', x.el.form), x.arr[id].image, null, 'database');
 
@@ -792,21 +865,24 @@ var database = {
 					image: el[1],
 					uid: el[2],
 					type: el[3],
-					private_title: el[4],
-					public_title: el[5],
-					fields: el[6],
-					date_added: el[7],
-					date_change: el[8],
-					edited: el[9]
+					unique: el[4],
+					private_title: el[5],
+					public_title: el[6],
+					fields: el[7],
+					date_added: el[8],
+					date_change: el[9],
+					edited: el[10]
 				};
 
 				var item = false;
 
 				if (json.draft) {
+					x.edit_status = 'vd';
 					item = $.extend({}, x.arr[id], json.draft.value);
 					x.draft.id = json.draft.id;
 					x.draft.data = {item: id, value: JSON.stringify(json.draft.value)};
 				} else {
+					x.edit_status = 'vo';
 					item = x.arr[id];
 					x.draft.id = false;
 					x.draft.data = false;
@@ -814,7 +890,7 @@ var database = {
 
 				x.language.setDefault();
 
-				if (el[9]) {
+				if (el[10]) {
 					var template = m.template(x.template.form, {
 						title: '<p>' + vsprintf(lang['database_form_view_item'], [item.private_title]) + '</p><span>' + lang['database_form_edit_title_' + (json.draft ? 'draft' : 'or')] + '</span>',
 						language: $.map(x.language.getLangs(), function(title, alias){
@@ -851,17 +927,18 @@ var database = {
 						uid: item.uid || '',
 						uid_disabled: '',
 						lock: '',
-						editions: ''
+						editions: item.unique ? 'hide' : ''
 					});
 				}
 
 				x.el.form.html(template).addClass('show');
 
 				setTimeout(function(){
-					if (!el[9]) x.edition.init();
+					if (!el[10]) x.edition.init();
 
 					$('#db_pr_title', x.el.form).val(item.private_title);
-					$('.container.system .select p[data="' + item.type + '"]', x.el.form).addClass('active');
+					$('.container.system .select.type p[data="' + item.type + '"]', x.el.form).addClass('active');
+					$('.container.system .select.unique p[data="' + item.unique + '"]', x.el.form).addClass('active');
 
 					fields.types.file.item_add($('.container.system .field.file .group', x.el.form), item.image, null, 'database');
 
@@ -870,7 +947,7 @@ var database = {
 
 					x.language.select(x.language.active, x, true);
 
-					if (!el[9]) {
+					if (!el[10]) {
 						setTimeout(function(){
 							if (x.mode) x.draft.init();
 						}, 2000);
@@ -891,7 +968,12 @@ var database = {
 
 		if (!field) return false;
 
-		var container = $('<div class="container custom">\
+		var hide = '';
+		if (x.mode !== 0 && $.inArray(id, x.config.unique) + 1) {
+			var item = $.extend({}, x.arr[x.mode], $.parseJSON(x.edit_status === 'vo' ? '{}' : (x.draft.data.value || '{}')));
+			if (!item.unique) hide = ' hide';
+		}
+		var container = $('<div class="container custom' + hide + '">\
 			<div class="field ' + field.type + '" data="' + id + '">\
 				<div class="head"><p>' + field.private_title + (required ? ' <r>*</r>' : '') + '</p></div>\
 				<div class="group"></div>\
@@ -1008,7 +1090,8 @@ var database = {
 
 		var private_title = $('#db_pr_title', x.el.form).val().trim();
 		var image = fields.types.file.item_save($('.container.system .field.file .group', x.el.form)) || 0;
-		var type = +$('.container.system .select p.active', x.el.form).attr('data');
+		var type = +$('.container.system .select.type p.active', x.el.form).attr('data');
+		var unique = +$('.container.system .select.unique p.active', x.el.form).attr('data');
 		var public_title = {};
 		var f = {};
 
@@ -1022,6 +1105,7 @@ var database = {
 			public_title: JSON.stringify(public_title),
 			image: image,
 			type: type,
+			unique: unique,
 			fields: JSON.stringify(f)
 		};
 		if (x.mode) {
@@ -1116,10 +1200,6 @@ var database = {
 
 			x.d = database;
 			x.el.parent = $('.editions', x.d.el.form);
-			x.el.form = $('.edition_form', x.d.el.parent);
-			x.template = {
-				form: x.el.form.html()
-			}
 
 			x.el.parent.on('click', '.head .create', function(){
 				x.edition_create();
@@ -1161,6 +1241,19 @@ var database = {
 				x.item_note(th);
 			});
 
+			$.post('?database/edition_get_editions', {id: x.d.mode}, function(json){
+				x.editions = json.items;
+				x.draw();
+			}, 'json');
+
+			if (x.created) return false;
+			x.created = true;
+
+			x.el.form = $('.edition_form', x.d.el.parent);
+			x.template = {
+				form: x.el.form.html()
+			}
+
 			x.el.form.on('click', '.header .save', function(){
 				x.edition_save();
 			}).on('click', '.header .close', function(){
@@ -1168,18 +1261,13 @@ var database = {
 			}).on('click', '.select p', function(){
 				$(this).addClass('active').siblings().removeClass('active');
 			});
-
-			$.post('?database/edition_get_editions', {id: x.d.mode}, function(json){
-				x.editions = json.items;
-				x.draw();
-			}, 'json');
 		},
 		draw: function(){
 			var x = this;
 
 			var items = [];
 			$.each(x.editions, function(i, el){
-				items.push('<div class="item animate1 br3 box" data="' + el.id + '" c="' + el.captions + '">\
+				items.push('<div class="item animate1 br3 box" data="' + el.id + '">\
 					<div class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>\
 					<div class="edit"><svg viewBox="0 0 32 32"><path d="M 30.122,30.122L 28.020,23.778L 11.050,6.808L 10,7.858L 6.808,11.050L 23.778,28.020 zM 3.98,8.222L 8.222,3.98l-2.1-2.1c-1.172-1.172-3.070-1.172-4.242,0c-1.172,1.17-1.172,3.072,0,4.242 L 3.98,8.222z"></path></svg></div>\
 					<div class="title">' + el.title + '</div>\
@@ -1208,29 +1296,17 @@ var database = {
 
 				// add parent fields
 				var captions = $('.captions', x.el.form);
-				$('.container.custom .field', x.d.el.form).each(function(){
-					var th = $(this);
-					var id = +th.attr('data');
+				$.each(x.d.config.unique, function(i, id){
+					var el = $('.container.custom .field[data="' + id + '"]', x.d.el.form);
 					var field = fields.arr.fields[id];
-					var val = fields.types[field.type].item_save(th.find('.group'));
+					var val = fields.types[field.type].item_save(el.find('.group'));
 
 					var container = $('<div class="container custom">\
 						<div class="field ' + field.type + '" data="' + id + '">\
-							<div class="head">' + ui.switch.html() + '</div>\
+							<div class="head"><p>' + field.private_title + '</p></div>\
 							<div class="group"></div>\
 						</div>\
 					</div>').appendTo(captions);
-
-					var sw = $('.ui-switch', container);
-
-					ui.switch.init(sw, {
-						status: false,
-						text: field.private_title,
-						change: function(status){
-							$('.group', container).toggle(status);
-							container.toggleClass('show', status)
-						}
-					});
 
 					fields.types[field.type].item_add($('.group', container), val, field.value, 'database', x.d.language.active);
 				});
@@ -1245,7 +1321,6 @@ var database = {
 
 			var title = $('.title', el).text();
 			var id = +el.attr('data');
-			var captions = el.attr('c').split(';');
 
 			x.mode = id;
 
@@ -1261,30 +1336,18 @@ var database = {
 				x.el.form.html(template).addClass('show');
 
 				// add parent fields
-				var capt = $('.captions', x.el.form);
-				$('.container.custom .field', x.d.el.form).each(function(){
-					var th = $(this);
-					var id = th.attr('data');
+				var captions = $('.captions', x.el.form);
+				$.each(x.d.config.unique, function(i, id){
+					var el = $('.container.custom .field[data="' + id + '"]', x.d.el.form);
 					var field = fields.arr.fields[id];
-					var val = fields.types[field.type].item_save(th.find('.group'));
+					var val = fields.types[field.type].item_save(el.find('.group'));
 
 					var container = $('<div class="container custom">\
 						<div class="field ' + field.type + '" data="' + id + '">\
-							<div class="head">' + ui.switch.html() + '</div>\
+							<div class="head"><p>' + field.private_title + '</p></div>\
 							<div class="group"></div>\
 						</div>\
-					</div>').appendTo(capt);
-
-					var sw = $('.ui-switch', container);
-
-					ui.switch.init(sw, {
-						status: $.inArray(id, captions) + 1 ? true : false,
-						text: field.private_title,
-						change: function(status){
-							$('.group', container).toggle(status);
-							container.toggleClass('show', status)
-						}
-					});
+					</div>').appendTo(captions);
 
 					fields.types[field.type].item_add($('.group', container), val, field.value, 'database', x.d.language.active);
 				});
@@ -1304,7 +1367,7 @@ var database = {
 					captions: (function(){
 						var json = {};
 
-						$('.captions .container.show', x.el.form).each(function(){
+						$('.captions .container', x.el.form).each(function(){
 							var th = $(this);
 							var id = +$('.field', th).attr('data');
 							var field = fields.arr.fields[id];
@@ -1325,7 +1388,7 @@ var database = {
 					captions: (function(){
 						var json = {};
 
-						$('.captions .container.show', x.el.form).each(function(){
+						$('.captions .container', x.el.form).each(function(){
 							var th = $(this);
 							var id = +$('.field', th).attr('data');
 							var field = fields.arr.fields[id];
@@ -1348,14 +1411,13 @@ var database = {
 			$.post('?database/edition_' + (x.mode ? 'edit' : 'create') + '_edition', data, function(json){
 				if (x.mode) {
 					var item = $('.editions .item[data="' + x.mode + '"]', x.d.el.form);
-					item.attr('c', json.captions).data('load', false);
+					item.data('load', false);
 					$('.title', item).text(data.title);
 					item.next('.childs').remove();
 
 					$.each(x.editions, function(i, el){
 						if (el.id === x.mode) {
 							x.editions[i].title = data.title;
-							x.editions[i].captions = json.captions;
 						}
 					});
 				} else {
@@ -1363,6 +1425,7 @@ var database = {
 					x.draw();
 				}
 
+				x.reset_load_scroll();
 				x.form_close();
 				loader.hide();
 			}, 'json');
@@ -1387,6 +1450,9 @@ var database = {
 								return false;
 							}
 						});
+						var items = $('.items', x.el.parent);
+						if (!$('.item', items).length) items.html('<div class="empty">' + lang['database_edition_list_empty'] + '</div>');
+						x.reset_load_scroll();
 					}, 'json');
 				} else {
 					el.removeClass('remove');
@@ -1397,7 +1463,6 @@ var database = {
 			var x = this;
 
 			var id = +th.attr('data');
-			var ids = th.attr('c'); ids = ids.length ? ids.split(';') : [];
 			var load = th.data('load');
 
 			if (load) {
@@ -1455,9 +1520,9 @@ var database = {
 					childs.append(item);
 
 					var captions = $.parseJSON(el[5] || '{}');
-					$.each(ids, function(i, v){
+					$.each(x.d.config.unique, function(i, v){
 						var capt = captions[v];
-						if (!capt) return true;
+						if (capt === undefined) return true;
 						var field = fields.arr.fields[v];
 						if (!field) return true;
 						var container = $('<div class="container">\
@@ -1581,6 +1646,7 @@ var database = {
 
 			$.post('?database/edition_set_item_captions', {id: item, captions: JSON.stringify(json)}, function(){
 				el.next().removeClass('show');
+				x.reset_load_scroll();
 			}, 'json');
 		},
 		item_note: function(th){
@@ -1637,6 +1703,134 @@ var database = {
 			setTimeout(function(){
 				x.d.el.form.addClass('show');
 			}, 210);
+		},
+		reset_load_scroll: function(){
+			var x = this;
+
+			x.d.ed[x.d.mode] = false;
+			$.each(x.d.list_items_p, function(i, el){
+				if (x.d.mode === el[3]) {
+					x.d.list_items_p[i][1] = false;
+					el[2].data('load', false);
+				}
+			});
+			$('.items', x.d.el.list).trigger('scroll');
+
+			WS.send('database/item_edition_edit/' + x.d.mode);
+		}
+	},
+	edition_modal:
+	{
+		el: {},
+		init: function(){
+			var x = this;
+
+			x.el.parent = $('.edition_modal', database.el.parent);
+			x.el.overlay = database.el.overlay;
+
+			x.template = x.el.parent.html();
+
+			x.el.parent.on('click', '.close', function(){
+				x.close();
+			}).on('click', '.e', function(){
+				var th = $(this);
+				x.edition_open(th);
+			});
+		},
+		open: function(id){
+			var x = this;
+
+			x.el.overlay.addClass('show');
+
+			setTimeout(function(){
+				$.post('?database/edition_get_editions/', {id: id}, function(json){
+					var editions = $.map(json.items, function(el){
+						return '<div class="e br3" data="' + el.id + '">' + el.title + '</div>';
+					}).join('');
+
+					var template = m.template(x.template, {
+						title: vsprintf(lang['database_edition_modal_header'], [database.arr[id].private_title]),
+						editions: editions || '<div class="empty br3">' + lang['global_empty'] + '</div>'
+					});
+
+					x.el.parent.html(template).addClass('show');
+				}, 'json');
+			}, 210);
+		},
+		close: function(){
+			var x = this;
+
+			x.el.parent.removeClass('show');
+			x.el.overlay.removeClass('show');
+			setTimeout(function(){
+				x.el.parent.empty();
+			}, 210);
+		},
+		edition_open: function(th){
+			var x = this;
+
+			var id = +th.attr('data');
+			var open = th.hasClass('open');
+			var load = th.hasClass('load');
+			var childs = th.next('.childs');
+
+			if (load) return false;
+
+			if (open) {
+				th.removeClass('open');
+				childs.hide();
+			} else {
+				if (childs.length) {
+					th.addClass('open');
+					childs.show();
+				} else {
+					var loader = $('<div class="loader">');
+					th.addClass('load').append(loader);
+
+					$.post('?database/edition_get_items/', {id: id}, function(json){
+						var childs = $('<div class="childs">');
+
+						$.each(json.items, function(i, el){
+							var status = '';
+							if (el[2] === 1) {
+								if (el[3] === 1) status = lang['database_edition_f_p_np'];
+								if (el[3] === 2) status = lang['database_edition_f_p_st'];
+								if (el[3] === 3) status = lang['database_edition_f_p_re'];
+								if (el[3] === 4) status = lang['database_edition_f_p_so'];
+								if (el[3] === 5) status = lang['database_edition_f_p_gi'];
+								if (el[3] === 6) status = lang['database_edition_f_p_ol'];
+							}
+							if (el[2] === 2) {
+								if (el[3] === 1) status = lang['database_edition_f_d_us'];
+								if (el[3] === 2) status = lang['database_edition_f_d_re'];
+								if (el[3] === 3) status = lang['database_edition_f_d_so'];
+								if (el[3] === 4) status = lang['database_edition_f_d_gi'];
+								if (el[3] === 5) status = lang['database_edition_f_d_ol'];
+							}
+							var f = '';
+							$.each($.parseJSON(el[4] || '{}'), function(i, el){
+								if (el) f += '<p><b>' + lang['database_edition_childs_' + i] + ':</b> ' + el + '</p>';
+							});
+							var d = '';
+							$.each($.parseJSON(el[5] || '{}'), function(i, el){
+								if (el && fields.arr.fields[i]) d += '<p><b>' + fields.arr.fields[i].private_title + ':</b> ' + el + '</p>';
+							});
+							
+							childs.append('<div class="c">\
+								<div class="box n">' + el[1] + '</div>\
+								<div class="box s">' + status + '</div>\
+								<div class="box f">' + f + '</div>\
+								<div class="box d">' + d + '</div>\
+								<div class="box no">' + el[7] + '</div>\
+							</div>');
+						});
+
+						th.addClass('open').removeClass('load').after(childs);
+						loader.remove();
+					}, 'json');
+				}
+			}
+
 		}
 	},
 	pdf:
@@ -1933,198 +2127,184 @@ var database = {
 					}).get();
 				};
 				x.s3_draw = function(callback){
-					var load_items = database.config.display.some(function(id){
-						return (typeof id === 'number' && fields.arr.fields[id].type === 'items');
+					var items = $.map(database.arr, function(el){
+						var el = $.extend({}, el);
+						el.fields = $.parseJSON(el.fields || '{}')[settings.arr['langFrontDefault']];
+						return el;
 					});
 
-					var start = function(){
-						var items = $.map(database.arr, function(el){
-							var el = $.extend({}, el);
-							el.fields = $.parseJSON(el.fields || '{}')[settings.arr['langFrontDefault']];
-							return el;
-						});
+					// sorting start
+					items.sort(function(a, b){
+						var a = a.id;
+						var b = b.id;
 
-						// sorting start
-						items.sort(function(a, b){
-							var a = a.id;
-							var b = b.id;
+						if (a > b) return -1;
+						if (a < b) return 1;
+						return 0;
+					});
+					// sorting end
 
-							if (a > b) return -1;
-							if (a < b) return 1;
-							return 0;
-						});
-						// sorting end
+					// template start
+					if (database.config.view === 'table') {
+						var width = 100 / database.config.display.length;
+						var template = '<div class="box {{type}}" style="width:' + width + '%">{{value}}</div>';
 
-						// template start
-						if (database.config.view === 'table') {
-							var width = 100 / database.config.display.length;
-							var template = '<div class="box {{type}}" style="width:' + width + '%">{{value}}</div>';
+						var head = '<div class="item head">\
+							' + $.map(database.config.display, function(id){
+								if (typeof id === 'number') {
+									if (fields.arr.fields[id]) {
+										return m.template(template, {
+											type: 'f_' + id + ' f_' + fields.arr.fields[id].type,
+											value: fields.arr.fields[id].private_title
+										});
+									}
+								} else {
+									if (id === 'id')
+										return m.template(template, {
+											type: 'id',
+											value: 'ID'
+										});
+									if (id === 'image')
+										return m.template(template, {
+											type: 'image',
+											value: lang['database_list_table_image']
+										});
+									if (id === 'uid')
+										return m.template(template, {
+											type: 'uid',
+											value: 'UID'
+										});
+									if (id === 'title')
+										return m.template(template, {
+											type: 'title',
+											value: lang['database_list_table_title']
+										});
+									if (id === 'date_added')
+										return m.template(template, {
+											type: 'date_added',
+											value: lang['database_list_table_date_added']
+										});
+								}
+							}).join('') + '\
+						</div>';
 
-							var head = '<div class="item head">\
+						var body = '';
+						$.each(items, function(i, el){
+							var date = new Date(el.date_added * 1000);
+							var day = date.getDate(); day = (day < 10 ? '0' : '') + day;
+							var month = date.getMonth() + 1; month = (month < 10 ? '0' : '') + month;
+							var year = date.getFullYear();
+							var hours = date.getHours(); hours = (hours < 10 ? '0' : '') + hours;
+							var minutes = date.getMinutes(); minutes = (minutes < 10 ? '0' : '') + minutes;
+
+							body += '<div class="item" data="' + el.id + '">\
 								' + $.map(database.config.display, function(id){
 									if (typeof id === 'number') {
 										if (fields.arr.fields[id]) {
+											var type = fields.arr.fields[id].type;
 											return m.template(template, {
-												type: 'f_' + id + ' f_' + fields.arr.fields[id].type,
-												value: fields.arr.fields[id].private_title
+												type: 'f_' + id + ' f_' + type,
+												value: fields.types[type].bases.view(el.fields[id] || '', id)
 											});
 										}
 									} else {
 										if (id === 'id')
 											return m.template(template, {
 												type: 'id',
-												value: 'ID'
+												value: el.id
 											});
 										if (id === 'image')
 											return m.template(template, {
 												type: 'image',
-												value: lang['database_list_table_image']
+												value: fields.types.file.bases.view(el.image)
 											});
 										if (id === 'uid')
 											return m.template(template, {
 												type: 'uid',
-												value: 'UID'
+												value: el.uid
 											});
 										if (id === 'title')
 											return m.template(template, {
 												type: 'title',
-												value: lang['database_list_table_title']
+												value: el.private_title
 											});
 										if (id === 'date_added')
 											return m.template(template, {
 												type: 'date_added',
-												value: lang['database_list_table_date_added']
+												value: day + '.' + month + '.' + year + ' ' + hours + ':' + minutes
 											});
 									}
 								}).join('') + '\
 							</div>';
-
-							var body = '';
-							$.each(items, function(i, el){
-								var date = new Date(el.date_added * 1000);
-								var day = date.getDate(); day = (day < 10 ? '0' : '') + day;
-								var month = date.getMonth() + 1; month = (month < 10 ? '0' : '') + month;
-								var year = date.getFullYear();
-								var hours = date.getHours(); hours = (hours < 10 ? '0' : '') + hours;
-								var minutes = date.getMinutes(); minutes = (minutes < 10 ? '0' : '') + minutes;
-
-								body += '<div class="item" data="' + el.id + '">\
-									' + $.map(database.config.display, function(id){
-										if (typeof id === 'number') {
-											if (fields.arr.fields[id]) {
-												var type = fields.arr.fields[id].type;
-												return m.template(template, {
-													type: 'f_' + id + ' f_' + type,
-													value: fields.types[type].bases.view(el.fields[id] || '', id)
-												});
-											}
-										} else {
-											if (id === 'id')
-												return m.template(template, {
-													type: 'id',
-													value: el.id
-												});
-											if (id === 'image')
-												return m.template(template, {
-													type: 'image',
-													value: fields.types.file.bases.view(el.image)
-												});
-											if (id === 'uid')
-												return m.template(template, {
-													type: 'uid',
-													value: el.uid
-												});
-											if (id === 'title')
-												return m.template(template, {
-													type: 'title',
-													value: el.private_title
-												});
-											if (id === 'date_added')
-												return m.template(template, {
-													type: 'date_added',
-													value: day + '.' + month + '.' + year + ' ' + hours + ':' + minutes
-												});
-										}
-									}).join('') + '\
-								</div>';
-							});
-
-							var empty = items.length ? '' : '<div class="empty">' + lang['database_list_table_empty'] + '</div>';
-
-							$('.c', parent).html('<div class="table br3">' + (items.length ? head + body : empty) + '</div>');
-						}
-
-						if (database.config.view === 'grid') {
-							var template = '<div class="item" data="{{id}}"><div class="inner br3">\
-								<div class="image" style="background-image:url({{image}});"></div>\
-								<div class="title">{{title}}</div>\
-								<div class="info">{{info}}</div>\
-							</div></div>';
-							var template_info = '<p><b>{{title}}</b>: {{value}}</p>';
-							var body = '';
-							$.each(items, function(i, el){
-								var date = new Date(el.date_added * 1000);
-								var day = date.getDate(); day = (day < 10 ? '0' : '') + day;
-								var month = date.getMonth() + 1; month = (month < 10 ? '0' : '') + month;
-								var year = date.getFullYear();
-								var hours = date.getHours(); hours = (hours < 10 ? '0' : '') + hours;
-								var minutes = date.getMinutes(); minutes = (minutes < 10 ? '0' : '') + minutes;
-
-								var info = $.map(database.config.display, function(id){
-									if (typeof id === 'number') {
-										if (fields.arr.fields[id]) {
-											var type = fields.arr.fields[id].type;
-											return m.template(template_info, {
-												title: fields.arr.fields[id].private_title,
-												value: fields.types[type].bases.view(el.fields[id] || '', id)
-											});
-										}
-									} else {
-										if (id === 'id')
-											return m.template(template_info, {
-												title: 'ID',
-												value: el.id
-											});
-										if (id === 'uid')
-											return m.template(template_info, {
-												title: 'UID',
-												value: el.uid
-											});
-										if (id === 'date_added')
-											return m.template(template_info, {
-												title: lang['database_list_table_date_added'],
-												value: day + '.' + month + '.' + year + ' ' + hours + ':' + minutes
-											});
-									}
-									return '';
-								}).join('');
-
-								body += m.template(template, {
-									image: '/qrs/getfile/' + (el.image || 0) + '/200/200/0',
-									title: el.private_title,
-									info: info,
-									id: el.id
-								});
-							});
-
-							var empty = items.length ? '' : '<div class="empty">' + lang['database_list_grid_empty'] + '</div>';
-
-							$('.c', parent).html('<div class="grid">' + (items.length ? body : empty) + '</div>');
-						}
-						// template end
-
-						$('.f input', parent).val('').trigger('keyup');
-						x.s3_selected();
-						callback();
-					};
-
-					if (load_items) { // TODO убрать, когда переделаю обновление контента на WS
-						items.loadList(function(){ // обновляем итемы чтоб правильно формировлся показ списка (если итемы используются)
-							start();
 						});
-					} else {
-						start();
+
+						var empty = items.length ? '' : '<div class="empty">' + lang['database_list_table_empty'] + '</div>';
+
+						$('.c', parent).html('<div class="table br3">' + (items.length ? head + body : empty) + '</div>');
 					}
+
+					if (database.config.view === 'grid') {
+						var template = '<div class="item" data="{{id}}"><div class="inner br3">\
+							<div class="image" style="background-image:url({{image}});"></div>\
+							<div class="title">{{title}}</div>\
+							<div class="info">{{info}}</div>\
+						</div></div>';
+						var template_info = '<p><b>{{title}}</b>: {{value}}</p>';
+						var body = '';
+						$.each(items, function(i, el){
+							var date = new Date(el.date_added * 1000);
+							var day = date.getDate(); day = (day < 10 ? '0' : '') + day;
+							var month = date.getMonth() + 1; month = (month < 10 ? '0' : '') + month;
+							var year = date.getFullYear();
+							var hours = date.getHours(); hours = (hours < 10 ? '0' : '') + hours;
+							var minutes = date.getMinutes(); minutes = (minutes < 10 ? '0' : '') + minutes;
+
+							var info = $.map(database.config.display, function(id){
+								if (typeof id === 'number') {
+									if (fields.arr.fields[id]) {
+										var type = fields.arr.fields[id].type;
+										return m.template(template_info, {
+											title: fields.arr.fields[id].private_title,
+											value: fields.types[type].bases.view(el.fields[id] || '', id)
+										});
+									}
+								} else {
+									if (id === 'id')
+										return m.template(template_info, {
+											title: 'ID',
+											value: el.id
+										});
+									if (id === 'uid')
+										return m.template(template_info, {
+											title: 'UID',
+											value: el.uid
+										});
+									if (id === 'date_added')
+										return m.template(template_info, {
+											title: lang['database_list_table_date_added'],
+											value: day + '.' + month + '.' + year + ' ' + hours + ':' + minutes
+										});
+								}
+								return '';
+							}).join('');
+
+							body += m.template(template, {
+								image: '/qrs/getfile/' + (el.image || 0) + '/200/200/0',
+								title: el.private_title,
+								info: info,
+								id: el.id
+							});
+						});
+
+						var empty = items.length ? '' : '<div class="empty">' + lang['database_list_grid_empty'] + '</div>';
+
+						$('.c', parent).html('<div class="grid">' + (items.length ? body : empty) + '</div>');
+					}
+					// template end
+
+					$('.f input', parent).val('').trigger('keyup');
+					x.s3_selected();
+					callback();
 				};
 				x.s3_draw_filter = function(){
 					var items_full = $.map(database.arr, function(el){
@@ -2335,7 +2515,7 @@ var database = {
 
 		var url = '?database/items_add';
 		$.post(url, data, function(json){
-			if (json.status == 'OK') {
+			if (json.status) {
 				var id = +json.id;
 				$.extend(data, {id: id, uid: json.uid, date_added: json.date_added, date_change: json.date_change});
 				x.arr[id] = data;
@@ -2477,6 +2657,7 @@ var database = {
 				type: 1,
 				fields: [],
 				display: [],
+				unique: [],
 				uid: {
 					use: true,
 					mask: '',
@@ -2493,13 +2674,18 @@ var database = {
 				if (title && path) data.pdf_templates.push([title, path]);
 			});
 
-			data.view = $('.container.view p.active', database.el.settings).attr('data');
-			data.type = +$('.container.type p.active', database.el.settings).attr('data');
+			data.view = $('.container .field.view p.active', database.el.settings).attr('data');
+			data.type = +$('.container .field.type p.active', database.el.settings).attr('data');
 
 			$('.container.fields .f .elems .item', database.el.settings).each(function(){
-				var id = +$(this).attr('data');
+				var th = $(this);
+				var id = +th.attr('data');
+				var star = $('.star', th);
 
-				if (id) data.fields.push(id);
+				if (id) {
+					data.fields.push(id);
+					if (star.hasClass('active')) data.unique.push(id);
+				}
 			});
 
 			$('.container.fields .d .item', database.el.settings).each(function(){
@@ -2577,14 +2763,14 @@ var database = {
 				handlers: function(parent){
 					var x = this;
 
-					parent.on('click', '.container.view p', function(){
+					parent.on('click', '.container .field.view p', function(){
 						$(this).addClass('active').siblings().removeClass('active');
 					});
 				},
 				draw: function(parent, json){
 					var x = this;
 
-					$('.container.view p[data="' + json.config.view + '"]', parent).addClass('active');
+					$('.container .field.view p[data="' + json.config.view + '"]', parent).addClass('active');
 				}
 			},
 			type: {
@@ -2592,14 +2778,14 @@ var database = {
 				handlers: function(parent){
 					var x = this;
 
-					parent.on('click', '.container.type p', function(){
+					parent.on('click', '.container .field.type p', function(){
 						$(this).addClass('active').siblings().removeClass('active');
 					});
 				},
 				draw: function(parent, json){
 					var x = this;
 
-					$('.container.type p[data="' + (json.config.type || 1) + '"]', parent).addClass('active');
+					$('.container .field.type p[data="' + (json.config.type || 1) + '"]', parent).addClass('active');
 				}
 			},
 			fields: {
@@ -2612,11 +2798,11 @@ var database = {
 
 					database.settings.types.uid.fields = ['id', 'mask'];
 
+					var s_group = $('.container.fields .s .group', parent);
 					var f_group = $('.container.fields .f .group', parent);
 					var d_group = $('.container.fields .d .group', parent);
-					var $combobox = $('.ui-combobox', f_group);
+					var $combobox = $('.ui-combobox', s_group);
 					var $elems = $('.elems', f_group);
-					var loading = $('.loading', f_group);
 					var fields = json.fields;
 					fields.push(['id', 'ID']);
 					fields.push(['image', lang['database_settings_fields_f_image']]);
@@ -2628,8 +2814,6 @@ var database = {
 					var combobox = null;
 
 					var start = function(){
-						loading.remove();
-
 						combobox = new ui.combobox($combobox, {
 							placeholder: lang['database_settings_fields_filter_ph'],
 							empty: lang['database_settings_fields_filter_empty'],
@@ -2653,6 +2837,9 @@ var database = {
 						$.each(json.config.display, function(i, id){
 							$('.item[data="' + id + '"] .show', $elems).trigger('click');
 						});
+						$.each(json.config.unique, function(i, id){
+							$('.item[data="' + id + '"] .star', $elems).addClass('active');
+						});
 
 						check_empty();
 					};
@@ -2668,6 +2855,7 @@ var database = {
 						}
 
 						var item = $('<div class="item br3 box' + (+id ? '' : ' lock') + '" data="' + id + '" title="ID ' + id + '">\
+							<div class="star" title="' + lang['database_settings_star'] + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 46.354 46.354"><path d="M21.57 2.049a1.796 1.796 0 0 1 3.218 0l5.771 11.695c.261.529.767.896 1.352.981L44.817 16.6a1.792 1.792 0 0 1 .994 3.06l-9.338 9.104a1.796 1.796 0 0 0-.517 1.588l2.204 12.855a1.797 1.797 0 0 1-2.605 1.893l-11.544-6.07a1.793 1.793 0 0 0-1.67 0l-11.544 6.069a1.795 1.795 0 0 1-2.604-1.892l2.204-12.855a1.794 1.794 0 0 0-.517-1.588L.542 19.66a1.794 1.794 0 0 1 .995-3.06l12.908-1.875a1.794 1.794 0 0 0 1.351-.982L21.57 2.049z"/></svg></div>\
 							<div class="show"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3m0 8c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z"/></svg></div>\
 							<div class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>\
 							<div class="title">' + titles[id] + '</div>\
@@ -2702,7 +2890,9 @@ var database = {
 						}
 					};
 
-					f_group.on('click', '.show', function(){
+					f_group.on('click', '.star', function(){
+						$(this).toggleClass('active');
+					}).on('click', '.show', function(){
 						var th = $(this);
 						var parent = th.parent();
 						var id = parent.attr('data');
@@ -2711,7 +2901,7 @@ var database = {
 
 						if (th.hasClass('active')) {
 							var clone = parent.clone();
-							clone.removeAttr('style').find('.show').remove().end().appendTo(d_group);
+							clone.removeAttr('style').find('.star').remove().end().find('.show').remove().end().appendTo(d_group);
 						} else {
 							$('.item[data="' + id + '"]', d_group).remove();
 						}
@@ -2938,6 +3128,20 @@ var database = {
 	{
 		var x = this;
 
+		if (cmd === 'item_edition_edit') {
+			WS.append(function(cb){
+				var id = +p[0];
+				x.ed[id] = false;
+				$.each(x.list_items_p, function(i, el){
+					if (id === el[3]) {
+						x.list_items_p[i][1] = false;
+						el[2].data('load', false);
+					}
+				});
+				$('.items', x.el.list).trigger('scroll');
+				cb();
+			});
+		}
 		if (cmd === 'item_new') {
 			WS.append(function(cb){
 				x.loadList(function(){
@@ -3030,6 +3234,17 @@ var database = {
 	resize: function()
 	{
 		var x = this;
+
+		x.list_items_h = $('.items', x.el.list).height();
+		x.list_items_p = [];
+		$.each(x.list_items, function(){
+			var th = $(this);
+			var top = th.position().top;
+			var load = th.data('load');
+			var id = +th.attr('data');
+			x.list_items_p.push([top, load, th, id]);
+		});
+		$('.items', x.el.list).trigger('scroll');
 	}
 };
 

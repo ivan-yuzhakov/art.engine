@@ -101,7 +101,7 @@ foreach ($items as $id => $item) {
 			
 			$tax = $price * ((float) $tax / 100);
 			return number_format($price + $tax);
-		},
+		}
 	]);
 }
 $html .= '
