@@ -790,13 +790,13 @@ var fields = {
 			},
 			bases: {
 				view: function(str, id){
-					var field = fields.arr.fields[id].value.lang()[settings.arr['langFrontDefault']];
+					var field = $.parseJSON(fields.arr.fields[id].value || '{}')[settings.arr['langFrontDefault']];
 					return $.map(str.split(';'), function(id){
 						if (id && field[id]) return field[id];
 					}).join(', ').short(100, ',');
 				},
 				sort: function(str, id){
-					var field = fields.arr.fields[id].value.lang()[settings.arr['langFrontDefault']];
+					var field = $.parseJSON(fields.arr.fields[id].value || '{}')[settings.arr['langFrontDefault']];
 					return $.map(str.split(';'), function(id){
 						if (id && field[id]) return field[id];
 					}).join(', ');
@@ -840,13 +840,13 @@ var fields = {
 			},
 			bases: {
 				view: function(str, id){
-					var field = fields.arr.fields[id].value.lang()[settings.arr['langFrontDefault']];
+					var field = $.parseJSON(fields.arr.fields[id].value || '{}')[settings.arr['langFrontDefault']];
 					return $.map(str.split(';'), function(id){
 						if (id && field[id]) return field[id];
 					}).join(', ').short(100, ',');
 				},
 				sort: function(str, id){
-					var field = fields.arr.fields[id].value.lang()[settings.arr['langFrontDefault']];
+					var field = $.parseJSON(fields.arr.fields[id].value || '{}')[settings.arr['langFrontDefault']];
 					return $.map(str.split(';'), function(id){
 						if (id && field[id]) return field[id];
 					}).join(', ');

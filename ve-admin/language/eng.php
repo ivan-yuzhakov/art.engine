@@ -89,7 +89,8 @@ $lang['database_edition_childs_nof'] = 'No fields...';
 $lang['database_edition_childs_captions_save'] = 'Save';
 $lang['database_edition_childs_note'] = 'Note...';
 
-$lang['database_edition_f_htitle'] = 'Create new edition';
+$lang['database_edition_f_h_create'] = 'Create new edition';
+$lang['database_edition_f_h_edit'] = 'Edit edition "%s"';
 $lang['database_edition_f_title'] = 'Title';
 $lang['database_edition_f_title_def'] = 'Edition';
 $lang['database_edition_f_count'] = 'Quantity';

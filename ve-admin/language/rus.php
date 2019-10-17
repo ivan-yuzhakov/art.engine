@@ -89,7 +89,8 @@ $lang['database_edition_childs_nof'] = 'Нет полей...';
 $lang['database_edition_childs_captions_save'] = 'Сохранить';
 $lang['database_edition_childs_note'] = 'Описание...';
 
-$lang['database_edition_f_htitle'] = 'Создание нового тиража';
+$lang['database_edition_f_h_create'] = 'Создание нового тиража';
+$lang['database_edition_f_h_edit'] = 'Редактирование тиража "%s"';
 $lang['database_edition_f_title'] = 'Название';
 $lang['database_edition_f_title_def'] = 'Тираж';
 $lang['database_edition_f_count'] = 'Количество';

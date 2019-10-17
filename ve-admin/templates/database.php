@@ -119,7 +119,7 @@
 				<div class="br3 save"><?php echo $lang['database_form_save']; ?></div>
 				<div class="br3 close"><?php echo $lang['database_form_close']; ?></div>
 			</div>
-			<div class="title"><?php echo $lang['database_edition_f_htitle']; ?></div>
+			<div class="title">{{title}}</div>
 		</div>
 		<div class="wrapper"><div class="w">
 			<div class="container system">

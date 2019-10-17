@@ -380,7 +380,20 @@ if ($section === 'database')
 			return $field;
 		}, $fields);
 
-		$items = $db->select('database', '*', ['id' => $ids, 'del' => 0], __FILE__, __LINE__);
+		$ids_items = [];
+		$ids_editions = [];
+		foreach ($ids as $id) {
+			if (is_array($id)) {
+				$ids_items[] = (int) $id['id'];
+				foreach ($id['childs'] as $child) {
+					$ids_editions[] = (int) $child;
+				}
+			} else {
+				$ids_items[] = (int) $id;
+			}
+		}
+
+		$items = $db->select('database', '*', ['id' => $ids_items, 'del' => 0], __FILE__, __LINE__);
 		$items = array_column($items, null, 'id');
 		$items = array_map(function($item) use($lang, $lang_default) {
 			global $core;
@@ -410,6 +423,23 @@ if ($section === 'database')
 
 			return ['uid' => $uid, 'title' => $title, 'image' => $image] + $f;
 		}, $items);
+		$editions = $db->select('editions_items', ['id', 'captions'], ['id' => $ids_editions], __FILE__, __LINE__);
+		$editions = array_column($editions, 'captions', 'id');
+		$new_items = [];
+		foreach ($ids as $id) {
+			if (is_array($id)) {
+				foreach ($id['childs'] as $child) {
+					$new_items[$id['id'] . '_' . $child] = $items[$id['id']];
+					$fi = json_decode($editions[$child], true);
+					foreach ($fi as $fi_id => $fi_val) {
+						$new_items[$id['id'] . '_' . $child][$fi_id] = $fi_val;
+					}
+				}
+			} else {
+				$new_items[$id] = $items[$id];
+			}
+		}
+		$items = $new_items;
 
 		$replace_item = function($text, $id, $processing = []) use($items, $fields, $lang, $lang_default) {
 			// replace title, uid
@@ -537,7 +567,7 @@ if ($section === 'database')
 									global $db, $helpers;
 
 									$item = $db->select('items', ['public_title'], ['id' => $id], __FILE__, __LINE__);
-									$item = $item[0] ?: false;
+									$item = $item[0] ?? false;
 
 									if ($item !== false) {
 										$title = $helpers->get_langs($item['public_title']);
@@ -759,9 +789,7 @@ if ($section === 'database')
 			], __FILE__, __LINE__);
 		}
 
-		json([
-			'id' => $id
-		]);
+		json(['id' => $id]);
 	}
 	if ($query === 'edition_edit_edition')
 	{
@@ -779,17 +807,14 @@ if ($section === 'database')
 			if (empty($c)) $c = '{}';
 			$c = json_decode($c, true);
 			foreach ($captions as $id => $val) {
-				if (!isset($c[$id])) $c[$id] = $val;
+				$c[$id] = $val;
 			}
 			$db->update('editions_items', [
 				'captions' => json_encode($c),
 			], 'id', $item['id'], __FILE__, __LINE__);
 		}
 
-		json([
-			'status' => true,
-			
-		]);
+		json(['status' => true]);
 	}
 	if ($query === 'edition_remove_edition')
 	{
@@ -798,9 +823,7 @@ if ($section === 'database')
 		$db->delete('editions', 'id', $id, __FILE__, __LINE__);
 		$db->delete('editions_items', 'edition', $id, __FILE__, __LINE__);
 
-		json([
-			'status' => true
-		]);
+		json(['status' => true]);
 	}
 	if ($query === 'edition_get_items')
 	{

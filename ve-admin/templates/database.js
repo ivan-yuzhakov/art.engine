@@ -1286,6 +1286,7 @@ var database = {
 			x.d.el.form.removeClass('show');
 			setTimeout(function(){
 				var template = m.template(x.template.form, {
+					title: lang['database_edition_f_h_create'],
 					q: '',
 					p: x.d.arr[x.d.mode].type === 1 ? 'show' : 'hide',
 					d: x.d.arr[x.d.mode].type === 2 ? 'show' : 'hide',
@@ -1327,6 +1328,7 @@ var database = {
 			x.d.el.form.removeClass('show');
 			setTimeout(function(){
 				var template = m.template(x.template.form, {
+					title: sprintf(lang['database_edition_f_h_edit'], [title]),
 					q: 'hide',
 					p: 'hide',
 					d: 'hide',
@@ -1338,9 +1340,7 @@ var database = {
 				// add parent fields
 				var captions = $('.captions', x.el.form);
 				$.each(x.d.config.unique, function(i, id){
-					var el = $('.container.custom .field[data="' + id + '"]', x.d.el.form);
 					var field = fields.arr.fields[id];
-					var val = fields.types[field.type].item_save(el.find('.group'));
 
 					var container = $('<div class="container custom">\
 						<div class="field ' + field.type + '" data="' + id + '">\
@@ -1349,7 +1349,7 @@ var database = {
 						</div>\
 					</div>').appendTo(captions);
 
-					fields.types[field.type].item_add($('.group', container), val, field.value, 'database', x.d.language.active);
+					fields.types[field.type].item_add($('.group', container), '', field.value, 'database', x.d.language.active);
 				});
 
 				setTimeout(function(){
@@ -1371,7 +1371,8 @@ var database = {
 							var th = $(this);
 							var id = +$('.field', th).attr('data');
 							var field = fields.arr.fields[id];
-							json[id] = fields.types[field.type].item_save(th.find('.group'));
+							var val = fields.types[field.type].item_save(th.find('.group'));
+							if (val) json[id] = val;
 						});
 
 						return JSON.stringify(json);
@@ -2024,13 +2025,42 @@ var database = {
 				}).on('click', '.s3 .f .clear', function(){
 					$('.s3 .f input', x.el.parent).val('');
 					x.s3_filter.change();
-				}).on('click', '.s3 .c .item:not(.head)', function(){
-					$(this).toggleClass('selected');
+				}).on('click', '.s3 .c .item:not(.head) .editions .e', function(){
+					var th = $(this);
+					var id = +th.attr('data');
+
+					x.s3_open_edition(th, id);
+
+					return false;
+				}).on('click', '.s3 .c .item:not(.head) .editions .childs .c', function(){
+					var th = $(this);
+
+					th.toggleClass('selected');
+
+					var parent = th.parent();
+					var selected = $('.c.selected', parent);
+
+					parent.parents('.item').toggleClass('selected', !!selected.length);
 					x.s3_selected();
+
+					return false;
+				}).on('click', '.s3 .c .item:not(.head)', function(){
+					var th = $(this);
+					var id = +th.attr('data');
+					var unique = database.arr[id].unique;
+
+					if (unique) {
+						th.toggleClass('selected');
+						x.s3_selected();
+					} else {
+						x.s3_open_item(th, id);
+					}
 				});
 
 				x.el.step.filter('.s4').find('.c').empty();
 				x.el.step.filter('.s5').find('.c').empty();
+
+				x.editions = {};
 			},
 			open: function(){
 				var x = this;
@@ -2118,13 +2148,130 @@ var database = {
 					}
 				};
 				x.s3_selected = function(){
-					var selected = $('.c .item.selected', parent);
-					var count = selected.length;
+					var count = 0;
+					x.temp.items = [];
+
+					$('.item.selected', parent).each(function(){
+						var th = $(this);
+						var id = +th.attr('data');
+						var c = $('.childs .c.selected', th);
+
+						if (c.length) {
+							var childs = [];
+							c.each(function(){
+								var el = $(this);
+								var data = +el.attr('data');
+
+								childs.push(data);
+								count++;
+							});
+							x.temp.items.push({id: id, childs: childs});
+						} else {
+							x.temp.items.push(id);
+							count++;
+						}
+					});
+
 					$('.t span', parent).text(count);
 					x.el.next.toggle(!!count);
-					x.temp.items = selected.map(function(){
-						return +$(this).attr('data');
-					}).get();
+				};
+				x.s3_open_item = function(th, id){
+					if (th.data('loading')) return false;
+
+					if (th.hasClass('open')) {
+						th.removeClass('open');
+					} else {
+						if (th.data('load')) {
+							th.addClass('open');
+						} else {
+							th.data('loading', true);
+
+							var loader = $('<div class="loader">');
+
+							th.append(loader);
+
+							$.post('?database/edition_get_editions', {id: id}, function(json){
+								var editions = [];
+								$.each(json.items, function(i, el){
+									editions.push('<div class="e br3" data="' + el.id + '">' + el.title + '</div>');
+								});
+								editions = editions.join('') || '<div class="empty">' + lang['global_empty'] + '</div>';
+
+								loader.fadeOut(200, function(){
+									loader.remove();
+									th.append('<div class="editions">' + editions + '</div>').data('load', true).addClass('open').data('loading', false);
+								});
+							}, 'json');
+						}
+					}
+				};
+				x.s3_open_edition = function(th, id){
+					if (th.data('loading')) return false;
+
+					if (th.hasClass('open')) {
+						th.removeClass('open');
+					} else {
+						if (th.data('load')) {
+							th.addClass('open');
+						} else {
+							th.data('loading', true);
+
+							var loader = $('<div class="loader">');
+
+							th.append(loader);
+
+							$.post('?database/edition_get_items', {id: id}, function(json){
+								var items = [];
+								$.each(json.items, function(i, el){
+									var status = '';
+									if (el[2] === 1) {
+										if (el[3] === 1) status = lang['database_edition_f_p_np'];
+										if (el[3] === 2) status = lang['database_edition_f_p_st'];
+										if (el[3] === 3) status = lang['database_edition_f_p_re'];
+										if (el[3] === 4) status = lang['database_edition_f_p_so'];
+										if (el[3] === 5) status = lang['database_edition_f_p_gi'];
+										if (el[3] === 6) status = lang['database_edition_f_p_ol'];
+									}
+									if (el[2] === 2) {
+										if (el[3] === 1) status = lang['database_edition_f_d_us'];
+										if (el[3] === 2) status = lang['database_edition_f_d_re'];
+										if (el[3] === 3) status = lang['database_edition_f_d_so'];
+										if (el[3] === 4) status = lang['database_edition_f_d_gi'];
+										if (el[3] === 5) status = lang['database_edition_f_d_ol'];
+									}
+									var f = '';
+									$.each($.parseJSON(el[4] || '{}'), function(i, el){
+										if (el) f += '<p><b>' + lang['database_edition_childs_' + i] + ':</b> ' + el + '</p>';
+									});
+									var d = '';
+									$.each($.parseJSON(el[5] || '{}'), function(i, el){
+										if (el && fields.arr.fields[i]) d += '<p><b>' + fields.arr.fields[i].private_title + ':</b> ' + el + '</p>';
+									});
+
+									x.editions[el[0]] = {
+										n: el[1],
+										status: status,
+										f: f,
+										d: d,
+										no: el[7]
+									};
+
+									items.push('<div class="c" data="' + el[0] + '">\
+										<div class="box n">' + el[1] + '</div>\
+										<div class="box st">' + status + '</div>\
+										<div class="box fi">' + f + '</div>\
+										<div class="box d">' + d + '</div>\
+										<div class="box no">' + el[7] + '</div>\
+									</div>');
+								});
+
+								loader.fadeOut(200, function(){
+									loader.remove();
+									th.data('load', true).addClass('open').data('loading', false).after('<div class="childs">' + items.join('') + '</div>');
+								});
+							}, 'json');
+						}
+					}
 				};
 				x.s3_draw = function(callback){
 					var items = $.map(database.arr, function(el){
@@ -2145,7 +2292,7 @@ var database = {
 					// sorting end
 
 					// template start
-					if (database.config.view === 'table') {
+					// if (database.config.view === 'table') {
 						var width = 100 / database.config.display.length;
 						var template = '<div class="box {{type}}" style="width:' + width + '%">{{value}}</div>';
 
@@ -2241,9 +2388,9 @@ var database = {
 						var empty = items.length ? '' : '<div class="empty">' + lang['database_list_table_empty'] + '</div>';
 
 						$('.c', parent).html('<div class="table br3">' + (items.length ? head + body : empty) + '</div>');
-					}
+					// }
 
-					if (database.config.view === 'grid') {
+					if (database.config.view === 'grid1') {
 						var template = '<div class="item" data="{{id}}"><div class="inner br3">\
 							<div class="image" style="background-image:url({{image}});"></div>\
 							<div class="title">{{title}}</div>\
@@ -2381,27 +2528,59 @@ var database = {
 						x.temp.request = json.request;
 
 						if (json.request.local && json.request.local.length) {
-							$.each(x.temp.items, function(i, id){
-								var item = database.arr[id];
+							$('.c', parent).empty();
 
-								var html = $('<div class="item br3" data="' + id + '">\
-									<div class="title">' + item.private_title + '</div>\
-									<div class="image br3" style="background-image:url(/qrs/getfile/' + item.image + '/200/200/0);"></div>\
-									<div class="fields"></div>\
-									<div class="clr"></div>\
-								</div>');
-								$.each(json.request.local, function(index, r){
-									var container = $('<div class="container">\
-										<div class="field ' + r.type + '" data="' + r.id + '" type="' + r.type + '">\
-											<div class="head"><p>' + r.title + '</p></div>\
-											<div class="group"></div>\
-										</div>\
+							$.each(x.temp.items, function(i, el){
+								var number = typeof el === 'number';
+
+								if (number) {
+									var item = database.arr[el];
+
+									var html = $('<div class="item br3" data="' + el + '">\
+										<div class="title">' + item.private_title + '</div>\
+										<div class="image br3" style="background-image:url(/qrs/getfile/' + item.image + '/200/200/0);"></div>\
+										<div class="fields"></div>\
+										<div class="clr"></div>\
 									</div>');
-									$('.fields', html).append(container);
+									$.each(json.request.local, function(index, r){
+										var container = $('<div class="container">\
+											<div class="field ' + r.type + '" data="' + r.id + '" type="' + r.type + '">\
+												<div class="head"><p>' + r.title + '</p></div>\
+												<div class="group"></div>\
+											</div>\
+										</div>');
+										$('.fields', html).append(container);
 
-									fields.types[r.type].item_add($('.group', container), '', '', 'database', '');
-								});
-								$('.c', parent).append(html);
+										fields.types[r.type].item_add($('.group', container), '', '', 'database', '');
+									});
+									$('.c', parent).append(html);
+								} else {
+									var item = database.arr[el.id];
+
+									var html = $('<div class="item br3" data="' + el.id + '">\
+										<div class="title">' + item.private_title + '</div>\
+										<div class="image br3" style="background-image:url(/qrs/getfile/' + item.image + '/200/200/0);"></div>\
+									</div>');
+									$.each(el.childs, function(ind, id){
+										var fi = $('<div class="fields" data="' + id + '">');
+										fi.append('<div class="info"><p>#' + x.editions[id].n + '</p><p>' + x.editions[id].status + '</p>' + x.editions[id].f + x.editions[id].d + '<p>' + x.editions[id].no + '</p></div>');
+										html.append(fi);
+
+										$.each(json.request.local, function(index, r){
+											var container = $('<div class="container">\
+												<div class="field ' + r.type + '" data="' + r.id + '" type="' + r.type + '">\
+													<div class="head"><p>' + r.title + '</p></div>\
+													<div class="group"></div>\
+												</div>\
+											</div>');
+											fi.append(container);
+
+											fields.types[r.type].item_add($('.group', container), '', '', 'database', '');
+										});
+									});
+
+									$('.c', parent).append(html);
+								}
 							});
 
 							callback();
@@ -2441,6 +2620,9 @@ var database = {
 				var x = this;
 
 				x.el.overlay.addClass('top');
+
+				var local = {};
+
 				var data = {
 					template: x.temp.template,
 					lang: x.temp.lang,
@@ -2450,18 +2632,37 @@ var database = {
 
 						x.el.step.filter('.s4').find('.item').each(function(){
 							var th = $(this);
-							var id = th.attr('data');
-							var d = {};
-							$('.field', th).each(function(){
-								var f = $(this);
-								var alias = f.attr('data');
-								var type = f.attr('type');
-								var value = fields.types[type].item_save(f.find('.group'));
+							var id = +th.attr('data');
 
-								d[alias] = value;
-							});
+							if (database.arr[id].unique) {
+								var d = {};
+								$('.field', th).each(function(){
+									var f = $(this);
+									var alias = f.attr('data');
+									var type = f.attr('type');
+									var value = fields.types[type].item_save(f.find('.group'));
 
-							data[id] = d;
+									d[alias] = value;
+								});
+
+								data[id] = d;
+							} else {
+								$('.fields', th).each(function(){
+									var th = $(this);
+									var e = +th.attr('data');
+									var d = {};
+									$('.field', th).each(function(){
+										var f = $(this);
+										var alias = f.attr('data');
+										var type = f.attr('type');
+										var value = fields.types[type].item_save(f.find('.group'));
+
+										d[alias] = value;
+									});
+
+									data[id + '_' + e] = d;
+								});
+							}
 						});
 
 						return data;
