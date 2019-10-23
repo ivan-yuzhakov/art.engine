@@ -17,8 +17,9 @@
 		$styles[] = 'templates/files.css';
 		$styles[] = 'templates/fields.css';
 		$styles[] = 'templates/users.css';
-		$styles[] = 'templates/settings.css';
 		$styles[] = 'templates/plugins.css';
+		$styles[] = 'templates/support.css';
+		$styles[] = 'templates/settings.css';
 		foreach ($styles as $style) {
 			echo '<link rel="stylesheet" href="' . $style . '?v=' . VERSION . '">';
 		}
@@ -26,15 +27,14 @@
 </head>
 <body class="box">
 	<header class="animate2">
-		<!--div class="burger">
-			<p class="p1 br3"></p>
-			<p class="p2 br3"></p>
-			<p class="p3 br3"></p>
-		</div-->
 		<div class="logo">
 			<img src="/favicon.png">
 			<p><?php echo $settings['siteTitle']; ?></p>
 		</div>
+		<?php if ($visitor->access === 4) { ?>
+			<a class="settings" href="#/settings" title="<?php echo $lang['section_settings']; ?>"><?php require_once('templates/settings.svg'); ?><i class="br10 animate2">!</i></a>
+		<?php } ?>
+		<a class="support" href="#/support" title="<?php echo $lang['section_support']; ?>"><?php require_once('templates/support.svg'); ?><i class="br10 animate2">!</i></a>
 		<div class="account">
 			<?php
 				$user = $db->select('members', ['fname'], ['id' => $visitor->id]);
@@ -76,9 +76,6 @@
 			?>
 			<a class="animate" href="#/users"><?php require_once('templates/users.svg'); ?><p><?php echo $lang['section_users']; ?></p></a>
 			<a class="animate" href="#/plugins"><?php require_once('templates/plugins.svg'); ?><p><?php echo $lang['section_plugins']; ?></p></a>
-			<?php if ($visitor->access === 4) { ?>
-				<a class="animate settings" href="#/settings"><?php require_once('templates/settings.svg'); ?><p><?php echo $lang['section_settings']; ?></p><i class="br10 animate2">!</i></a>
-			<?php } ?>
 		</div>
 		<div class="search animate2">
 			<input class="br3 box" type="text" value="" placeholder="<?php echo $lang['search_input_placeholder']; ?>">
@@ -140,6 +137,7 @@
 			require_once('templates/users.php');
 			require_once('templates/plugins.php');
 			require_once('templates/settings.php');
+			require_once('templates/support.php');
 		?>
 		<div id="overlay" class="loader"></div>
 	</div>
@@ -190,6 +188,7 @@
 		$scripts[] = 'templates/items.js';
 		$scripts[] = 'templates/files.js';
 		$scripts[] = 'templates/plugins.js';
+		$scripts[] = 'templates/support.js';
 
 		foreach ($scripts as $script) {
 			echo '<script src="' . $script . '?v=' . VERSION . '"></script>';

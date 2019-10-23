@@ -16,6 +16,7 @@ require_once('api/plugins.php');
 require_once('api/settings.php');
 require_once('api/sorting.php');
 require_once('api/updates.php');
+require_once('api/support.php');
 //require_once('api/orders.php');
 //require_once('api/statistics.php');
 ?>

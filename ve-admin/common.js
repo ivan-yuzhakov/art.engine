@@ -1108,7 +1108,7 @@ var common = {
 		setTimeout(function(){
 			$.get('?updates/check_update', function(json){
 				if (json.status === 'MANUAL_UPDATE' || json.status === 'NEW_VERSION') {
-					$('a.settings', menu).addClass('warning');
+					$('a.settings', common.el.header).addClass('warning');
 					$('.section[data="update"]', settings.el.list).addClass('warning');
 				}
 			}, 'json');
@@ -1181,7 +1181,8 @@ var common = {
 		} else {
 			location.hash = '/database';
 		}
-		$('a[href="#/' + hash.join('/') + '"]', menu).addClass('active').siblings().removeClass('active');
+		$('a', menu).removeClass('active').filter('[href="#/' + hash.join('/') + '"]').addClass('active');
+		$('a', common.el.header).removeClass('active').filter('[href="#/' + hash.join('/') + '"]').addClass('active');
 	},
 	resize: function()
 	{

@@ -270,6 +270,8 @@ var files = {
 							x.el.overlay.removeClass('show');
 						}, 'json');
 					}, 'json');
+				} else {
+					x.el.overlay.removeClass('show');
 				}
 			}, 210);
 		}).on('click', '.remove', function(){

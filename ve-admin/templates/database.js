@@ -1226,13 +1226,16 @@ var database = {
 				x.item_input_key(th);
 			}).on('blur', '.childs .i .f > div', function(){
 				var th = $(this);
-				x.item_input(th);
+				setTimeout(function(){
+					x.item_input(th);
+				}, 100);
 				x.focus = false;
 			}).on('click', '.childs .i .f .popup .v', function(){
 				var th = $(this);
 				var html = th.html();
-				th.parent().prev().html(html);
-				th.parent().remove();
+				var parent = th.parent();
+				parent.prev().html(html);
+				parent.remove();
 			}).on('click', '.childs .i .c .button', function(){
 				var th = $(this);
 				x.item_captions(th);
@@ -1619,9 +1622,11 @@ var database = {
 			var f_old = $.parseJSON(parent_i.attr('f'));
 			$('>div', parent_f).each(function(){
 				var i = $(this);
+				var data = i.attr('data');
+				if (!data) return true;
 				var text = i.text();
 				if (!text) i.empty();
-				f_old[i.attr('data')] = i.html();
+				f_old[data] = i.html();
 			});
 			f_old = JSON.stringify(f_old);
 

@@ -6,6 +6,7 @@ $lang['section_bases'] = 'Bases';
 $lang['section_users'] = 'Users';
 $lang['section_fields'] = 'Fields';
 $lang['section_settings'] = 'Settings';
+$lang['section_support'] = 'Support';
 $lang['section_plugins'] = 'Plugins';
 $lang['section_logout'] = 'Logout';
 
