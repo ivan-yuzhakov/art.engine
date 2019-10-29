@@ -763,8 +763,10 @@ var WS = (function(){
 	var arr = [];
 	var work = false;
 	var loader = $('#ws');
+	var status = false;
 
 	var connect = function(){
+		status = false;
 		loader.show();
 
 		if (location.protocol === 'https:') {
@@ -773,27 +775,22 @@ var WS = (function(){
 			ws = new WebSocket('ws://' + location.host + ':1010');
 		}
 
-		ws.onopen = function(e) {
-			// console.log("Connection!");
-			// handler on error connection
+		ws.onopen = function(e){
+			status = true;
 			loader.hide();
 		};
-		ws.onclose = function(e) {
-			if (event.wasClean) {
-				//alert('Соединение закрыто чисто');
+		ws.onclose = function(e){
+			if (e.wasClean) {
+				
 			} else {
-				//alert('Обрыв соединения'); // например, "убит" процесс сервера
 				connect();
 			}
-			//alert('Код: ' + event.code + ' причина: ' + event.reason);
 		};
-		ws.onmessage = function(e) {
+		ws.onmessage = function(e){
 			var obj = e.data.split('/');
 			window[obj[0]].WS(obj[1], obj.slice(2));
 		};
-		ws.onerror = function(error) {
-			// alert("Ошибка " + error.message);
-		};
+		ws.onerror = function(e){};
 	};
 	var send = function(val){
 		ws.send(val);
@@ -817,12 +814,14 @@ var WS = (function(){
 		arr.push(func);
 		start();
 	};
+	var getStatus = function(){
+		return status;
+	};
 
 	connect();
-	
-	// RECONNECT
 
 	return {
+		getStatus: getStatus,
 		send: send,
 		append: append
 	};
@@ -868,6 +867,13 @@ var common = {
 	queue: [sorting],
 	init: function()
 	{
+		if (!WS.getStatus()) {
+			setTimeout(function(){
+				common.init();
+			}, 300);
+			return false;
+		}
+
 		$.ajaxSetup({
 			error: function(jqXHR, status, error){
 				if (jqXHR.responseText === 'AUTH_FAIL') {
@@ -891,19 +897,19 @@ var common = {
 			} else {
 				plugins.showPlugins(function(){
 					extentions.init(function(){
-						$(window).on('hashchange', common.hash).trigger('hashchange').on('resize', common.resize);
-
 						common.check_update();
+						common.menu.init();
+						common.search.init();
+
+						$(window).on('hashchange', common.hash).trigger('hashchange').on('resize', common.resize);
 					});
 				});
 			}
 		};
 		load();
-
-		common.menu.init();
-		common.search.init();
 	},
-	menu: {
+	menu:
+	{
 		init: function(){
 			common.el.header.on('click', '.logo', function(){
 				common.menu.open();
@@ -930,7 +936,8 @@ var common = {
 			common.el.content.removeClass('openMenu');
 		}
 	},
-	search: {
+	search:
+	{
 		el: {},
 		init: function()
 		{

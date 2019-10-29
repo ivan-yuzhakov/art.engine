@@ -10,6 +10,7 @@ $lang['section_support'] = 'Support';
 $lang['section_plugins'] = 'Plugins';
 $lang['section_logout'] = 'Logout';
 
+$lang['global_create'] = 'Create';
 $lang['global_save'] = 'Save';
 $lang['global_save_and_close'] = 'Save & Close';
 $lang['global_close'] = 'Close';
@@ -440,4 +441,15 @@ $lang['settings_update_progress_backup'] = 'Creating backup core and database...
 $lang['settings_update_progress_update_files'] = 'Updating files of core...';
 $lang['settings_update_progress_update_db'] = 'Updating database...';
 $lang['settings_update_progress_update_core'] = 'Completing the installation of updates...';
+
+/* SUPPORT */
+
+$lang['support_status_title'] = 'Status';
+$lang['support_help_title'] = 'Help Desk';
+$lang['support_help_add'] = 'Create new ticket';
+$lang['support_help_ticket_name'] = 'Ticket name';
+$lang['support_help_ticket_desc'] = 'Ticket description';
+$lang['support_help_new_message'] = 'New messages';
+$lang['support_help_submit'] = 'Submit';
+$lang['support_faq_title'] = 'FAQ';
 ?>

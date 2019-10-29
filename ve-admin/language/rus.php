@@ -10,6 +10,7 @@ $lang['section_support'] = 'Поддержка';
 $lang['section_plugins'] = 'Плагины';
 $lang['section_logout'] = 'Выход';
 
+$lang['global_create'] = 'Создать';
 $lang['global_save'] = 'Сохранить';
 $lang['global_save_and_close'] = 'Сохранить & Закрыть';
 $lang['global_close'] = 'Закрыть';
@@ -440,4 +441,15 @@ $lang['settings_update_progress_backup'] = 'Создание резервной 
 $lang['settings_update_progress_update_files'] = 'Обновление файлов ядра...';
 $lang['settings_update_progress_update_db'] = 'Обновление базы данных...';
 $lang['settings_update_progress_update_core'] = 'Завершение установки обновлений...';
+
+/* SUPPORT */
+
+$lang['support_status_title'] = 'Статус';
+$lang['support_help_title'] = 'Техническая поддержка';
+$lang['support_help_add'] = 'Создать новый запрос';
+$lang['support_help_ticket_name'] = 'Тема';
+$lang['support_help_ticket_desc'] = 'Ваше сообщение';
+$lang['support_help_new_message'] = 'Новые сообщения';
+$lang['support_help_submit'] = 'Отправить';
+$lang['support_faq_title'] = 'Часто задаваемые вопросы';
 ?>

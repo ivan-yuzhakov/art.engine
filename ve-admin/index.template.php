@@ -36,11 +36,7 @@
 		<?php } ?>
 		<a class="support" href="#/support" title="<?php echo $lang['section_support']; ?>"><?php require_once('templates/support.svg'); ?><i class="br10 animate2">!</i></a>
 		<div class="account">
-			<?php
-				$user = $db->select('members', ['fname'], ['id' => $visitor->id]);
-				$user = $user[0]['fname'];
-				echo '<div class="user">' . $user . '</div>';
-			?>
+			<?php echo '<div class="user">' . $visitor->fname . '</div>'; ?>
 			<a class="logout" href="index.php?logout" title="<?php echo $lang['section_logout']; ?>">
 				<svg class="animate1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M352.672 544h-257.312v-448h257.28v96h63.36v-96c0-35.2-28.768-64-64-64h-256c-35.2 0-64 28.8-64 64v448c0 35.2 28.8 64 64 64h256c35.232 0 64-28.8 64-64v-64h-63.328v64zM608 336l-127.328-124.8v76.8h-288v96h288v76.8l127.328-124.8z"></path></svg>
 			</a>

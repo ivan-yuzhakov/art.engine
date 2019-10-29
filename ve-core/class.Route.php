@@ -13,6 +13,10 @@ class Route
 			$visitor->set_lang_temp($_GET['lang']);
 		}
 
+		if (isset($_POST['section']) && $_POST['section'] === 'helpdesk') {
+			$this->support_helpdesk();
+		}
+
 		if (isset($urls[0]) && $urls[0] === 'sitemap.xml') {
 			$helpers->get_sitemap();
 		}
@@ -31,6 +35,32 @@ class Route
 			//$this->subscribe();
 		} else {
 			$this->get_template();
+		}
+	}
+
+	private function support_helpdesk()
+	{
+		global $db;
+
+		$query = isset($_POST['query']) ? $_POST['query'] : false;
+
+		if ($query === 'send_message') {
+			$ticket = $_POST['ticket'];
+			$message = $_POST['message'];
+			$id_item = $_POST['id_item'];
+			$user = $_POST['user'];
+
+			$id_item = $db->insert('help_tickets_items', [
+				'ticket' => $ticket,
+				'id_item' => $id_item,
+				'desc' => $message,
+				'user' => $user,
+				'readed' => 0,
+				'date' => time()
+			]);
+
+			json(['status' => true, 'id_item' => $id_item]);
+			
 		}
 	}
 

@@ -8,6 +8,7 @@ class Visitor
 	public $is_guest;
 	public $is_admin;
 	public $is_logged;
+	public $fname;
 
 	public function __construct()
 	{
@@ -22,7 +23,7 @@ class Visitor
 		$this->is_logged = false;
 
 		if (isset($_SESSION['id']) && $_SESSION['id'] > 0 && isset($_SESSION['ip']) && $_SESSION['ip'] == $this->ip) {
-			$arr = $db->select('members', ['access'], [
+			$arr = $db->select('members', ['fname', 'access'], [
 				'id' => (int) $_SESSION['id'],
 			], __FILE__, __LINE__);
 
@@ -32,6 +33,7 @@ class Visitor
 				$this->is_guest = false;
 				$this->is_admin = $_SESSION['id'] === 1;
 				$this->is_logged = true;
+				$this->fname = $arr[0]['fname'];
 			}
 		}
 	}
