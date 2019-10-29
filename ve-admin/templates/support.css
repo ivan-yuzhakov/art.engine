@@ -44,6 +44,7 @@
 #support .modal .popup .wrapper .i{margin:40px 0;}
 #support .modal .popup .wrapper .i .info{font-weight:bold;}
 #support .modal .popup .wrapper .i .desc{margin-top:10px;white-space:pre-wrap;}
+#support .modal .popup .wrapper .new_message{padding-bottom:10px;border-bottom:1px solid #238ba3;text-transform:uppercase;text-align:center;color:#238ba3;}
 #support .modal .popup .bottom{height:40px;padding:19px 20px 20px;position:absolute;bottom:0;left:0;right:0;background:#fff;border-top:1px solid #ddd;display:flex;}
 #support .modal .popup .bottom input{width:100%;height:40px;margin:0 20px;padding:10px 20px;background:#fff;border:1px solid #ddd;display:block;font-size:16px;color:#333;}
 #support .modal .popup .bottom input:focus{border-color:#999;}

@@ -75,6 +75,15 @@ if ($section === 'support')
 
 		json(['status' => true, 'items' => $items]);
 	}
+	if ($query === 'help_get_new_message')
+	{
+		$id = $_POST['id'];
+
+		$items = $db->select('help_tickets_items', '*', ['ticket' => $id, 'readed' => 0]);
+		$db->update('help_tickets_items', ['readed' => 1], 'ticket', $id);
+
+		json(['status' => true, 'items' => $items]);
+	}
 	if ($query === 'help_send_message')
 	{
 		$ticket = $_POST['ticket'];

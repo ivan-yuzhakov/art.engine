@@ -173,6 +173,7 @@
 			'plugins/alertify.min.js',
 			'plugins/jquery.Jcrop.min.js',
 			'plugins/sprintf.min.js',
+			'plugins/moment.js',
 			'common.js',
 			//'order.js',
 			//'statistics.js',

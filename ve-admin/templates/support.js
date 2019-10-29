@@ -24,11 +24,6 @@ var support = {
 		x.help.load();
 		x.load_faq();
 
-// clear if other page
-		setInterval(function(){
-			$('.overlay', x.el.help).removeClass('hide');
-			x.help.load();
-		}, 30000);
 		callback();
 	},
 	start: function()
@@ -36,6 +31,15 @@ var support = {
 		var x = this;
 
 		x.el.parent.show().siblings().hide();
+
+		x.timer = setInterval(function(){
+			if (hash[0] === 'support') {
+				$('.overlay', x.el.help).removeClass('hide');
+				x.help.load();
+			} else {
+				clearInterval(x.timer); x.timer = null;
+			}
+		}, 10000);
 	},
 	handlers: function()
 	{
@@ -58,6 +62,8 @@ var support = {
 			x.help.create_save();
 		}).on('click', '.close', function(){
 			x.el.modal.removeClass('show open');
+
+			clearInterval(x.help.timer_open); x.help.timer_open = null;
 		}).on('keyup', '.bottom input', function(e){
 			if (e.keyCode === 13) x.help.send_message();
 		});
@@ -120,7 +126,7 @@ var support = {
 			var val = {
 				name: el.name.val().trim(),
 				desc: el.desc.val().trim(),
-				host: location.host
+				host: location.origin
 			};
 			var valid = true;
 
@@ -161,7 +167,7 @@ var support = {
 			$.post('?support/help_open_ticket', {id: id}, function(json){
 				if (json.status) {
 					var template = m.template(support.template.modal, {
-						popup_style: 'width:70%;padding-bottom:80px;',
+						popup_style: 'width:50%;padding-bottom:80px;',
 						title: x.arr[id],
 						actions: '<div class="br3 close">' + lang['global_close'] + '</div>',
 						content: $.map(json.items, function(el){
@@ -169,7 +175,7 @@ var support = {
 							if (el.readed === 0) readed = '<div class="new_message">' + lang['support_help_new_message'] + '</div>';
 
 							return readed + '<div class="i">\
-								<div class="info">' + el.user + ', ' + el.date + '</div>\
+								<div class="info">' + el.user + ', ' + moment(el.date*1000).format('M.D.Y H:m') + '</div>\
 								<div class="desc">' + el.desc + '</div>\
 							</div>';
 						}).join(''),
@@ -182,9 +188,34 @@ var support = {
 					support.el.modal.html(template).addClass('open');
 
 					var new_message = $('.new_message', support.el.modal);
-					var scroll = new_message.length ? new_message.position().top : $('.wrapper .i', support.el.modal).eq(-1).position().top;
+					var scroll = new_message.length ? new_message.position().top : 9999999;
 					$('.wrapper', support.el.modal).scrollTop(scroll);
+					if (scroll === 9999999) x.scroll_max = $('.wrapper', support.el.modal).scrollTop();
 					$('input', support.el.modal).focus();
+
+					x.timer_open = setInterval(function(){
+						$.post('?support/help_get_new_message', {id: id}, function(json){
+							if (json.status) {
+								var scroll = $('.wrapper', support.el.modal).scrollTop();
+
+								$('.wrapper', support.el.modal).append($.map(json.items, function(el){
+									return '<div class="i">\
+										<div class="info">' + el.user + ', ' + moment(el.date*1000).format('M.D.Y H:m') + '</div>\
+										<div class="desc">' + el.desc + '</div>\
+									</div>';
+								}).join(''));
+
+								if (json.items.length) {
+									if (x.scroll_max <= scroll) {
+										$('.wrapper', support.el.modal).scrollTop(9999999);
+										x.scroll_max = $('.wrapper', support.el.modal).scrollTop();
+									} else {
+										// show notify about new message
+									}
+								}
+							}
+						}, 'json');
+					}, 5000);
 				}
 			}, 'json');
 		},
@@ -197,10 +228,11 @@ var support = {
 			if (val) {
 				input.val('');
 				var i = $('<div class="i">\
-					<div class="info">' + users.arr[users.logged].fname + ', ' + (+new Date()) + '</div>\
+					<div class="info">' + users.arr[users.logged].fname + ', ' + moment().format('M.D.Y H:m') + '</div>\
 					<div class="desc">' + val + '</div>\
 				</div>');
-				$('.wrapper', support.el.modal).append(i).scrollTop(999999);
+				$('.wrapper', support.el.modal).append(i).scrollTop(9999999);
+				x.scroll_max = $('.wrapper', support.el.modal).scrollTop();
 
 				$.post('?support/help_send_message', {ticket: x.ticket, message: val}, function(json){
 					// check sending
