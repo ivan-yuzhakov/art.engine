@@ -1,5 +1,8 @@
 /*
 	User permissions:
+	0 - Site user without login
+	1 - Site user with login
+	2 - ?
 	3 - Access to all data
 	4 - Administrator
 */
@@ -20,7 +23,8 @@ var users = {
 
 		x.template = {};
 		x.template.item = $('.overview', x.el.list).html();
-		$('.overview', x.el.list).empty().text('{{item}}');
+		$('.overview', x.el.list).eq(0).empty().text('{{item_admin}}');
+		$('.overview', x.el.list).eq(1).empty().text('{{item_site}}');
 		x.template.list = x.el.list.html();
 		x.el.list.empty();
 		x.template.form = x.el.form.html();
@@ -56,6 +60,7 @@ var users = {
 		var x = this;
 
 		x.el.list.on('click', '.header .create', function(){
+			x.parent = $(this).parents('.items').attr('parent');
 			x.add();
 		}).on('click', '.item .remove', function(){
 			var th = $(this).parent();
@@ -88,12 +93,6 @@ var users = {
 			items: '.item',
 			axis: 'y',
 			update: function(e, ui){
-				var parent = ui.item.parents('.items');
-
-				x.sort = $('.item', parent).map(function(){
-					return $(this).attr('id');
-				}).get();
-
 				x.set_sorting();
 			}
 		});
@@ -102,20 +101,25 @@ var users = {
 	{
 		var x = this;
 
-		var child = $.map(x.sort, function(id){
+		var childs_a = [];
+		var childs_s = [];
+
+		$.each(x.sort, function(i, id){
 			if (id && x.arr[id]) {
-				return m.template(x.template.item, {
+				var html = m.template(x.template.item, {
 					id: id,
 					title: x.arr[id].fname + ' ' + x.arr[id].lname,
 					ne: x.logged !== 1 && x.logged != id ? 'ne' : '',
 					nd: x.logged == id || x.logged !== 1 ? 'nd' : '',
 					logged: x.logged == id ? 'logged' : ''
 				});
+				(x.arr[id].access === 1 ? childs_s : childs_a).push(html);
 			}
-		}).join('');
+		});
 		var html = m.template(x.template.list, {
 			create: x.logged === 1 ? '' : 'hide',
-			item: child
+			item_admin: childs_a.join(''),
+			item_site: childs_s.join('')
 		});
 
 		x.el.list.html(html);
@@ -134,8 +138,7 @@ var users = {
 		x.mode = 0;
 
 		var html = m.template(x.template.form, {
-			title: lang['users_create_user'],
-			access: ''
+			title: x.parent === 'users_administrative' ? lang['users_create_user_a'] : lang['users_create_user_s']
 		});
 
 		x.el.form.html(html);
@@ -153,8 +156,7 @@ var users = {
 		x.mode = id;
 
 		var html = m.template(x.template.form, {
-			title: vsprintf(lang['users_edit_user'], [x.arr[id].fname]),
-			access: x.mode === 1 || x.logged === id ? 'hide' : ''
+			title: vsprintf(lang['users_edit_user'], [x.arr[id].fname])
 		});
 
 		x.el.form.html(html);
@@ -170,7 +172,6 @@ var users = {
 		$('#address_1', x.el.form).val(arr.address_1);
 		$('#address_2', x.el.form).val(arr.address_2);
 		$('#company', x.el.form).val(arr.company);
-		$('.field.select p[data="' + arr.access + '"]', x.el.form).addClass('active').siblings().removeClass('active');
 
 		fields.types.tinymce.item_add($('.field.tinymce .group', x.el.form), arr.desc, null, 'users');
 		fields.types.file.item_add($('.field.file .group', x.el.form), arr.image, null, 'users');
@@ -197,7 +198,7 @@ var users = {
 			company: $('#company', x.el.form).val().trim(),
 			desc: fields.types.tinymce.item_save($('.field.tinymce .group', x.el.form)),
 			image: fields.types.file.item_save($('.field.file .group', x.el.form)),
-			access: x.mode === 1 ? 4 : x.logged === x.mode ? x.access : $('.field.select p.active', x.el.form).attr('data')
+			access: x.mode === 1 ? 4 : x.logged === x.mode ? x.access : x.parent === 'users_administrative' ? 3 : 1
 		};
 
 		if (!data.login) {
@@ -224,16 +225,17 @@ var users = {
 			if (json.status) {
 				if (x.mode) {
 					$.extend(x.arr[x.mode], data);
+					x.draw();
 				} else {
 					x.mode = data.id = json.id;
 					x.arr[x.mode] = data;
 					x.sort.push(x.mode);
+					x.draw();
 					x.set_sorting();
 				}
 				loader.hide();
 
-				if (close) x.close()
-				x.draw();
+				if (close) x.close();
 			} else {
 				m.report(url, data, JSON.stringify(json));
 				loader.hide();
@@ -262,11 +264,10 @@ var users = {
 				$.post('?members/remove', {id: id}, function(json){
 					if (json.status) {
 						delete x.arr[id];
-						var k = $.inArray(id, x.sort);
-						if (k > -1) x.sort.splice(k, 1);
+						el.remove();
 
-						x.draw();
 						x.set_sorting();
+						x.draw();
 					} else {
 						m.report('members/remove', {id: id}, JSON.stringify(json));
 					}
@@ -280,6 +281,10 @@ var users = {
 	set_sorting: function()
 	{
 		var x = this;
+
+		x.sort = $('.item', x.el.list).map(function(){
+			return +$(this).attr('data');
+		}).get();
 
 		$.post('?members/set_sort', {sort: x.sort.join(',')}, function(json){}, 'json');
 	},

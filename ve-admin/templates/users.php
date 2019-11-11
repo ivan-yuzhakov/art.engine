@@ -1,9 +1,24 @@
 <div id="users">
 	<div class="list animate">
-		<div class="items animate2 box" parent="users">
+		<div class="items animate2 box" parent="users_administrative">
 			<div class="header">
 				<div class="br3 animate create {{create}}"><?php echo $lang['users_create']; ?></div>
-				<div class="title"><?php echo $lang['users']; ?></div>
+				<div class="title"><?php echo $lang['users_administrative']; ?></div>
+			</div>
+			<div class="scroll">
+				<div class="viewport"><div class="overview">
+					<div class="item br3 animate {{ne}} {{nd}} {{logged}}" data="{{id}}">
+						<p class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></p>
+						<p class="title">{{title}}</p>
+					</div>
+				</div></div>
+				<div class="scrollbar animate"><div class="track"><div class="thumb"></div></div></div>
+			</div>
+		</div>
+		<div class="items animate2 box" parent="users_site">
+			<div class="header">
+				<div class="br3 animate create {{create}}"><?php echo $lang['users_create']; ?></div>
+				<div class="title"><?php echo $lang['users_site']; ?></div>
 			</div>
 			<div class="scroll">
 				<div class="viewport"><div class="overview">
@@ -106,16 +121,6 @@
 					<div class="head"><p><?php echo $lang['users_input_company']; ?></p></div>
 					<div class="group">
 						<input id="company" class="br3 box animate1" type="text" value="">
-					</div>
-				</div>
-			</div>
-			<div class="container system {{access}}">
-				<div class="field select">
-					<div class="head"><p><?php echo $lang['users_input_access']; ?></p></div>
-					<div class="group">
-						<p class="animate1 br3 active" data="1"><?php echo $lang['users_input_access1']; ?></p>
-						<p class="animate1 br3" data="3"><?php echo $lang['users_input_access3']; ?></p>
-						<div class="clr"></div>
 					</div>
 				</div>
 			</div>

@@ -24,18 +24,18 @@ if ($section === 'members')
 	{
 		if ($visitor->id == 1) {
 			$data = [
-				'login'    => $_POST['login'],
-				'password' => sha1($_POST['password'] . SALT),
+				'login'     => $_POST['login'],
+				'password'  => sha1($_POST['password'] . SALT),
 				'fname'     => $_POST['fname'],
 				'lname'     => $_POST['lname'],
-				'phone'    => $_POST['phone'],
+				'phone'     => $_POST['phone'],
 				'email'     => $_POST['email'],
-				'image'    => (int) $_POST['image'],
-				'desc'     => $_POST['desc'],
-				'company'  => $_POST['company'],
+				'image'     => (int) $_POST['image'],
+				'desc'      => $_POST['desc'],
+				'company'   => $_POST['company'],
 				'address_1' => $_POST['address_1'],
 				'address_2' => $_POST['address_2'],
-				'access'   => $_POST['access']
+				'access'    => $_POST['access']
 			];
 
 			$json['id'] = $db->insert('members', $data, __FILE__, __LINE__);
@@ -52,17 +52,17 @@ if ($section === 'members')
 	{
 		if ($visitor->id == 1 || $visitor->id == $_POST['id']) {
 			$data = [
-				'login'  => $_POST['login'],
-				'desc'   => $_POST['desc'],
-				'image'  => $_POST['image'],
-				'email'   => $_POST['email'],
-				'phone'  => $_POST['phone'],
-				'fname'   => $_POST['fname'],
-				'lname'   => $_POST['lname'],
-				'company' => $_POST['company'],
-				'address_1'  => $_POST['address_1'],
-				'address_2'  => $_POST['address_2'],
-				'access' => $_POST['access']
+				'login'     => $_POST['login'],
+				'desc'      => $_POST['desc'],
+				'image'     => $_POST['image'],
+				'email'     => $_POST['email'],
+				'phone'     => $_POST['phone'],
+				'fname'     => $_POST['fname'],
+				'lname'     => $_POST['lname'],
+				'company'   => $_POST['company'],
+				'address_1' => $_POST['address_1'],
+				'address_2' => $_POST['address_2'],
+				'access'    => $_POST['access']
 			];
 			if (!empty($_POST['password'])) {
 				$data['password'] = sha1($_POST['password'] . SALT);
