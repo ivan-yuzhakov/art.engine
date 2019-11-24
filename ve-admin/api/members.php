@@ -1,31 +1,112 @@
 <?php
 if ($section === 'members')
 {
-	if ($query === 'get')
+	function generate(){
+		global $db;
+
+		$chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+		$numChars = strlen($chars);
+		$salt = '';
+
+		for ($i = 0; $i < 6; $i++) {
+			$salt .= substr($chars, rand(1, $numChars) - 1, 1);
+		}
+
+		$items = $db->select('members', ['id'], ['salt' => $salt], __FILE__, __LINE__);
+
+		if (empty($items)) {
+			return $salt;
+		} else {
+			return generate();
+		}
+	}
+
+	if ($query === 'get_list')
 	{
 		$users = $db->select('members', '*', [], __FILE__, __LINE__);
 		$users = array_map(function($user){
 			unset($user['password']);
+			unset($user['salt']);
 			return $user;
 		}, $users);
 		$users = array_column($users, null, 'id');
 
-		$sorting = $db->select('settings', ['value'], ['variable' => 'sort_users_root'], __FILE__, __LINE__);
-		$sorting = $sorting[0]['value'];
+		$groups = $db->select('members_groups', '*', [], __FILE__, __LINE__);
+		$groups = array_column($groups, null, 'id');
+
+		$u_sorting = $db->select('settings', ['value'], ['variable' => ['sort_users_groups', 'sort_users_root']], __FILE__, __LINE__);
+		$g_sorting = $u_sorting[0]['value'];
+		$u_sorting = $u_sorting[1]['value'];
 
 		json([
-			'members' => $users,
+			'users' => $users,
+			'groups' => $groups,
 			'logged' => $visitor->id,
-			'sorting' => $sorting
+			'g_sorting' => $g_sorting,
+			'u_sorting' => $u_sorting
 		]);
+	}
+
+	if ($query === 'groups_add')
+	{
+		if ($visitor->id == 1) {
+			$data = [
+				'title' => $_POST['title'],
+				'type'  => $_POST['type']
+			];
+
+			$json['id'] = $db->insert('members_groups', $data, __FILE__, __LINE__);
+			$json['status'] = $json['id'] ? true : false;
+		} else {
+			$json['status'] = false;
+			$json['error'] = 'You do not have permission';
+		}
+
+		json($json);
+	}
+
+	if ($query === 'groups_edit')
+	{
+		if ($visitor->id == 1) {
+			$data = [
+				'title' => $_POST['title']
+			];
+
+			$result = $db->update('members_groups', $data, 'id', $_POST['id'], __FILE__, __LINE__);
+
+			$json['status'] = $result ? true : false;
+		} else {
+			$json['status'] = false;
+			$json['error'] = 'You do not have permission';
+		}
+
+		json($json);
+	}
+
+	if ($query === 'groups_remove')
+	{
+		$id = (int) $_POST['id'];
+
+		if ($visitor->id === 1) {
+			$result = $db->delete('members_groups', 'id', $id, __FILE__, __LINE__);
+
+			$json['status'] = $result ? true : false;
+		} else {
+			$json['status'] = false;
+			$json['error'] = 'You do not have permission';
+		}
+
+		json($json);
 	}
 
 	if ($query === 'add')
 	{
 		if ($visitor->id == 1) {
+			$salt = generate();
 			$data = [
 				'login'     => $_POST['login'],
-				'password'  => sha1($_POST['password'] . SALT),
+				'password'  => sha1($_POST['password'] . SALT . $salt),
+				'salt'      => $salt,
 				'fname'     => $_POST['fname'],
 				'lname'     => $_POST['lname'],
 				'phone'     => $_POST['phone'],
@@ -35,7 +116,8 @@ if ($section === 'members')
 				'company'   => $_POST['company'],
 				'address_1' => $_POST['address_1'],
 				'address_2' => $_POST['address_2'],
-				'access'    => $_POST['access']
+				'access'    => $_POST['access'],
+				'groups'    => $_POST['groups']
 			];
 
 			$json['id'] = $db->insert('members', $data, __FILE__, __LINE__);
@@ -62,10 +144,13 @@ if ($section === 'members')
 				'company'   => $_POST['company'],
 				'address_1' => $_POST['address_1'],
 				'address_2' => $_POST['address_2'],
-				'access'    => $_POST['access']
+				'access'    => $_POST['access'],
+				'groups'    => $_POST['groups']
 			];
 			if (!empty($_POST['password'])) {
-				$data['password'] = sha1($_POST['password'] . SALT);
+				$salt = generate();
+				$data['salt'] = $salt;
+				$data['password'] = sha1($_POST['password'] . SALT . $salt);
 			}
 
 			$result = $db->update('members', $data, 'id', $_POST['id'], __FILE__, __LINE__);
@@ -101,8 +186,9 @@ if ($section === 'members')
 	if ($query === 'set_sort')
 	{
 		$sort = $_POST['sort'];
+		$s = $_POST['s'];
 
-		$db->update('settings', ['value' => $sort], 'variable', 'sort_users_root', __FILE__, __LINE__);
+		$db->update('settings', ['value' => $sort], 'variable', ($s === 'users' ? 'sort_users_root' : 'sort_users_groups'), __FILE__, __LINE__);
 
 		json(['status' => true]);
 	}

@@ -115,17 +115,20 @@ class Visitor
 	{
 		global $db;
 
-		$arr = $db->select('members', '*', [
-			'login'    => $login,
-			'password' => sha1($password . SALT),
+		$users = $db->select('members', ['id', 'password', 'salt'], [
+			'login'  => $login,
 			'access' => [2, 3, 4]
 		], __FILE__, __LINE__);
 
-		if (!empty($arr)) {
-			$_SESSION['id'] = (int) $arr[0]['id'];
-			$_SESSION['ip'] = $this->ip;
+		foreach ($users as $user) {
+			$pass = sha1($password . SALT . $user['salt']);
 
-			return true;
+			if ($pass === $user['password']) {
+				$_SESSION['id'] = $user['id'];
+				$_SESSION['ip'] = $this->ip;
+
+				return true;
+			}
 		}
 
 		return false;

@@ -1,13 +1,13 @@
 <div id="users">
 	<div class="list animate">
-		<div class="items animate2 box" parent="users_administrative">
+		<div class="items animate2 box" parent="a_groups">
 			<div class="header">
-				<div class="br3 animate create {{create}}"><?php echo $lang['users_create']; ?></div>
-				<div class="title"><?php echo $lang['users_administrative']; ?></div>
+				<?php if ($visitor->id === 1) echo '<div class="br3 animate create">' . $lang['users_create_group'] . '</div>'; ?>
+				<div class="title"><?php echo $lang['users_a_groups']; ?></div>
 			</div>
 			<div class="scroll">
 				<div class="viewport"><div class="overview">
-					<div class="item br3 animate {{ne}} {{nd}} {{logged}}" data="{{id}}">
+					<div class="g br3 animate {{n}}" data="{{id}}" title="ID {{id}}">
 						<p class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></p>
 						<p class="title">{{title}}</p>
 					</div>
@@ -15,14 +15,44 @@
 				<div class="scrollbar animate"><div class="track"><div class="thumb"></div></div></div>
 			</div>
 		</div>
-		<div class="items animate2 box" parent="users_site">
+		<div class="items animate2 box" parent="a_users">
 			<div class="header">
-				<div class="br3 animate create {{create}}"><?php echo $lang['users_create']; ?></div>
-				<div class="title"><?php echo $lang['users_site']; ?></div>
+				<?php if ($visitor->id === 1) echo '<div class="br3 animate create">' . $lang['users_create_user'] . '</div>'; ?>
+				<div class="title"><?php echo $lang['users_a_users']; ?></div>
 			</div>
 			<div class="scroll">
 				<div class="viewport"><div class="overview">
-					<div class="item br3 animate {{ne}} {{nd}} {{logged}}" data="{{id}}">
+					<div class="i br3 animate {{ne}} {{nd}} {{logged}}" data="{{id}}" title="ID {{id}}">
+						<p class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></p>
+						<p class="title">{{title}}</p>
+					</div>
+				</div></div>
+				<div class="scrollbar animate"><div class="track"><div class="thumb"></div></div></div>
+			</div>
+		</div>
+		<div class="items animate2 box" parent="s_groups">
+			<div class="header">
+				<?php if ($visitor->id === 1) echo '<div class="br3 animate create">' . $lang['users_create_group'] . '</div>'; ?>
+				<div class="title"><?php echo $lang['users_s_groups']; ?></div>
+			</div>
+			<div class="scroll">
+				<div class="viewport"><div class="overview">
+					<div class="g br3 animate {{n}}" data="{{id}}" title="ID {{id}}">
+						<p class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></p>
+						<p class="title">{{title}}</p>
+					</div>
+				</div></div>
+				<div class="scrollbar animate"><div class="track"><div class="thumb"></div></div></div>
+			</div>
+		</div>
+		<div class="items animate2 box" parent="s_users">
+			<div class="header">
+				<?php if ($visitor->id === 1) echo '<div class="br3 animate create">' . $lang['users_create_user'] . '</div>'; ?>
+				<div class="title"><?php echo $lang['users_s_users']; ?></div>
+			</div>
+			<div class="scroll">
+				<div class="viewport"><div class="overview">
+					<div class="i br3 animate {{ne}} {{nd}} {{logged}}" data="{{id}}" title="ID {{id}}">
 						<p class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></p>
 						<p class="title">{{title}}</p>
 					</div>
@@ -122,6 +152,12 @@
 					<div class="group">
 						<input id="company" class="br3 box animate1" type="text" value="">
 					</div>
+				</div>
+			</div>
+			<div class="container system">
+				<div class="field checkbox">
+					<div class="head"><p><?php echo $lang['users_input_groups']; ?></p></div>
+					<div class="group">{{groups}}<div class="clr"></div></div>
 				</div>
 			</div>
 		</div>
