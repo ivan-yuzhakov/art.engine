@@ -1363,9 +1363,9 @@ var fields = {
 				return '';
 			},
 			item_add: function(parent, value){
-				parent.append($.map(users.arr, function(el, i){
-					if (el && i != 1 && i != '#') {
-						var active = i === +value ? ' active' : '';
+				parent.append($.map(users.arr.users, function(el, i){
+					if (el && el.id !== 1) {
+						var active = el.id === value ? ' active' : '';
 						return '<p class="br3 animate1' + active + '" data="' + i + '">' + el.fname + '</p>';
 					}
 				}).join('') + '<div class="clr"></div>');
@@ -1375,20 +1375,14 @@ var fields = {
 				});
 			},
 			item_save: function(parent){
-				return +$('p.active', parent).attr('data') || '';
+				return +$('p.active', parent).attr('data') || 0;
 			},
 			bases: {
 				view: function(str){
-					var str = str ? str.split(';') : [];
-					return $.map(str, function(id){
-						if (users.arr[id]) return users.arr[id].fname;
-					}).join(', ').short(100, ',');
+					if (users.arr.users[str]) return users.arr.users[str].fname;
 				},
 				sort: function(str){
-					var str = str ? str.split(';') : [];
-					return $.map(str, function(id){
-						if (users.arr[id]) return users.arr[id].fname;
-					}).join(', ');
+					if (users.arr.users[str]) return users.arr.users[str].fname;
 				}
 			}
 		},

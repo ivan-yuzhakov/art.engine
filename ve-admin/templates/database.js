@@ -1819,7 +1819,10 @@ var database = {
 							});
 							var d = '';
 							$.each($.parseJSON(el[5] || '{}'), function(i, el){
-								if (el && fields.arr.fields[i]) d += '<p><b>' + fields.arr.fields[i].private_title + ':</b> ' + el + '</p>';
+								if (el && fields.arr.fields[i]) {
+									var type = fields.arr.fields[i].type;
+									d += '<p><b>' + fields.arr.fields[i].private_title + ':</b> ' + fields.types[type].bases.view(el) + '</p>';
+								}
 							});
 							
 							childs.append('<div class="c">\
