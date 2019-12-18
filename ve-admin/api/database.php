@@ -86,6 +86,82 @@ if ($section === 'database')
 		json(['status' => true]);
 	}
 
+	if ($query === 'search')
+	{
+		$text = explode(' ', $_POST['text']);
+		$ids = [];
+
+		$new_text = [];
+		foreach ($text as $t) {
+			$new_text[] = '%' . $t . '%';
+		}
+
+		$items = $db->search('editions_items', ['edition'], [['fields' => $new_text, 'captions' => $new_text, 'note' => $new_text]], __FILE__, __LINE__);
+		$items = array_map(function($i){
+			return $i['edition'];
+		}, $items);
+		$items = array_unique($items);
+		$items = array_values($items);
+
+		$database = $db->select('database', ['id', 'private_title', 'public_title', 'fields'], ['del' => 0], __FILE__, __LINE__);
+		foreach ($database as $dbi) {
+			$public_title = json_decode($dbi['public_title'], true);
+			$public_title = array_map(function($t){
+				return $t;
+			}, $public_title);
+			$fields = json_decode($dbi['fields'], true);
+			$fields = array_map(function($f){
+				return implode(' ', $f);
+			}, $fields);
+
+			$vals = [$dbi['id'], $dbi['private_title'], implode(' ', $public_title), implode(' ', $fields)];
+			$vals = implode(' ', $vals);
+			$vals = strtolower($vals);
+
+			$find = false;
+
+			foreach ($text as $t) {
+				$pos = strpos($vals, $t);
+				if ($pos !== false) {
+					$find = true;
+					break;
+				}
+			}
+
+			if ($find) {
+				$ids[] = $dbi['id'];
+			} else {
+				$editions = $db->select('editions', ['id', 'title'], ['item' => $dbi['id']], __FILE__, __LINE__);
+				$vals = array_map(function($e){
+					return $e['title'];
+				}, $editions);
+				$vals = implode(' ', $vals);
+				$vals = strtolower($vals);
+
+				foreach ($text as $t) {
+					$pos = strpos($vals, $t);
+					if ($pos !== false) {
+						$find = true;
+						break;
+					}
+				}
+
+				if ($find) {
+					$ids[] = $dbi['id'];
+				} else {
+					foreach ($editions as $ed) {
+						if (in_array($ed['id'], $items)) {
+							$ids[] = $dbi['id'];
+							break;
+						}
+					}
+				}
+			}
+		}
+
+		json(['status' => true, 'ids' => $ids]);
+	}
+
 	if ($query === 'items_add')
 	{
 		$data = [
@@ -750,7 +826,8 @@ if ($section === 'database')
 
 		$id = $db->insert('editions', [
 			'item' => $item,
-			'title' => $title
+			'title' => $title,
+			'count' => $count
 		], __FILE__, __LINE__);
 
 		function generate(){

@@ -57,7 +57,7 @@
 
 #database .list .items{height:100%;padding:0 40px;position:relative;overflow:hidden;overflow-y:auto;}
 
-#database .list .items .table{margin-bottom:40px;background:#fff;border:1px solid #ddd;border-top:none;}
+#database .list .items .table{margin-bottom:40px;position:relative;background:#fff;border:1px solid #ddd;border-top:none;}
 #database .list .items .table .item{border-top:1px solid #ddd;display:flex;justify-content:space-between;cursor:pointer;}
 #database .list .items .table .item.nr{background:#eee;}
 #database .list .items .table .item.edited{background:#bfb;}
@@ -88,8 +88,9 @@
 #database .list .items .table .item.head > div.image{height:auto;}
 #database .list .items .table .item.head > div.actions{height:auto;}
 #database .list .items .table .empty{padding:20px;border-top:1px solid #ddd;text-align:center;}
+#database .list .items .table .load{width:100%;height:100%;position:absolute;top:0;left:0;background-color:rgba(0,0,0,.7);}
 
-#database .list .items .grid{margin:0 -20px;display:flex;flex-wrap:wrap;align-content:flex-start;}
+#database .list .items .grid{margin:0 -20px;position:relative;display:flex;flex-wrap:wrap;align-content:flex-start;}
 #database .list .items .grid .item{width:20%;margin-bottom:40px;}
 #database .list .items .grid .item .inner{margin:0 20px;position:relative;background:#fff;border:1px solid #ddd;overflow:hidden;cursor:pointer;}
 #database .list .items .grid .item.nr .inner{background:#eee;}
@@ -119,6 +120,7 @@
 #database .list .items .grid .item .remove:hover{background:#f55;}
 #database .list .items .grid .item .remove svg{width:100%;display:block;fill:#fff;}
 #database .list .items .grid .empty{width:100%;margin:0 20px;padding:20px;background:#fff;border:1px solid #ddd;text-align:center;}
+#database .list .items .grid .load{width:100%;height:100%;position:absolute;top:0;left:0;background-color:rgba(0,0,0,.7);}
 
 @-webkit-keyframes database_finded{
 	0% {background:#fff;}

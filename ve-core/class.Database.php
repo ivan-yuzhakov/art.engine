@@ -221,5 +221,73 @@ class Database
 
 		return $result;
 	}
+
+	function search($db_name, $fields = '*', $where = [], $file = null, $line = null)
+	{
+		$query_fields = $fields;
+		if (is_array($query_fields)) {
+			$query_fields = array_map(function($field){
+				return '`' . $field . '`';
+			}, $query_fields);
+			$query_fields = implode(',', $query_fields);
+		}
+
+		$type = [];
+		$args = [];
+
+		if (empty($where)) {
+			$sql = '';
+		} else {
+			$sql = [];
+			foreach ($where as $key => $value) {
+				if (is_int($key)) {
+					$str = [];
+					foreach ($value as $i => $v) {
+						if (is_array($v)) {
+							foreach ($v as $ind => $val) {
+								$str[] = '`' . $i . '` LIKE ?';
+								$type[] = is_int($val) ? 'i' : 's';
+								$args[] = &$where[$key][$i][$ind];
+							}
+						} else {
+							$str[] = '`' . $i . '` LIKE ?';
+							$type[] = is_int($v) ? 'i' : 's';
+							$args[] = &$where[$key][$i];
+						}
+					}
+					$sql[] = '(' . implode(' OR ', $str) . ')';
+				} else {
+					if (is_array($value)) {
+						$str = [];
+						foreach ($value as $i => $v) {
+							$str[] = '`' . $key . '` = ?';
+							$type[] = is_int($v) ? 'i' : 's';
+							$args[] = &$where[$key][$i];
+						}
+						$sql[] = '(' . implode(' OR ', $str) . ')';
+					} else {
+						$sql[] = '`' . $key . '` = ?';
+						$type[] = is_int($value) ? 'i' : 's';
+						$args[] = &$where[$key];
+					}
+				}
+			}
+			$sql = ' WHERE ' . implode(' AND ', $sql);
+		}
+
+		$stmt = $this->prepare('SELECT ' . $query_fields . ' FROM `prefix_' . $db_name . '`' . $sql, $type, $args, $file, $line);
+
+		$result = $stmt->get_result();
+		$stmt->close();
+
+		$arr = [];
+		if ($result->num_rows > 0) {
+			while ($row = $result->fetch_assoc()) {
+				$arr[] = $row;
+			}
+		}
+
+		return $arr;
+	}
 }
 ?>

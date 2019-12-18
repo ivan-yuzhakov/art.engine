@@ -87,33 +87,12 @@ var database = {
 		});
 
 		// filter start
-		if (x.filter.use) {
-			var items = items_full.filter(function(el) {
-				var valid = true;
-				var vars = $.map(x.config.display, function(id){
-					if (id) {
-						if (typeof id === 'number' && $.inArray(el, x.config.unique) < 0) {
-							if (fields.arr.fields[id]) {
-								var type = fields.arr.fields[id].type;
-								return fields.types[type].bases.view(el.fields[id] || '', id);
-							}
-						} else {
-							if (id === 'id') return el.id;
-							if (id === 'image') return el.image;
-							if (id === 'uid') return el.uid;
-							if (id === 'title') return el.private_title + ' ' + el.public_title;
-						}
-					}
-				}).join(' ').toLowerCase();
-
-				$.each(x.filter.text.split(' '), function(i, text){
-					if (vars.indexOf(text) === -1) valid = false;
-				});
-
-				return valid;
-			});
-		} else {
+		if (x.filter.ids === false) {
 			var items = items_full;
+		} else {
+			var items = items_full.filter(function(el) {
+				return !!($.inArray(el.id, x.filter.ids) + 1);
+			});
 		}
 		// filter end
 
@@ -208,7 +187,7 @@ var database = {
 						if (typeof id === 'number') {
 							if (fields.arr.fields[id]) {
 								var type = fields.arr.fields[id].type;
-								var value = $.inArray(id, x.config.unique) < 0 ? fields.types[type].bases.view(el.fields[id] || '', id) : '';
+								var value = $.inArray(id, x.config.unique) < 0 || !!el.unique ? fields.types[type].bases.view(el.fields[id] || '', id) : '';
 
 								return m.template(template, {
 									type: 'f f_' + id + ' f_' + type,
@@ -274,7 +253,7 @@ var database = {
 					if (typeof id === 'number') {
 						if (fields.arr.fields[id]) {
 							var type = fields.arr.fields[id].type;
-							var value = $.inArray(id, x.config.unique) < 0 ? fields.types[type].bases.view(el.fields[id] || '', id) : '';
+							var value = $.inArray(id, x.config.unique) < 0 || !!el.unique ? fields.types[type].bases.view(el.fields[id] || '', id) : '';
 
 							return m.template(template_info, {
 								title: fields.arr.fields[id].private_title,
@@ -340,19 +319,32 @@ var database = {
 			$('.header .remove', x.el.list).toggle(!!length);
 		};
 		x.filter = {
-			text: '',
-			use: false,
+			ids: false,
 			change: function(){
 				var s = this;
 
 				var parent = $('.header .filter', x.el.list);
 
-				s.text = $('input', parent).val().trim().toLowerCase();
-				s.use = !!s.text;
+				var text = $('input', parent).val().trim().toLowerCase();
 
-				$('.clear, .count', parent).toggleClass('show', s.use);
+				if (text === s.old) return false;
+				s.old = text;
 
-				x.draw_items();
+				$('.clear, .count', parent).toggleClass('show', !!text);
+				s.ids = text ? [] : false;
+
+				if (s.ajax) s.ajax.abort();
+				if (text) {
+					$('.items .' + x.config.view, x.el.list).append('<div class="load"></div>');
+					s.ajax = $.post('?database/search', {text: text}, function(json){
+						if (json.status) {
+							s.ids = json.ids;
+							x.draw_items();
+						}
+					});
+				} else {
+					x.draw_items();
+				}
 			},
 			set: function(counts){
 				$('.header .filter .count', x.el.list).text(counts.join(' / '));
@@ -482,7 +474,10 @@ var database = {
 		}).on('click', '.header .pdf', function(){
 			x.pdf.init();
 		}).on('keyup', '.header .filter input', function(){
-			x.filter.change();
+			clearTimeout(x.timer); x.timer = null;
+			x.timer = setTimeout(function(){
+				x.filter.change();
+			}, 500);
 		}).on('click', '.header .filter .clear', function(){
 			$('.header .filter input', x.el.list).val('');
 			x.filter.change();
@@ -1273,7 +1268,7 @@ var database = {
 				items.push('<div class="item animate1 br3 box" data="' + el.id + '">\
 					<div class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>\
 					<div class="edit"><svg viewBox="0 0 32 32"><path d="M 30.122,30.122L 28.020,23.778L 11.050,6.808L 10,7.858L 6.808,11.050L 23.778,28.020 zM 3.98,8.222L 8.222,3.98l-2.1-2.1c-1.172-1.172-3.070-1.172-4.242,0c-1.172,1.17-1.172,3.072,0,4.242 L 3.98,8.222z"></path></svg></div>\
-					<div class="title">' + el.title + '</div>\
+					<div class="title">' + el.title + ' (' + el.count + ' items)</div>\
 					<div class="loader"></div>\
 				</div>');
 			});
@@ -1751,7 +1746,7 @@ var database = {
 			setTimeout(function(){
 				$.post('?database/edition_get_editions/', {id: id}, function(json){
 					var editions = $.map(json.items, function(el){
-						return '<div class="e br3" data="' + el.id + '">' + el.title + '</div>';
+						return '<div class="e br3" data="' + el.id + '">' + el.title + ' (' + el.count + ' items)</div>';
 					}).join('');
 
 					var template = m.template(x.template, {
@@ -1821,7 +1816,7 @@ var database = {
 							$.each($.parseJSON(el[5] || '{}'), function(i, el){
 								if (el && fields.arr.fields[i]) {
 									var type = fields.arr.fields[i].type;
-									d += '<p><b>' + fields.arr.fields[i].private_title + ':</b> ' + fields.types[type].bases.view(el) + '</p>';
+									d += '<p><b>' + fields.arr.fields[i].private_title + ':</b> ' + fields.types[type].bases.view(el, i) + '</p>';
 								}
 							});
 							
@@ -2201,7 +2196,7 @@ var database = {
 							$.post('?database/edition_get_editions', {id: id}, function(json){
 								var editions = [];
 								$.each(json.items, function(i, el){
-									editions.push('<div class="e br3" data="' + el.id + '">' + el.title + '</div>');
+									editions.push('<div class="e br3" data="' + el.id + '">' + el.title + ' (' + el.count + ' items)</div>');
 								});
 								editions = editions.join('') || '<div class="empty">' + lang['global_empty'] + '</div>';
 

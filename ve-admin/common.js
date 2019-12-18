@@ -876,6 +876,8 @@ var common = {
 
 		$.ajaxSetup({
 			error: function(jqXHR, status, error){
+				if (status === 'abort') return false;
+
 				if (jqXHR.responseText === 'AUTH_FAIL') {
 					alertify.alert(lang['global_error_session']);
 				} else {
