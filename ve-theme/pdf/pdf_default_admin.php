@@ -13,6 +13,7 @@ foreach ($items as $id => $item) {
 }
 
 $template = [
+	'debug' => false,
 	'title' => 'PDF.pdf',
 	'html' => [$html],
 	// fonts

@@ -414,18 +414,20 @@ if ($section === 'database')
 			require_once DIR_SITE . $template[1];
 		}
 		$request = isset($template['request']) ? $template['request'] : [];
+		$debug = isset($template['debug']) ? $template['debug'] : false;
 
 		json([
 			'status' => true,
-			'request' => $request
+			'request' => $request,
+			'debug' => $debug
 		]);
 	}
 
 	if ($query === 'pdf_create')
 	{
-		$ids = $_POST['items'];
-		$path = (int) $_POST['template'];
-		$lang = $_POST['lang'];
+		$ids = $_REQUEST['items'];
+		$path = (int) $_REQUEST['template'];
+		$lang = $_REQUEST['lang'];
 		$lang_default = $settings['langFrontDefault'];
 
 		$path = json_decode($settings['database'], true)['pdf_templates'][$path];
@@ -436,7 +438,6 @@ if ($section === 'database')
 			echo 'Template does not exist: ' . $path;
 			die;
 		}
-
 		$fields = $db->select('fields', ['id', 'type', 'value'], [], __FILE__, __LINE__);
 		$fields = array_column($fields, null, 'id');
 		$fields = array_map(function($field) use($lang, $lang_default) {
@@ -476,7 +477,6 @@ if ($section === 'database')
 
 			$uid = $item['uid'];
 			$image = (int) $item['image'];
-			$image = '<img src="' . $core->files->getFileUrl($image) . '">';
 			$title = $item['public_title'];
 			$title = json_decode($title, true);
 			if (isset($title[$lang])) {
@@ -499,14 +499,21 @@ if ($section === 'database')
 
 			return ['uid' => $uid, 'title' => $title, 'image' => $image] + $f;
 		}, $items);
-		$editions = $db->select('editions_items', ['id', 'captions'], ['id' => $ids_editions], __FILE__, __LINE__);
-		$editions = array_column($editions, 'captions', 'id');
+
+		if ($ids_editions) {
+			$editions = $db->select('editions_items', '*', ['id' => $ids_editions], __FILE__, __LINE__);
+			$editions = array_column($editions, null, 'id');
+		} else {
+			$editions = [];
+		}
+
 		$new_items = [];
 		foreach ($ids as $id) {
 			if (is_array($id)) {
 				foreach ($id['childs'] as $child) {
 					$new_items[$id['id'] . '_' . $child] = $items[$id['id']];
-					$fi = json_decode($editions[$child], true);
+					$new_items[$id['id'] . '_' . $child]['_edition'] = $editions[$child];
+					$fi = json_decode($editions[$child]['captions'], true);
 					foreach ($fi as $fi_id => $fi_val) {
 						$new_items[$id['id'] . '_' . $child][$fi_id] = $fi_val;
 					}
@@ -519,7 +526,7 @@ if ($section === 'database')
 
 		$replace_item = function($text, $id, $processing = []) use($items, $fields, $lang, $lang_default) {
 			// replace title, uid
-			$text = preg_replace_callback('/{{(title|uid|image)}}/', function($matches) use($items, $id) {
+			$text = preg_replace_callback('/{{(title|uid)}}/', function($matches) use($items, $id) {
 				$find = $matches[1];
 
 				return $items[$id][$find];
@@ -530,7 +537,7 @@ if ($section === 'database')
 				global $core;
 
 				$find = $matches[1];
-				$value = $items[$id][$find] ?: '';
+				$value = $items[$id][$find] ?? '';
 
 				if (isset($processing[$find])) {
 					return $processing[$find]($value, @$fields[$find]);
@@ -572,8 +579,8 @@ if ($section === 'database')
 							break;
 
 						case 'select':
-							if (isset($f_value[$value])) {
-								$value = '<span>' . $f_value[$value] . '</span>';
+							if (isset($f_value[$lang][$value])) {
+								$value = $f_value[$lang][$value];
 							}
 							break;
 
@@ -687,7 +694,9 @@ if ($section === 'database')
 		require_once DIR_SITE . 'vendor/autoload.php';
 
 		$config = array_merge([
+			'debug' => false,
 			'title' => 'PDF.pdf',
+			'orientation' => 'P', // L, P
 			'html' => [],
 			'fonts_dir' => DIR_THEME . 'fonts',
 			'fonts' => [],
@@ -704,9 +713,11 @@ if ($section === 'database')
 		$fontData = $defaultFontConfig['fontdata'];
 
 		$mpdf = new \Mpdf\Mpdf([
+			'orientation' => $config['orientation'],
 			'fontDir' => array_merge($fontDirs, [$config['fonts_dir']]),
 			'fontdata' => $fontData + $config['fonts'],
 			'default_font' => $config['default_font'],
+			'showImageErrors' => $config['debug'],
 			'setAutoTopMargin' => $config['headers'] === false ? false : 'stretch',
 			'setAutoTopMargin' => $config['footers'] === false ? false : 'stretch'
 		]);
@@ -727,6 +738,11 @@ if ($section === 'database')
 
 			$mpdf->AddPage();
 			$mpdf->WriteHTML($text);
+		}
+
+		if ($config['debug']) {
+			$mpdf->Output();
+			die;
 		}
 
 		// Add to DB

@@ -97,6 +97,14 @@ class Database
 		}
 	}
 
+	function get_ai($db_name)
+	{
+		$query = $this->query('SHOW TABLE STATUS LIKE "prefix_' . $db_name . '"');
+		$row = $query->fetch_assoc();
+
+		return (int) $row['Auto_increment'];
+	}
+
 	function select($db_name, $fields = '*', $where = [], $file = null, $line = null)
 	{
 		$query_fields = $fields;

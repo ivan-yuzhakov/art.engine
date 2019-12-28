@@ -39,7 +39,7 @@ foreach ($items as $id => $item) {
 	</div>';
 	$html .= $replace_item($text, $id, [
 		'discount' => function($item) use ($id) {
-			$discount = isset($_POST['local'][$id]['discount']) ? $_POST['local'][$id]['discount'] : '';
+			$discount = isset($_REQUEST['local'][$id]['discount']) ? $_REQUEST['local'][$id]['discount'] : '';
 			$discount = str_replace(',', '.', $discount);
 			$discount = str_replace('%', '', $discount);
 			$discount = (float) $discount;
@@ -57,13 +57,13 @@ foreach ($items as $id => $item) {
 			}
 		},
 		'tax_val' => function() use ($id) {
-			$tax = isset($_POST['local'][$id]['tax']) ? $_POST['local'][$id]['tax'] : '0';
+			$tax = isset($_REQUEST['local'][$id]['tax']) ? $_REQUEST['local'][$id]['tax'] : '0';
 			$tax = str_replace(',', '.', $tax);
 			$tax = str_replace('%', '', $tax);
 			return $tax;
 		},
 		'tax' => function($item, $fields) use ($id) {
-			$tax = isset($_POST['local'][$id]['tax']) ? $_POST['local'][$id]['tax'] : '0';
+			$tax = isset($_REQUEST['local'][$id]['tax']) ? $_REQUEST['local'][$id]['tax'] : '0';
 			$tax = str_replace(',', '.', $tax);
 			$tax = str_replace('%', '', $tax);
 
@@ -72,7 +72,7 @@ foreach ($items as $id => $item) {
 			$price = str_replace('$', '', $price);
 			$price = (float) $price;
 
-			$discount = isset($_POST['local'][$id]['discount']) ? $_POST['local'][$id]['discount'] : '';
+			$discount = isset($_REQUEST['local'][$id]['discount']) ? $_REQUEST['local'][$id]['discount'] : '';
 			$discount = str_replace(',', '.', $discount);
 			$discount = str_replace('%', '', $discount);
 			$discount = (float) $discount;
@@ -83,7 +83,7 @@ foreach ($items as $id => $item) {
 			return number_format($tax);
 		},
 		'total' => function($item, $fields) use ($id) {
-			$tax = isset($_POST['local'][$id]['tax']) ? $_POST['local'][$id]['tax'] : '0';
+			$tax = isset($_REQUEST['local'][$id]['tax']) ? $_REQUEST['local'][$id]['tax'] : '0';
 			$tax = str_replace(',', '.', $tax);
 			$tax = str_replace('%', '', $tax);
 
@@ -92,7 +92,7 @@ foreach ($items as $id => $item) {
 			$price = str_replace('$', '', $price);
 			$price = (float) $price;
 
-			$discount = isset($_POST['local'][$id]['discount']) ? $_POST['local'][$id]['discount'] : '';
+			$discount = isset($_REQUEST['local'][$id]['discount']) ? $_REQUEST['local'][$id]['discount'] : '';
 			$discount = str_replace(',', '.', $discount);
 			$discount = str_replace('%', '', $discount);
 			$discount = (float) $discount;
@@ -153,6 +153,7 @@ $html .= '
 </style>';
 
 $template = [
+	'debug' => true,
 	'title' => 'Helwaser_Gallery_Invoice_'.date('m_Y').'.pdf',
 	'html' => [$html],
 	// fonts
@@ -200,17 +201,17 @@ $template = [
 	],
 	'processing' => [
 		'address' => function($items){
-			$address = isset($_POST['global']['address']) ? $_POST['global']['address'] : '';
+			$address = isset($_REQUEST['global']['address']) ? $_REQUEST['global']['address'] : '';
 
 			return $address;
 		},
 		'bank-info' => function($items){
-			$bank_info = isset($_POST['global']['bank-info']) ? $_POST['global']['bank-info'] : '';
+			$bank_info = isset($_REQUEST['global']['bank-info']) ? $_REQUEST['global']['bank-info'] : '';
 
 			return $bank_info;
 		},
 		'terms' => function($items){
-			$terms = isset($_POST['global']['terms']) ? $_POST['global']['terms'] : '';
+			$terms = isset($_REQUEST['global']['terms']) ? $_REQUEST['global']['terms'] : '';
 
 			return $terms;
 		},

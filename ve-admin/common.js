@@ -837,8 +837,9 @@ var Tasks = (function(){
 		var f = task[0];
 
 		if (f) {
+			task.splice(0, 1);
+
 			f(function(){
-				task.splice(0, 1);
 				work = false;
 				start();
 			});
@@ -850,10 +851,15 @@ var Tasks = (function(){
 		task.push(func);
 		start();
 	};
+	var unshift = function(func){
+		task.unshift(func);
+		start();
+	}
 
 	return {
 		task: task,
-		add: add
+		add: add,
+		unshift: unshift
 	};
 })();
 

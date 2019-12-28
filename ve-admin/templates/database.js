@@ -423,22 +423,36 @@ var database = {
 					x.list_items_p[i][1] = true;
 					el[2].data('load', true);
 
-					Tasks.add(function(callback){
+					Tasks.unshift(function(callback){
 						var id = +el[2].attr('data');
 
+						var li = false;
+						var lf = false;
+
 						// image
-						var bg = $('.bg', el[2]);
-						var src = '/qrs/getfile/' + x.arr[id].image + '/200/200/0';
-						m.preload(src, function(){
-							bg.css({backgroundImage: 'url(' + src + ')'});
-							callback();
-						});
+						var image = x.arr[id].image;
+						if (image) {
+							var bg = $('.bg', el[2]);
+							var src = '/qrs/getfile/' + image + '/200/200/0';
+							m.preload(src, function(){
+								bg.css({backgroundImage: 'url(' + src + ')'});
+
+								li = true;
+								if (li && lf) callback();
+							});
+						} else {
+							li = true;
+							if (li && lf) callback();
+						}
 
 						// unique field
 						if (x.ed[id]) {
 							$.each(x.ed[id], function(i, v){
 								$('.f.f_' + i, el[2]).html(v);
 							});
+
+							lf = true;
+							if (li && lf) callback();
 						} else {
 							$.post('?database/get_itemEditions', {id: id}, function(json){
 								x.ed[id] = {};
@@ -450,6 +464,9 @@ var database = {
 									$('.f.f_' + i, el[2]).html(value);
 									x.ed[id][i] = value;
 								});
+
+								lf = true;
+								if (li && lf) callback();
 							}, 'json');
 						}
 					});
@@ -2528,6 +2545,7 @@ var database = {
 				var url = '?database/pdf_template_fields/' + x.temp.template;
 				$.get(url, function(json){
 					if (json.status) {
+						x.temp.debug = json.debug;
 						x.temp.request = json.request;
 
 						if (json.request.local && json.request.local.length) {
@@ -2685,6 +2703,11 @@ var database = {
 						return d;
 					})()
 				};
+
+				if (x.temp.debug) {
+					window.open(location.origin + location.pathname + '?database/pdf_create&' + $.param(data));
+					return false;
+				}
 
 				var url = '?database/pdf_create';
 				$.post(url, data, function(json){
