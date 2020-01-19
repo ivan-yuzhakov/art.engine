@@ -102,6 +102,24 @@
 				</label>
 				<div class="clr"></div>
 			</div>
+			<div class="edition_settings {{edition_settings}}">
+				<div class="head">
+					<div class="title"><?php echo $lang['database_editionf_title']; ?></div>
+				</div>
+				<div class="items br3">
+					<div class="col box s">{{ed_status}}</div>
+					<div class="col box f">
+						<div data="seller" content="<?php echo $lang['database_edition_childs_seller']; ?>" contenteditable="true" style="display:none;"></div>
+						<div data="client" content="<?php echo $lang['database_edition_childs_client']; ?>" contenteditable="true" style="display:none;"></div>
+						<div data="date" content="<?php echo $lang['database_edition_childs_date']; ?>" contenteditable="true" style="display:none;"></div>
+						<div data="date_start" content="<?php echo $lang['database_edition_childs_date_start']; ?>" contenteditable="true" style="display:none;"></div>
+						<div data="date_end" content="<?php echo $lang['database_edition_childs_date_end']; ?>" contenteditable="true" style="display:none;"></div>
+						<div data="location" content="<?php echo $lang['database_edition_childs_location']; ?>" contenteditable="true" style="display:none;"></div>
+						<span class="no"><?php echo $lang['database_edition_childs_nof']; ?></span>
+					</div>
+					<div class="col box n" contenteditable="true" content="Note...">{{ed_note}}</div>
+				</div>
+			</div>
 			<div class="editions {{editions}}">
 				<div class="head">
 					<div class="br3 create"><?php echo $lang['database_edition_create']; ?></div>

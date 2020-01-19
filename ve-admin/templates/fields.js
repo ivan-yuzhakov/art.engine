@@ -1371,7 +1371,7 @@ var fields = {
 				}).join('') + '<div class="clr"></div>');
 
 				parent.on('click', 'p', function(){
-					$(this).addClass('active').siblings().removeClass('active');
+					$(this).toggleClass('active').siblings().removeClass('active');
 				});
 			},
 			item_save: function(parent){
@@ -1379,10 +1379,10 @@ var fields = {
 			},
 			bases: {
 				view: function(str){
-					if (users.arr.users[str]) return users.arr.users[str].fname;
+					return users.arr.users[str] ? users.arr.users[str].fname : '';
 				},
 				sort: function(str){
-					if (users.arr.users[str]) return users.arr.users[str].fname;
+					return users.arr.users[str] ? users.arr.users[str].fname : '';
 				}
 			}
 		},

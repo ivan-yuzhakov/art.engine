@@ -582,17 +582,79 @@ var database = {
 			var public_title_val = public_title.val().trim();
 			if (!public_title_val) public_title.val(val);
 		}).on('click', '.container.system .select.type p', function(){
-			$(this).addClass('active').siblings().removeClass('active');
+			var th = $(this);
+			var data = +th.attr('data');
+			th.addClass('active').siblings().removeClass('active');
+
+			$('.edition_settings .col.s', x.el.form).html((function(){
+				var status = '';
+
+				if (data === 1) {
+					status += '<option value="1" selected>' + lang['database_edition_f_p_np'] + '</option>';
+					status += '<option value="6">' + lang['database_edition_f_p_ol'] + '</option>';
+					status += '<option value="2">' + lang['database_edition_f_p_st'] + '</option>';
+					status += '<option value="3">' + lang['database_edition_f_p_re'] + '</option>';
+					status += '<option value="4">' + lang['database_edition_f_p_so'] + '</option>';
+					status += '<option value="5">' + lang['database_edition_f_p_gi'] + '</option>';
+				}
+				if (data === 2) {
+					status += '<option value="5" selected>' + lang['database_edition_f_d_ol'] + '</option>';
+					status += '<option value="1">' + lang['database_edition_f_d_us'] + '</option>';
+					status += '<option value="2">' + lang['database_edition_f_d_re'] + '</option>';
+					status += '<option value="3">' + lang['database_edition_f_d_so'] + '</option>';
+					status += '<option value="4">' + lang['database_edition_f_d_gi'] + '</option>';
+				}
+
+				return '<select t="' + data + '">' + status + '</select>';
+			})());
+			x.edition_settings_select_change();
+
+			alertify.log(lang['database_editionf_status_type_log']);
 		}).on('click', '.container.system .select.unique p', function(){
 			var th = $(this);
 			var data = +th.attr('data');
 			th.addClass('active').siblings().removeClass('active');
+			$('.edition_settings', x.el.form).toggleClass('hide', !data);
 			if (x.mode === 0) return false;
 			$('.editions', x.el.form).toggleClass('hide', !!data);
 			$.each(x.config.unique, function(i, id){
 				$('.container.custom .field[data="' + id + '"]', x.el.form).parent().toggleClass('hide', !data);
 			});
+		}).on('change', '.edition_settings .col.s select', function(){
+			x.edition_settings_select_change();
 		});
+
+		x.edition_settings_select_change = function(){
+			var select = $('.edition_settings .col.s select', x.el.form);
+			var val = +select.val();
+			var type = +select.attr('t');
+			var parent = $('.edition_settings .col.f', x.el.form);
+
+			$('> div', parent).hide();
+			$('.no', parent).show();
+			if (type === 1 && val === 2) {
+				$('> div[data="location"]', parent).removeAttr('style');
+				$('.no', parent).hide();
+			}
+			if (type === 1 && (val === 4 || val === 5) || type === 2 && (val === 3 || val === 4)) {
+				$('> div[data="seller"]', parent).removeAttr('style');
+				$('> div[data="client"]', parent).removeAttr('style');
+				$('> div[data="date"]', parent).removeAttr('style');
+				$('.no', parent).hide();
+			}
+			if (type === 1 && val === 3 || type === 2 && val === 2) {
+				$('> div[data="client"]', parent).removeAttr('style');
+				$('> div[data="date_start"]', parent).removeAttr('style');
+				$('> div[data="date_end"]', parent).removeAttr('style');
+				$('.no', parent).hide();
+			}
+			if (type === 1 && val === 6 || type === 2 && val === 5) {
+				$('> div[data="location"]', parent).removeAttr('style');
+				$('> div[data="date_start"]', parent).removeAttr('style');
+				$('> div[data="date_end"]', parent).removeAttr('style');
+				$('.no', parent).hide();
+			}
+		};
 	},
 	language:
 	{
@@ -675,6 +737,16 @@ var database = {
 			return x.fields[x.active];
 		}
 	},
+	fill_ed_fields: function(str){
+		var x = this;
+
+		var ed_f = $.parseJSON(str || '{}');
+		var parent = $('.edition_settings .col.f', x.el.form);
+
+		$.each(ed_f, function(i, v){
+			$('> div[data="' + i + '"]', parent).html(v);
+		});
+	},
 	add_items: function()
 	{
 		var x = this;
@@ -694,6 +766,29 @@ var database = {
 			rd: 'hide',
 			uid: '',
 			uid_disabled: 'disabled',
+			edition_settings: '',
+			ed_status: (function(){
+				var status = '';
+
+				if (x.config.type === 1) {
+					status += '<option value="1" selected>' + lang['database_edition_f_p_np'] + '</option>';
+					status += '<option value="6">' + lang['database_edition_f_p_ol'] + '</option>';
+					status += '<option value="2">' + lang['database_edition_f_p_st'] + '</option>';
+					status += '<option value="3">' + lang['database_edition_f_p_re'] + '</option>';
+					status += '<option value="4">' + lang['database_edition_f_p_so'] + '</option>';
+					status += '<option value="5">' + lang['database_edition_f_p_gi'] + '</option>';
+				}
+				if (x.config.type === 2) {
+					status += '<option value="5" selected>' + lang['database_edition_f_d_ol'] + '</option>';
+					status += '<option value="1">' + lang['database_edition_f_d_us'] + '</option>';
+					status += '<option value="2">' + lang['database_edition_f_d_re'] + '</option>';
+					status += '<option value="3">' + lang['database_edition_f_d_so'] + '</option>';
+					status += '<option value="4">' + lang['database_edition_f_d_gi'] + '</option>';
+				}
+
+				return '<select t="' + x.config.type + '">' + status + '</select>';
+			})(),
+			ed_note: '',
 			editions: 'hide'
 		});
 
@@ -741,6 +836,29 @@ var database = {
 					uid: x.arr[id].uid || '',
 					uid_disabled: '',
 					lock: 'show',
+					edition_settings: '',
+					ed_status: (function(){
+						var status = '';
+
+						if (x.arr[id].type === 1) {
+							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
+							status += '<option value="6"' + (x.arr[id].ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_p_ol'] + '</option>';
+							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_p_st'] + '</option>';
+							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_p_re'] + '</option>';
+							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_p_so'] + '</option>';
+							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_p_gi'] + '</option>';
+						}
+						if (x.arr[id].type === 2) {
+							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_d_ol'] + '</option>';
+							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_d_us'] + '</option>';
+							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_d_re'] + '</option>';
+							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_d_so'] + '</option>';
+							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
+						}
+
+						return '<select t="' + x.arr[id].type + '">' + status + '</select>';
+					})(),
+					ed_note: x.arr[id].ed_note,
 					editions: 'hide'
 				});
 
@@ -756,7 +874,10 @@ var database = {
 					x.language.setValue(x.arr[id].public_title, 'public_title');
 					x.language.setValue(x.arr[id].fields, 'fields');
 
+					x.fill_ed_fields(x.arr[id].ed_fields);
 					x.language.select(x.language.active, x, true);
+
+					x.edition_settings_select_change();
 				}, 210);
 			}, 210);
 
@@ -787,6 +908,29 @@ var database = {
 					uid: item.uid || '',
 					uid_disabled: '',
 					lock: x.arr[x.mode].edited ? 'show' : '',
+					edition_settings: item.unique ? '' : 'hide',
+					ed_status: (function(){
+						var status = '';
+
+						if (item.type === 1) {
+							status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
+							status += '<option value="6"' + (item.ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_p_ol'] + '</option>';
+							status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_p_st'] + '</option>';
+							status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_p_re'] + '</option>';
+							status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_p_so'] + '</option>';
+							status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_p_gi'] + '</option>';
+						}
+						if (item.type === 2) {
+							status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_d_ol'] + '</option>';
+							status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_d_us'] + '</option>';
+							status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_d_re'] + '</option>';
+							status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_d_so'] + '</option>';
+							status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
+						}
+
+						return '<select t="' + item.type + '">' + status + '</select>';
+					})(),
+					ed_note: item.ed_note,
 					editions: x.arr[x.mode].edited || item.unique ? 'hide' : ''
 				});
 
@@ -805,6 +949,9 @@ var database = {
 					x.language.setValue(item.fields, 'fields');
 
 					x.language.select(x.language.active, x, true);
+
+					x.fill_ed_fields(item.ed_fields);
+					x.edition_settings_select_change();
 
 					setTimeout(function(){
 						if (x.mode && !x.arr[x.mode].edited) x.draft.init();
@@ -839,6 +986,29 @@ var database = {
 					uid: x.arr[id].uid || '',
 					uid_disabled: '',
 					lock: '',
+					edition_settings: x.arr[id].unique ? '' : 'hide',
+					ed_status: (function(){
+						var status = '';
+
+						if (x.arr[id].type === 1) {
+							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
+							status += '<option value="6"' + (x.arr[id].ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_p_ol'] + '</option>';
+							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_p_st'] + '</option>';
+							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_p_re'] + '</option>';
+							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_p_so'] + '</option>';
+							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_p_gi'] + '</option>';
+						}
+						if (x.arr[id].type === 2) {
+							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_d_ol'] + '</option>';
+							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_d_us'] + '</option>';
+							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_d_re'] + '</option>';
+							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_d_so'] + '</option>';
+							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
+						}
+
+						return '<select t="' + x.arr[id].type + '">' + status + '</select>';
+					})(),
+					ed_note: x.arr[id].ed_note,
 					editions: x.arr[id].unique ? 'hide' : ''
 				});
 
@@ -857,6 +1027,9 @@ var database = {
 					x.language.setValue(x.arr[id].fields, 'fields');
 
 					x.language.select(x.language.active, x, true);
+
+					x.fill_ed_fields(x.arr[id].ed_fields);
+					x.edition_settings_select_change();
 
 					setTimeout(function(){
 						if (x.mode) x.draft.init();
@@ -883,7 +1056,10 @@ var database = {
 					fields: el[7],
 					date_added: el[8],
 					date_change: el[9],
-					edited: el[10]
+					edited: el[10],
+					ed_status: el[11],
+					ed_fields: el[12],
+					ed_note: el[13]
 				};
 
 				var item = false;
@@ -918,6 +1094,29 @@ var database = {
 						uid: item.uid || '',
 						uid_disabled: '',
 						lock: 'show',
+						edition_settings: '',
+						ed_status: (function(){
+							var status = '';
+
+							if (item.type === 1) {
+								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
+								status += '<option value="6"' + (item.ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_p_ol'] + '</option>';
+								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_p_st'] + '</option>';
+								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_p_re'] + '</option>';
+								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_p_so'] + '</option>';
+								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_p_gi'] + '</option>';
+							}
+							if (item.type === 2) {
+								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_d_ol'] + '</option>';
+								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_d_us'] + '</option>';
+								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_d_re'] + '</option>';
+								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_d_so'] + '</option>';
+								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
+							}
+
+							return '<select t="' + item.type + '">' + status + '</select>';
+						})(),
+						ed_note: item.ed_note,
 						editions: 'hide'
 					});
 				} else {
@@ -939,6 +1138,29 @@ var database = {
 						uid: item.uid || '',
 						uid_disabled: '',
 						lock: '',
+						edition_settings: item.unique ? '' : 'hide',
+						ed_status: (function(){
+							var status = '';
+
+							if (item.type === 1) {
+								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
+								status += '<option value="6"' + (item.ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_p_ol'] + '</option>';
+								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_p_st'] + '</option>';
+								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_p_re'] + '</option>';
+								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_p_so'] + '</option>';
+								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_p_gi'] + '</option>';
+							}
+							if (item.type === 2) {
+								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_d_ol'] + '</option>';
+								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_d_us'] + '</option>';
+								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_d_re'] + '</option>';
+								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_d_so'] + '</option>';
+								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
+							}
+
+							return '<select t="' + item.type + '">' + status + '</select>';
+						})(),
+						ed_note: item.ed_note,
 						editions: item.unique ? 'hide' : ''
 					});
 				}
@@ -958,6 +1180,9 @@ var database = {
 					x.language.setValue(item.fields, 'fields');
 
 					x.language.select(x.language.active, x, true);
+
+					x.fill_ed_fields(item.ed_fields);
+					x.edition_settings_select_change();
 
 					if (!el[10]) {
 						setTimeout(function(){
@@ -990,7 +1215,7 @@ var database = {
 				<div class="head"><p>' + field.private_title + (required ? ' <r>*</r>' : '') + '</p></div>\
 				<div class="group"></div>\
 			</div>\
-		</div>').insertBefore($('.editions', x.el.form));
+		</div>').insertBefore($('.edition_settings', x.el.form));
 
 		fields.types[field.type].item_add($('.group', container), x.language.fields[x.language.active].fields[id], field.value, 'database', x.language.active);
 	},
@@ -1104,6 +1329,21 @@ var database = {
 		var image = fields.types.file.item_save($('.container.system .field.file .group', x.el.form)) || 0;
 		var type = +$('.container.system .select.type p.active', x.el.form).attr('data');
 		var unique = +$('.container.system .select.unique p.active', x.el.form).attr('data');
+		var ed_status = +$('.edition_settings .col.s select', x.el.form).val();
+		var ed_fields = {};
+		$('.edition_settings .col.f > div', x.el.form).each(function(){
+			var th = $(this);
+			var i = th.attr('data');
+			var val = th.text();
+			if (!val) th.empty();
+			val = th.html();
+
+			if (i) ed_fields[i] = val;
+		});
+		var ed_note_el = $('.edition_settings .col.n', x.el.form);
+		var ed_note = ed_note_el.text();
+		if (!ed_note) ed_note_el.empty();
+		ed_note = ed_note_el.html();
 		var public_title = {};
 		var f = {};
 
@@ -1118,7 +1358,10 @@ var database = {
 			image: image,
 			type: type,
 			unique: unique,
-			fields: JSON.stringify(f)
+			fields: JSON.stringify(f),
+			ed_status: ed_status,
+			ed_fields: JSON.stringify(ed_fields),
+			ed_note: ed_note
 		};
 		if (x.mode) {
 			data.id = x.mode;
@@ -1167,8 +1410,7 @@ var database = {
 					$('.header .drafts_control, .header .vo, .header .rd', x.el.form).addClass('hide');
 				} else {
 					x.mode = +json.id;
-					$.extend(data, {id: x.mode, uid: json.uid, date_added: json.date_added, date_change: json.date_change});
-					x.arr[x.mode] = data;
+					x.arr[x.mode] = $.extend({}, data, {id: x.mode, uid: json.uid, date_added: json.date_added, date_change: json.date_change});
 					WS.send('database/item_new');
 					if (!close) {
 						x.el.form.removeClass('show');
@@ -1285,7 +1527,7 @@ var database = {
 				items.push('<div class="item animate1 br3 box" data="' + el.id + '">\
 					<div class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>\
 					<div class="edit"><svg viewBox="0 0 32 32"><path d="M 30.122,30.122L 28.020,23.778L 11.050,6.808L 10,7.858L 6.808,11.050L 23.778,28.020 zM 3.98,8.222L 8.222,3.98l-2.1-2.1c-1.172-1.172-3.070-1.172-4.242,0c-1.172,1.17-1.172,3.072,0,4.242 L 3.98,8.222z"></path></svg></div>\
-					<div class="title">' + el.title + ' (' + el.count + ' items)</div>\
+					<div class="title" data="' + el.title + '">' + el.title + ' (' + el.count + ' items)</div>\
 					<div class="loader"></div>\
 				</div>');
 			});
@@ -1335,7 +1577,7 @@ var database = {
 		edition_edit: function(el){
 			var x = this;
 
-			var title = $('.title', el).text();
+			var title = $('.title', el).attr('data');
 			var id = +el.attr('data');
 
 			x.mode = id;
@@ -1428,16 +1670,16 @@ var database = {
 				if (x.mode) {
 					var item = $('.editions .item[data="' + x.mode + '"]', x.d.el.form);
 					item.data('load', false);
-					$('.title', item).text(data.title);
 					item.next('.childs').remove();
 
 					$.each(x.editions, function(i, el){
 						if (el.id === x.mode) {
 							x.editions[i].title = data.title;
+							$('.title', item).text(data.title + ' (' + el.count + ' items)').attr('data', data.title);
 						}
 					});
 				} else {
-					x.editions.push({id: json.id, item: x.d.mode, title: data.title});
+					x.editions.push({id: json.id, item: x.d.mode, title: data.title, count: data.count});
 					x.draw();
 				}
 
@@ -1831,9 +2073,10 @@ var database = {
 							});
 							var d = '';
 							$.each($.parseJSON(el[5] || '{}'), function(i, el){
-								if (el && fields.arr.fields[i]) {
+								if (fields.arr.fields[i]) {
 									var type = fields.arr.fields[i].type;
-									d += '<p><b>' + fields.arr.fields[i].private_title + ':</b> ' + fields.types[type].bases.view(el, i) + '</p>';
+									var val = fields.types[type].bases.view(el, i);
+									if (val) d += '<p><b>' + fields.arr.fields[i].private_title + ':</b> ' + val + '</p>';
 								}
 							});
 							
@@ -2621,6 +2864,8 @@ var database = {
 				x.el.submit.show();
 
 				if (x.temp.request.global && x.temp.request.global.length) {
+					$('.c', parent).empty();
+
 					$.each(x.temp.request.global, function(index, r){
 						var container = $('<div class="container">\
 							<div class="field ' + r.type + '" data="' + r.id + '" type="' + r.type + '">\
@@ -2709,8 +2954,7 @@ var database = {
 					return false;
 				}
 
-				var url = '?database/pdf_create';
-				$.post(url, data, function(json){
+				$.post('?database/pdf_create', data, function(json){
 					if (json.status) {
 						database.pdf.list.load(function(){
 							database.pdf.list.draw();
@@ -2719,8 +2963,8 @@ var database = {
 						});
 						WS.send('database/pdf_new');
 					} else {
-						m.report(url, data, JSON.stringify(json));
 						x.el.overlay.removeClass('top');
+						alertify.error(json.error);
 					}
 				}, 'json');
 			}

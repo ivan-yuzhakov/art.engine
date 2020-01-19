@@ -174,7 +174,10 @@ if ($section === 'database')
 			'date_added'    => time(),
 			'date_change'   => time(),
 			'edited'        => 0,
-			'del'           => 0
+			'del'           => 0,
+			'ed_status'     => (int) $_POST['ed_status'],
+			'ed_fields'     => $_POST['ed_fields'],
+			'ed_note'       => $_POST['ed_note']
 		];
 
 		$core->cache->clearCache('theme_');
@@ -230,7 +233,10 @@ if ($section === 'database')
 				$item['fields'],
 				$item['date_added'],
 				$item['date_change'],
-				$item['edited']
+				$item['edited'],
+				$item['ed_status'],
+				$item['ed_fields'],
+				$item['ed_note']
 			];
 		}, $items);
 		$status = @$items[0][0] === $id;
@@ -279,7 +285,10 @@ if ($section === 'database')
 			'unique'        => (int) $_POST['unique'],
 			'fields'        => $_POST['fields'],
 			'date_change'   => time(),
-			'edited'        => time()
+			'edited'        => time(),
+			'ed_status'     => (int) $_POST['ed_status'],
+			'ed_fields'     => $_POST['ed_fields'],
+			'ed_note'       => $_POST['ed_note']
 		];
 
 		$core->cache->clearCache('theme_');
@@ -691,6 +700,11 @@ if ($section === 'database')
 		};
 
 		require_once $path;
+		// validation
+		if (isset($template['check'])) {
+			$res = $template['check']($items, $fields);
+			if ($res !== true) json(['status' => false, 'error' => $res]);
+		}
 		require_once DIR_SITE . 'vendor/autoload.php';
 
 		$config = array_merge([

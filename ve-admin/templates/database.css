@@ -178,6 +178,23 @@
 
 #database .form .wrapper{height:100%;overflow:auto;}
 #database .form .wrapper .w{padding:0 40px;position:relative;overflow:hidden;}
+
+#database .form .wrapper .w .edition_settings{margin:40px 0;position:relative;clear:both;}
+#database .form .wrapper .w .edition_settings.hide{display:none;}
+#database .form .wrapper .w .edition_settings > .head{margin:0 -40px;padding:19px 0;background:#fff;border-top:1px solid #ddd;border-bottom:1px solid #ddd;}
+#database .form .wrapper .w .edition_settings > .head .title{padding:0 40px;overflow:hidden;font-size:22px;line-height:40px;color:#222;white-space:nowrap;text-overflow:ellipsis;}
+#database .form .wrapper .w .edition_settings .items{margin-top:40px;display:flex;background:#fff;border:1px solid #ddd;}
+#database .form .wrapper .w .edition_settings .items .col{width:100%;padding:20px;position:relative;border-left:1px solid #ddd;}
+#database .form .wrapper .w .edition_settings .items .col:first-child{border:none;}
+#database .form .wrapper .w .edition_settings .items .col.s{width:140px;padding:10px;flex-grow:0;flex-shrink:0;}
+#database .form .wrapper .w .edition_settings .items .col.s select{width:100%;height:40px;border:none;display:block;font:normal 16px/20px 'PT Sans', sans-serif;}
+#database .form .wrapper .w .edition_settings .items .col.f{padding:0;}
+#database .form .wrapper .w .edition_settings .items .col.f > div{min-height:20px;padding:20px;position:relative;}
+#database .form .wrapper .w .edition_settings .items .col.f > div:empty:after{position:absolute;top:20px;left:20px;content:attr(content);cursor:text;color:#999;}
+#database .form .wrapper .w .edition_settings .items .col.f .no{padding:0 20px;cursor:default;line-height:60px;color:#999;}
+#database .form .wrapper .w .edition_settings .items .col.n{}
+#database .form .wrapper .w .edition_settings .items .col.n:empty:after{position:absolute;top:20px;left:20px;content:attr(content);cursor:text;color:#999;}
+
 #database .form .wrapper .w .editions{margin:40px 0;position:relative;clear:both;}
 #database .form .wrapper .w .editions.hide{display:none;}
 #database .form .wrapper .w .editions > .head{margin:0 -40px;padding:19px 0;background:#fff;border-top:1px solid #ddd;border-bottom:1px solid #ddd;}
