@@ -293,6 +293,8 @@ class Files
 			imagesavealpha($image, true);
 		}
 
+		if ($crop['canvas'] === null) $crop['canvas'] = imagecreatetruecolor($image_width, $image_height);
+
 		imagecopyresampled($image, $crop['canvas'], 0, 0, 0, 0, $image_width, $image_height, $crop['w'], $crop['h']);
 
 		if ($watermark !== false) {
@@ -344,14 +346,19 @@ class Files
 		if ($this->info['mime'] == 'image/jpeg') {
 			imageinterlace($image, 5);
 			imagejpeg($image, $cache, 100);
+		} else if ($this->info['mime'] == 'image/png') {
+			imagepng($image, $cache);
+		} else if ($this->info['mime'] == 'image/gif') {
+			imagegif($image, $cache);
+		} else {
+			imageinterlace($image, 5);
+			imagejpeg($image, $cache, 100);
 		}
-		if ($this->info['mime'] == 'image/png') imagepng($image, $cache);
-		if ($this->info['mime'] == 'image/gif') imagegif($image, $cache);
 
 		imagedestroy($image);
 	}
 
-	private function getImage($id, $w, $h, $use_crop, $watermark)
+	private function getImage($id, $w, $h, $use_crop, $watermark, $return_path = false)
 	{
 		$watermark_cache = $watermark === false ? 0 : md5($watermark['image'] . $watermark['padding'] . $watermark['width'] . $watermark['height'] . $watermark['opacity'] . $watermark['x_align'] . $watermark['y_align']);
 
@@ -359,7 +366,7 @@ class Files
 
 		if (!file_exists($this->dir_cache . $this->cache)) $this->create($id, $w, $h, $use_crop, $watermark);
 
-		return $this->url_cache . $this->cache;
+		return ($return_path ? $this->dir_cache : $this->url_cache) . $this->cache;
 	}
 
 	private function verificationFile($id)
@@ -550,6 +557,77 @@ class Files
 			$size = $this->originalResize($info['basename']);
 
 			$db->update('files', ['size' => implode(';', $size)], 'filename', $info['basename']);
+		}
+	}
+
+	public function getFile($id = 0, $w = 0, $h = 0, $use_crop = false, $watermark = false)
+	{
+		$id = (int) $id;
+		$w = (int) $w; $w = max($w, 0);
+		$h = (int) $h; $h = max($h, 0);
+		$use_crop = !empty($use_crop);
+		$watermark = $this->verificationWatermark($watermark);
+
+		$this->file = $this->verificationFile($id);
+
+		if ($this->file === false) {
+			$this->getPlaceholder($w > 0 ? $w : 500, $h > 0 ? $h : 500);
+		}
+
+		$this->info = pathinfo($this->path);
+		$path = false;
+
+		switch ($this->getType($this->info['extension'])) {
+			case 'image':
+				$info = getimagesize($this->path);
+				$this->info['w'] = $info[0];
+				$this->info['h'] = $info[1];
+				$this->info['mime'] = $info['mime'];
+
+				if ($w === 0 && $h === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+					$path = $this->dir_files . $this->file['filename'];
+				}
+				if ($w >= $this->info['w'] && $h === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+					$path = $this->dir_files . $this->file['filename'];
+				}
+				if ($h >= $this->info['h'] && $w === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+					$path = $this->dir_files . $this->file['filename'];
+				}
+				if ($w >= $this->info['w'] && $h >= $this->info['h'] && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+					$path = $this->dir_files . $this->file['filename'];
+				}
+
+				$path = $this->getImage($id, $w, $h, $use_crop, $watermark, true);
+			break;
+
+			case 'document':
+			case 'archive':
+			case 'audio':
+			case 'video':
+				$path = $this->dir_files . $this->file['filename'];
+			break;
+		}
+
+		if ($path) {
+			$mime = mime_content_type($path);
+
+			if (ob_get_level()) ob_end_clean();
+
+			header('Cache-Control: public');
+			header('Content-Length: ' . filesize($path));
+			header('Content-Type: ' . $mime);
+			header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 60*60*24*30) . ' GMT');
+
+			if ($fd = fopen($path, 'rb')) {
+				while (!feof($fd)) {
+					print fread($fd, 1024);
+				}
+				fclose($fd);
+			}
+
+			exit;
+		} else {
+			$this->getPlaceholder($w > 0 ? $w : 500, $h > 0 ? $h : 500);
 		}
 	}
 }

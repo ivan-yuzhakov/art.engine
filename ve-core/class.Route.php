@@ -69,9 +69,7 @@ class Route
 		global $core, $urls, $helpers;
 
 		if ($urls[1] === 'getfile') {
-			$url = $core->files->getFileUrl(@$urls[2], @$urls[3], @$urls[4], @$urls[5]);
-			header("Location: $url");
-			die;
+			$core->files->getFile(@$urls[2], @$urls[3], @$urls[4], @$urls[5]);
 		}
 
 		if ($urls[1] === 'report_error') {

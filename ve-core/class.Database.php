@@ -124,6 +124,8 @@ class Database
 			$sql = [];
 			foreach ($where as $key => $value) {
 				if (is_array($value)) {
+					if (empty($value)) continue;
+
 					$str = [];
 					foreach ($value as $i => $v) {
 						$str[] = '`' . $key . '` = ?';
@@ -137,7 +139,12 @@ class Database
 					$args[] = &$where[$key];
 				}
 			}
-			$sql = ' WHERE ' . implode(' AND ', $sql);
+
+			if (empty($sql)) {
+				$sql = '';
+			} else {
+				$sql = ' WHERE ' . implode(' AND ', $sql);
+			}
 		}
 
 		$stmt = $this->prepare('SELECT ' . $query_fields . ' FROM `prefix_' . $db_name . '`' . $sql, $type, $args, $file, $line);

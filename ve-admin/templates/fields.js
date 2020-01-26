@@ -713,29 +713,36 @@ var fields = {
 				// но обратная замена нужна для старых версий.
 				// TODO: исправить в базе во всех tinymce полях (desc, fields[]) ~^~ на \"
 				var val = value ? String(value).replace(/~\^~/g, '"') : '';
-				var id = 't' + Math.floor(Math.random() * (1000 + 1));
+				var id = 't' + Math.floor(Math.random() * (10000 + 1));
 				$('<textarea id="' + id + '" />').val(val).appendTo(parent);
 
 				tinymce.init({
 					selector: 'textarea#' + id,
-					init_instance_callback: function(){},
-					plugins: 'image autoresize charmap code hr fullscreen contextmenu visualchars visualblocks textcolor table searchreplace print paste media lists link',
+					init_instance_callback: function(){
+						$('.tox .tox-notification--in').hide();
+					},
+					plugins: "chiffer print preview powerpaste noneditable searchreplace autolink directionality advcode visualblocks visualchars fullscreen image link media mediaembed codesample table advtable charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount a11ychecker imagetools textpattern help permanentpen pageembed tinycomments mentions linkchecker code autoresize contextmenu textcolor",
 					image_list: $.map(files.arr.files, function(el, i){
 						return {title: el.title, value: '/qrs/getfile/' + i + '/-1/-1/0'};
 					}).reverse(),
 					image_advtab: true,
-					autoresize_bottom_margin: '0',
-					autoresize_overflow_padding: '0',
+					autoresize_bottom_margin: 0,
+					autoresize_overflow_padding: 0,
 					autoresize_min_height: 75,
 					contextmenu: "link image inserttable | cell row column deletetable",
-					tools: "inserttable",
 					paste_as_text: true,
-					relative_urls: false,
-					remove_script_host: false,
-					entity_encoding: 'raw',
-					setup: function(editor){
-						editor.on('change', function(){});
-					}
+					convert_urls: false,
+					// relative_urls: false,
+					// document_base_url: location.origin + '/',
+					// remove_script_host: false,
+					// entity_encoding: 'raw',
+					toolbar: "formatselect | fontsizeselect | bold italic | align | numlist bullist outdent indent | link media image | removeformat | code | preview",
+					menubar: "file edit insert view format table tools help",
+					branding: false,
+					// fontsize_formats: "8pt 10pt 12pt 14pt 18pt 24pt 36pt",
+					// setup: function(editor){
+						// editor.on('change', function(){});
+					// }
 				});
 			},
 			item_save: function(parent){
