@@ -713,33 +713,76 @@ var fields = {
 				// но обратная замена нужна для старых версий.
 				// TODO: исправить в базе во всех tinymce полях (desc, fields[]) ~^~ на \"
 				var val = value ? String(value).replace(/~\^~/g, '"') : '';
-				var id = 't' + Math.floor(Math.random() * (10000 + 1));
-				$('<textarea id="' + id + '" />').val(val).appendTo(parent);
+				var textarea = $('<textarea />').val(val).appendTo(parent);
 
 				tinymce.init({
-					selector: 'textarea#' + id,
-					init_instance_callback: function(){
-						$('.tox .tox-notification--in').hide();
-					},
-					plugins: "chiffer print preview powerpaste noneditable searchreplace autolink directionality advcode visualblocks visualchars fullscreen image link media mediaembed codesample table advtable charmap hr pagebreak nonbreaking anchor toc insertdatetime advlist lists wordcount a11ychecker imagetools textpattern help permanentpen pageembed tinycomments mentions linkchecker code autoresize contextmenu textcolor",
-					image_list: $.map(files.arr.files, function(el, i){
-						return {title: el.title, value: '/qrs/getfile/' + i + '/-1/-1/0'};
-					}).reverse(),
+					target: textarea.get(0),
+					init_instance_callback: function(){},
+					plugins: 'print code image link media table lists autoresize contextmenu paste',
+					// plugin image
+					// https://www.tiny.cloud/docs/plugins/image/
+					// image_list: $.map(files.arr.files, function(el, i){
+						// return {title: '/qrs/getfile/' + el.title, value: i};
+					// }).reverse(),
 					image_advtab: true,
-					autoresize_bottom_margin: 0,
-					autoresize_overflow_padding: 0,
+					file_picker_callback: function(callback, value, meta){
+						files.openFiles = 1;
+						files.openFilesSelected = [];
+						files.start();
+
+						files.el.list.css({zIndex: 99999, background: '#f8f8f8'});
+						common.el.header.css({zIndex: 99999});
+
+						$('.f.selected', files.el.list).removeClass('selected');
+
+						var close = function(){
+							actions.remove();
+
+							window[section].reset();
+							files.openFiles = false;
+							$('.f.selected', files.el.list).removeClass('selected');
+
+							files.el.list.removeAttr('style');
+							common.el.header.removeAttr('style');
+						};
+						var actions = $('<div class="actions" />');
+						var btn_back = $('<div class="back br3">' + lang['fields_types_file_back'] + '</div>').on('click', function(){
+							callback('');
+							close();
+						});
+						var btn_save = $('<div class="save br3">' + lang['fields_types_file_save'] + '</div>').on('click', function(){
+							if (!files.openFilesSelected.length) {
+								alertify.error(lang['fields_types_file_error_not_selected']);
+								return false;
+							}
+							var id = files.openFilesSelected[0];
+							callback('/qrs/getfile/' + id, {alt: files.arr.files[id].title});
+							close();
+						});
+						actions.append(btn_save, btn_back);
+						common.el.header.append(actions);
+					},
+					// plugin autoresize
+					resize: false,
+					autoresize_bottom_margin: 3,
+					autoresize_overflow_padding: 20,
 					autoresize_min_height: 75,
-					contextmenu: "link image inserttable | cell row column deletetable",
+					// plugin link
+					default_link_target: '_blank',
 					paste_as_text: true,
 					convert_urls: false,
 					// relative_urls: false,
 					// document_base_url: location.origin + '/',
 					// remove_script_host: false,
 					// entity_encoding: 'raw',
-					toolbar: "formatselect | fontsizeselect | bold italic | align | numlist bullist outdent indent | link media image | removeformat | code | preview",
-					menubar: "file edit insert view format table tools help",
+					menubar: false,
+					toolbar: 'print | undo redo | formatselect | fontsizeselect | bold italic underline strikethrough | superscript subscript | align | numlist bullist outdent indent | removeformat | link image media | code',
+					contextmenu: 'link image inserttable | cell row column deletetable',
+					elementpath: false,
 					branding: false,
-					// fontsize_formats: "8pt 10pt 12pt 14pt 18pt 24pt 36pt",
+					statusbar: false,
+					content_style: 'img {max-width:100%;height:auto;display:block;}',
+					fontsize_formats: '8pt 9pt 10pt 11pt 12pt 13pt 14pt 15pt 16pt 17pt 18pt 24pt 36pt',
 					// setup: function(editor){
 						// editor.on('change', function(){});
 					// }

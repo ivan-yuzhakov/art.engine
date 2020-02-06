@@ -910,6 +910,13 @@ var common = {
 						common.search.init();
 
 						$(window).on('hashchange', common.hash).trigger('hashchange').on('resize', common.resize);
+
+						// clear memory tinymce
+						setInterval(function(){
+							$.each(tinyMCE.editors, function(i, el){
+								if (el && !$('textarea#' + el.id, common.el.body).length) el.remove();
+							});
+						}, 30000);
 					});
 				});
 			}

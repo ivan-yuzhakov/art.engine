@@ -247,8 +247,8 @@ header .actions .back{background:#f55;}
 .container .field.textarea .group.error textarea{border-color:#f55;}
 /* tinymce */
 .container .field.tinymce{}
-.container .field.tinymce .group .mce-tinymce{background:#eee;border-color:#ddd;-webkit-border-radius:3px;-moz-border-radius:3px;border-radius:3px;}
-.container .field.tinymce .group .mce-panel{background:#eee;border-color:#ddd;}
+.container .field.tinymce .group .mce-tinymce{border-color:#ddd;border-radius:3px;box-shadow:none;box-sizing:border-box;overflow:hidden;}
+.container .field.tinymce .group .mce-panel{background:#fff;border-color:#ddd;}
 /* checkbox */
 .container .field.checkbox{}
 .container .field.checkbox .group{margin:0;}
