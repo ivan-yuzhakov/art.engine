@@ -166,16 +166,22 @@ var support = {
 
 			$.post('?support/help_open_ticket', {id: id}, function(json){
 				if (json.status) {
+					var nm = false;
 					var template = m.template(support.template.modal, {
 						popup_style: 'width:50%;padding-bottom:80px;',
 						title: x.arr[id],
 						actions: '<div class="br3 close">' + lang['global_close'] + '</div>',
 						content: $.map(json.items, function(el){
 							var readed = '';
-							if (el.readed === 0) readed = '<div class="new_message">' + lang['support_help_new_message'] + '</div>';
+							if (!nm) {
+								if (el.readed === 0) {
+									readed = '<div class="new_message">' + lang['support_help_new_message'] + '</div>';
+									nm = true;
+								}
+							}
 
 							return readed + '<div class="i">\
-								<div class="info">' + el.user + ', ' + moment(el.date*1000).format('M.D.Y H:m') + '</div>\
+								<div class="info">' + el.user + ', ' + moment(el.date*1000).format('MM/DD/Y H:mm') + '</div>\
 								<div class="desc">' + el.desc + '</div>\
 							</div>';
 						}).join(''),
@@ -188,7 +194,7 @@ var support = {
 					support.el.modal.html(template).addClass('open');
 
 					var new_message = $('.new_message', support.el.modal);
-					var scroll = new_message.length ? new_message.position().top : 9999999;
+					var scroll = new_message.length ? new_message.position().top - 11 : 9999999;
 					$('.wrapper', support.el.modal).scrollTop(scroll);
 					if (scroll === 9999999) x.scroll_max = $('.wrapper', support.el.modal).scrollTop();
 					$('input', support.el.modal).focus();
@@ -200,7 +206,7 @@ var support = {
 
 								$('.wrapper', support.el.modal).append($.map(json.items, function(el){
 									return '<div class="i">\
-										<div class="info">' + el.user + ', ' + moment(el.date*1000).format('M.D.Y H:m') + '</div>\
+										<div class="info">' + el.user + ', ' + moment(el.date*1000).format('MM/DD/Y H:mm') + '</div>\
 										<div class="desc">' + el.desc + '</div>\
 									</div>';
 								}).join(''));
@@ -228,7 +234,7 @@ var support = {
 			if (val) {
 				input.val('');
 				var i = $('<div class="i">\
-					<div class="info">' + users.arr[users.logged].fname + ', ' + moment().format('M.D.Y H:m') + '</div>\
+					<div class="info">' + users.arr.users[users.logged].fname + ', ' + moment().format('MM/DD/Y H:mm') + '</div>\
 					<div class="desc">' + val + '</div>\
 				</div>');
 				$('.wrapper', support.el.modal).append(i).scrollTop(9999999);

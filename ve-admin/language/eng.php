@@ -77,7 +77,7 @@ $lang['database_form_input_image'] = 'Image';
 $lang['database_form_error_save_required'] = 'Saving is impossible. Required fields are not filled.';
 $lang['database_form_error_opened_el'] = 'This item has been opened by another user.';
 
-$lang['database_editionf_title'] = 'Edition settings';
+$lang['database_editionf_title'] = 'Status';
 $lang['database_editionf_status_type_log'] = 'When selecting an item type, you must re-select the edition status';
 
 $lang['database_edition_title'] = 'Editions';

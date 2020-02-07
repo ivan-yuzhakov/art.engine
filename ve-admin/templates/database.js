@@ -496,7 +496,7 @@ var database = {
 				x.filter.change();
 			}, 500);
 		}).on('click', '.header .filter .clear', function(){
-			$('.header .filter input', x.el.list).val('');
+			$('.header .filter input', x.el.list).val('').focus();
 			x.filter.change();
 		}).on('click', '.header .menu p', function(){
 			var th = $(this);

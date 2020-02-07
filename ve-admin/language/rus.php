@@ -77,7 +77,7 @@ $lang['database_form_input_image'] = 'Изображение';
 $lang['database_form_error_save_required'] = 'Сохранение невозможно. Обязательные поля не заполнены.';
 $lang['database_form_error_opened_el'] = 'Этот элемент был открыт другим пользователем.';
 
-$lang['database_editionf_title'] = 'Настройки тиража';
+$lang['database_editionf_title'] = 'Статус';
 $lang['database_editionf_status_type_log'] = 'При выборе типа элемента необходимо заново выбрать статус тиража';
 
 $lang['database_edition_title'] = 'Тиражи';

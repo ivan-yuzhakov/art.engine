@@ -91,39 +91,42 @@ if ($section === 'database')
 		$text = explode(' ', $_POST['text']);
 		$ids = [];
 
+		require_once(DIR_CORE . 'api_frontend.php');
+
 		$new_text = [];
 		foreach ($text as $t) {
 			$new_text[] = '%' . $t . '%';
 		}
 
-		$items = $db->search('editions_items', ['edition'], [['fields' => $new_text, 'captions' => $new_text, 'note' => $new_text]], __FILE__, __LINE__);
-		$items = array_map(function($i){
+		$edis = $db->search('editions_items', ['edition', 'fields', 'captions', 'note'], [['fields' => $new_text, 'captions' => $new_text, 'note' => $new_text]], __FILE__, __LINE__);
+		$edition = array_map(function($i){
 			return $i['edition'];
-		}, $items);
-		$items = array_unique($items);
-		$items = array_values($items);
+		}, $edis);
+		$edition = array_unique($edition);
+		$edition = array_values($edition);
 
 		$database = $db->select('database', ['id', 'private_title', 'public_title', 'fields'], ['del' => 0], __FILE__, __LINE__);
 		foreach ($database as $dbi) {
 			$public_title = json_decode($dbi['public_title'], true);
-			$public_title = array_map(function($t){
-				return $t;
-			}, $public_title);
 			$fields = json_decode($dbi['fields'], true);
+			
 			$fields = array_map(function($f){
-				return implode(' ', $f);
+				foreach ($f as $k => $v) {
+					$f[$k] = get_value($f, $k);
+				}
+				return json_encode($f);
 			}, $fields);
 
 			$vals = [$dbi['id'], $dbi['private_title'], implode(' ', $public_title), implode(' ', $fields)];
 			$vals = implode(' ', $vals);
-			$vals = strtolower($vals);
+			$vals1 = strtolower($vals);
 
-			$find = false;
+			$find = true;
 
 			foreach ($text as $t) {
-				$pos = strpos($vals, $t);
-				if ($pos !== false) {
-					$find = true;
+				$pos = strpos($vals1, $t);
+				if ($pos === false) {
+					$find = false;
 					break;
 				}
 			}
@@ -136,12 +139,14 @@ if ($section === 'database')
 					return $e['title'];
 				}, $editions);
 				$vals = implode(' ', $vals);
-				$vals = strtolower($vals);
+				$vals2 = strtolower($vals);
+
+				$find = true;
 
 				foreach ($text as $t) {
-					$pos = strpos($vals, $t);
-					if ($pos !== false) {
-						$find = true;
+					$pos = strpos($vals2, $t);
+					if ($pos === false) {
+						$find = false;
 						break;
 					}
 				}
@@ -149,12 +154,30 @@ if ($section === 'database')
 				if ($find) {
 					$ids[] = $dbi['id'];
 				} else {
+					$vals = [];
 					foreach ($editions as $ed) {
-						if (in_array($ed['id'], $items)) {
-							$ids[] = $dbi['id'];
+						foreach ($edis as $edi) {
+							if ($ed['id'] === $edi['edition']) {
+								$vals[] = implode(' ', (array) json_decode($edi['fields'], true));
+								$vals[] = implode(' ', (array) json_decode($edi['captions'], true));
+								$vals[] = $edi['note'];
+							}
+						}
+					}
+					$vals3 = implode(' ', $vals);
+					$vals = $vals1 . ' ' . $vals2 . ' ' . $vals3;
+					$vals = strtolower($vals);
+
+					$find = true;
+
+					foreach ($text as $t) {
+						$pos = strpos($vals, $t);
+						if ($pos === false) {
+							$find = false;
 							break;
 						}
 					}
+					if ($find) $ids[] = $dbi['id'];
 				}
 			}
 		}
