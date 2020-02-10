@@ -109,6 +109,7 @@
 				<div class="items br3">
 					<div class="col box s">{{ed_status}}</div>
 					<div class="col box f">
+						<div data="type" content="<?php echo $lang['database_edition_childs_type']; ?>" contenteditable="true"></div>
 						<div data="seller" content="<?php echo $lang['database_edition_childs_seller']; ?>" contenteditable="true" style="display:none;"></div>
 						<div data="client" content="<?php echo $lang['database_edition_childs_client']; ?>" contenteditable="true" style="display:none;"></div>
 						<div data="date" content="<?php echo $lang['database_edition_childs_date']; ?>" contenteditable="true" style="display:none;"></div>
@@ -159,23 +160,23 @@
 				<div class="field box left select status {{p}}">
 					<div class="head"><p><?php echo $lang['database_edition_f_status']; ?></p></div>
 					<div class="group">
-						<p class="br3 animate1 active" data="1"><?php echo $lang['database_edition_f_p_np']; ?></p>
-						<p class="br3 animate1" data="6"><?php echo $lang['database_edition_f_p_ol']; ?></p>
-						<p class="br3 animate1" data="2"><?php echo $lang['database_edition_f_p_st']; ?></p>
-						<p class="br3 animate1" data="3"><?php echo $lang['database_edition_f_p_re']; ?></p>
-						<p class="br3 animate1" data="4"><?php echo $lang['database_edition_f_p_so']; ?></p>
-						<p class="br3 animate1" data="5"><?php echo $lang['database_edition_f_p_gi']; ?></p>
+						<p class="br3 animate1 active" data="1"><?php echo $lang['database_edition_f_1_1']; ?></p>
+						<p class="br3 animate1" data="6"><?php echo $lang['database_edition_f_1_6']; ?></p>
+						<p class="br3 animate1" data="2"><?php echo $lang['database_edition_f_1_2']; ?></p>
+						<p class="br3 animate1" data="3"><?php echo $lang['database_edition_f_1_3']; ?></p>
+						<p class="br3 animate1" data="4"><?php echo $lang['database_edition_f_1_4']; ?></p>
+						<p class="br3 animate1" data="5"><?php echo $lang['database_edition_f_1_5']; ?></p>
 						<div class="clr"></div>
 					</div>
 				</div>
 				<div class="field box left select status {{d}}">
 					<div class="head"><p><?php echo $lang['database_edition_f_status']; ?></p></div>
 					<div class="group">
-						<p class="br3 animate1 active" data="5"><?php echo $lang['database_edition_f_d_ol']; ?></p>
-						<p class="br3 animate1" data="1"><?php echo $lang['database_edition_f_d_us']; ?></p>
-						<p class="br3 animate1" data="2"><?php echo $lang['database_edition_f_d_re']; ?></p>
-						<p class="br3 animate1" data="3"><?php echo $lang['database_edition_f_d_so']; ?></p>
-						<p class="br3 animate1" data="4"><?php echo $lang['database_edition_f_d_gi']; ?></p>
+						<p class="br3 animate1 active" data="5"><?php echo $lang['database_edition_f_2_5']; ?></p>
+						<p class="br3 animate1" data="1"><?php echo $lang['database_edition_f_2_1']; ?></p>
+						<p class="br3 animate1" data="2"><?php echo $lang['database_edition_f_2_2']; ?></p>
+						<p class="br3 animate1" data="3"><?php echo $lang['database_edition_f_2_3']; ?></p>
+						<p class="br3 animate1" data="4"><?php echo $lang['database_edition_f_2_4']; ?></p>
 						<div class="clr"></div>
 					</div>
 				</div>

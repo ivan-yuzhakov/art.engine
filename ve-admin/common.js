@@ -830,8 +830,10 @@ var WS = (function(){
 var Tasks = (function(){
 	var task = [];
 	var work = false;
+	var clearing = false;
 
 	var start = function(){
+		if (clearing) return false;
 		if (work) return false;
 		work = true;
 		var f = task[0];
@@ -839,7 +841,7 @@ var Tasks = (function(){
 		if (f) {
 			task.splice(0, 1);
 
-			f(function(){
+			f[0](function(){
 				work = false;
 				start();
 			});
@@ -847,19 +849,29 @@ var Tasks = (function(){
 			work = false;
 		}
 	};
-	var add = function(func){
-		task.push(func);
+	var add = function(cb, fb){
+		task.push([cb, fb]);
 		start();
 	};
-	var unshift = function(func){
-		task.unshift(func);
+	var unshift = function(cb, fb){
+		task.unshift([cb, fb]);
 		start();
+	}
+	var clear = function(){
+		clearing = true;
+		$.each(task, function(i, t){
+			t[1]();
+		});
+		task = [];
+		work = false;
+		clearing = false;
 	}
 
 	return {
 		task: task,
 		add: add,
-		unshift: unshift
+		unshift: unshift,
+		clear: clear
 	};
 })();
 

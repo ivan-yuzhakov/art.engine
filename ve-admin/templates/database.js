@@ -55,7 +55,8 @@ var database = {
 					fields: el[7],
 					date_added: el[8],
 					date_change: el[9],
-					edited: x.mode == id ? 0 : el[10]
+					edited: x.mode == id ? 0 : el[10],
+					ed_status: el[11] || 1
 				};
 			});
 
@@ -166,6 +167,11 @@ var database = {
 								type: 'title',
 								value: lang['database_list_table_title']
 							});
+						if (id === 'status')
+							return m.template(template, {
+								type: 'status',
+								value: lang['database_list_table_status']
+							});
 						if (id === 'date_added')
 							return m.template(template, {
 								type: 'date_added',
@@ -220,6 +226,16 @@ var database = {
 									value: el.private_title,
 									attr: ''
 								});
+							if (id === 'status') {
+								var status = '';
+								if (!!el.unique) status = lang['database_edition_f_' + el.type + '_' + el.ed_status];
+
+								return m.template(template, {
+									type: 'status',
+									value: status,
+									attr: ''
+								});
+							}
 							if (id === 'date_added')
 								return m.template(template, {
 									type: 'date_added',
@@ -274,6 +290,16 @@ var database = {
 								value: el.uid,
 								id: id
 							});
+						if (id === 'status') {
+							var status = '';
+							if (!!el.unique) status = lang['database_edition_f_' + el.type + '_' + el.ed_status];
+
+							return m.template(template_info, {
+								title: lang['database_list_table_status'],
+								value: status,
+								id: id
+							});
+						}
 						if (id === 'date_added')
 							return m.template(template_info, {
 								title: lang['database_list_table_date_added'],
@@ -368,7 +394,7 @@ var database = {
 						if (el === 'image') return true;
 						if ($.inArray(el, x.config.unique) + 1) return true;
 
-						var title = 'Undefined';
+						var title = false;
 						if (typeof el === 'number') {
 							if (fields.arr.fields[el]) title = fields.arr.fields[el].private_title;
 						} else {
@@ -377,6 +403,8 @@ var database = {
 							if (el === 'title') title = lang['database_list_table_title'];
 							if (el === 'date_added') title = lang['database_list_table_date_added'];
 						}
+
+						if (title === false) return true;
 
 						var item = m.template(html, {
 							active: el == s.param ? 'active' : '',
@@ -414,17 +442,20 @@ var database = {
 		$('.items', x.el.list).on('scroll', function(){
 			if (!x.list_items || !x.list_items_p) return false;
 
-			var ws = $(this).scrollTop() + x.list_items_h;
+			Tasks.clear();
+
+			var ws = $(this).scrollTop();
+			var wsb = ws + x.list_items_h;
 
 			$.each(x.list_items_p, function(i, el){
 				if (el[1]) return true;
 
-				if (ws > el[0]) {
+				if (ws < el[0]+140 && wsb > el[0]) {
 					x.list_items_p[i][1] = true;
 					el[2].data('load', true);
 
 					Tasks.unshift(function(callback){
-						var id = +el[2].attr('data');
+						var id = el[3];
 
 						var li = false;
 						var lf = false;
@@ -445,30 +476,70 @@ var database = {
 							if (li && lf) callback();
 						}
 
+						if (x.arr[id].unique) {
+							lf = true;
+							if (li && lf) callback();
+							return false;
+						}
+
 						// unique field
 						if (x.ed[id]) {
 							$.each(x.ed[id], function(i, v){
-								$('.f.f_' + i, el[2]).html(v);
+								if (i === 'status') {
+									$('.' + i, el[2]).html(v);
+								} else {
+									$('.f.f_' + i, el[2]).html(v);
+								}
 							});
 
+							common.resize();
 							lf = true;
 							if (li && lf) callback();
 						} else {
 							$.post('?database/get_itemEditions', {id: id}, function(json){
 								x.ed[id] = {};
 								$.each(json.edition, function(i, v){
-									var type = fields.arr.fields[i].type;
-									value = $.map(v, function(el){
-										return fields.types[type].bases.view(el || '', i);
-									}).join(x.config.view === 'table' ? '<br>' : ', ');
-									$('.f.f_' + i, el[2]).html(value);
-									x.ed[id][i] = value;
+									if (i === 'status') {
+										var value = '';
+										$.each(v, function(k, val){
+											var t = '';
+											if (k == 1) t = 'physical';
+											if (k == 2) t = 'digital';
+											$.each(val, function(type, arr){
+												var temp = [];
+												var text = [];
+												$.each(arr, function(p, y){
+													if (temp.indexOf(y) + 1) return true;
+
+													temp.push(y);
+													var count = arr.reduce(function(prev, item){
+														return item === y ? prev+1 : prev;
+													}, 0);
+													text.push(count + '/' + arr.length + ' ' + lang['database_edition_f_' + k + '_' + y]);
+												});
+												value += '<b>' + lang['database_form_type_' + t] + ' ' + type + ':</b><br>' + text.join('<br>') + '<br>';
+											});
+										});
+										$('.' + i, el[2]).html(value);
+										x.ed[id][i] = value;
+									} else {
+										var type = fields.arr.fields[i].type;
+										value = $.map(v, function(el){
+											return fields.types[type].bases.view(el || '', i);
+										}).join(x.config.view === 'table' ? '<br>' : ', ');
+										$('.f.f_' + i, el[2]).html(value);
+										x.ed[id][i] = value;
+									}
 								});
 
+								common.resize();
 								lf = true;
 								if (li && lf) callback();
 							}, 'json');
 						}
+					}, function(){
+						x.list_items_p[i][1] = false;
+						el[2].data('load', false);
 					});
 				}
 			});
@@ -590,19 +661,19 @@ var database = {
 				var status = '';
 
 				if (data === 1) {
-					status += '<option value="1" selected>' + lang['database_edition_f_p_np'] + '</option>';
-					status += '<option value="6">' + lang['database_edition_f_p_ol'] + '</option>';
-					status += '<option value="2">' + lang['database_edition_f_p_st'] + '</option>';
-					status += '<option value="3">' + lang['database_edition_f_p_re'] + '</option>';
-					status += '<option value="4">' + lang['database_edition_f_p_so'] + '</option>';
-					status += '<option value="5">' + lang['database_edition_f_p_gi'] + '</option>';
+					status += '<option value="1" selected>' + lang['database_edition_f_1_1'] + '</option>';
+					status += '<option value="6">' + lang['database_edition_f_1_6'] + '</option>';
+					status += '<option value="2">' + lang['database_edition_f_1_2'] + '</option>';
+					status += '<option value="3">' + lang['database_edition_f_1_3'] + '</option>';
+					status += '<option value="4">' + lang['database_edition_f_1_4'] + '</option>';
+					status += '<option value="5">' + lang['database_edition_f_1_5'] + '</option>';
 				}
 				if (data === 2) {
-					status += '<option value="5" selected>' + lang['database_edition_f_d_ol'] + '</option>';
-					status += '<option value="1">' + lang['database_edition_f_d_us'] + '</option>';
-					status += '<option value="2">' + lang['database_edition_f_d_re'] + '</option>';
-					status += '<option value="3">' + lang['database_edition_f_d_so'] + '</option>';
-					status += '<option value="4">' + lang['database_edition_f_d_gi'] + '</option>';
+					status += '<option value="5" selected>' + lang['database_edition_f_2_5'] + '</option>';
+					status += '<option value="1">' + lang['database_edition_f_2_1'] + '</option>';
+					status += '<option value="2">' + lang['database_edition_f_2_2'] + '</option>';
+					status += '<option value="3">' + lang['database_edition_f_2_3'] + '</option>';
+					status += '<option value="4">' + lang['database_edition_f_2_4'] + '</option>';
 				}
 
 				return '<select t="' + data + '">' + status + '</select>';
@@ -631,6 +702,7 @@ var database = {
 			var parent = $('.edition_settings .col.f', x.el.form);
 
 			$('> div', parent).hide();
+			$('> div[data="type"]', parent).removeAttr('style');
 			$('.no', parent).show();
 			if (type === 1 && val === 2) {
 				$('> div[data="location"]', parent).removeAttr('style');
@@ -737,7 +809,8 @@ var database = {
 			return x.fields[x.active];
 		}
 	},
-	fill_ed_fields: function(str){
+	fill_ed_fields: function(str)
+	{
 		var x = this;
 
 		var ed_f = $.parseJSON(str || '{}');
@@ -771,19 +844,19 @@ var database = {
 				var status = '';
 
 				if (x.config.type === 1) {
-					status += '<option value="1" selected>' + lang['database_edition_f_p_np'] + '</option>';
-					status += '<option value="6">' + lang['database_edition_f_p_ol'] + '</option>';
-					status += '<option value="2">' + lang['database_edition_f_p_st'] + '</option>';
-					status += '<option value="3">' + lang['database_edition_f_p_re'] + '</option>';
-					status += '<option value="4">' + lang['database_edition_f_p_so'] + '</option>';
-					status += '<option value="5">' + lang['database_edition_f_p_gi'] + '</option>';
+					status += '<option value="1" selected>' + lang['database_edition_f_1_1'] + '</option>';
+					status += '<option value="6">' + lang['database_edition_f_1_6'] + '</option>';
+					status += '<option value="2">' + lang['database_edition_f_1_2'] + '</option>';
+					status += '<option value="3">' + lang['database_edition_f_1_3'] + '</option>';
+					status += '<option value="4">' + lang['database_edition_f_1_4'] + '</option>';
+					status += '<option value="5">' + lang['database_edition_f_1_5'] + '</option>';
 				}
 				if (x.config.type === 2) {
-					status += '<option value="5" selected>' + lang['database_edition_f_d_ol'] + '</option>';
-					status += '<option value="1">' + lang['database_edition_f_d_us'] + '</option>';
-					status += '<option value="2">' + lang['database_edition_f_d_re'] + '</option>';
-					status += '<option value="3">' + lang['database_edition_f_d_so'] + '</option>';
-					status += '<option value="4">' + lang['database_edition_f_d_gi'] + '</option>';
+					status += '<option value="5" selected>' + lang['database_edition_f_2_5'] + '</option>';
+					status += '<option value="1">' + lang['database_edition_f_2_1'] + '</option>';
+					status += '<option value="2">' + lang['database_edition_f_2_2'] + '</option>';
+					status += '<option value="3">' + lang['database_edition_f_2_3'] + '</option>';
+					status += '<option value="4">' + lang['database_edition_f_2_4'] + '</option>';
 				}
 
 				return '<select t="' + x.config.type + '">' + status + '</select>';
@@ -841,19 +914,19 @@ var database = {
 						var status = '';
 
 						if (x.arr[id].type === 1) {
-							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
-							status += '<option value="6"' + (x.arr[id].ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_p_ol'] + '</option>';
-							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_p_st'] + '</option>';
-							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_p_re'] + '</option>';
-							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_p_so'] + '</option>';
-							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_p_gi'] + '</option>';
+							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_1_1'] + '</option>';
+							status += '<option value="6"' + (x.arr[id].ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_1_6'] + '</option>';
+							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_1_2'] + '</option>';
+							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_1_3'] + '</option>';
+							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_1_4'] + '</option>';
+							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_1_5'] + '</option>';
 						}
 						if (x.arr[id].type === 2) {
-							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_d_ol'] + '</option>';
-							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_d_us'] + '</option>';
-							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_d_re'] + '</option>';
-							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_d_so'] + '</option>';
-							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
+							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_2_5'] + '</option>';
+							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_2_1'] + '</option>';
+							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_2_2'] + '</option>';
+							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_2_3'] + '</option>';
+							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_2_4'] + '</option>';
 						}
 
 						return '<select t="' + x.arr[id].type + '">' + status + '</select>';
@@ -913,19 +986,19 @@ var database = {
 						var status = '';
 
 						if (item.type === 1) {
-							status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
-							status += '<option value="6"' + (item.ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_p_ol'] + '</option>';
-							status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_p_st'] + '</option>';
-							status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_p_re'] + '</option>';
-							status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_p_so'] + '</option>';
-							status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_p_gi'] + '</option>';
+							status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_1_1'] + '</option>';
+							status += '<option value="6"' + (item.ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_1_6'] + '</option>';
+							status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_1_2'] + '</option>';
+							status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_1_3'] + '</option>';
+							status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_1_4'] + '</option>';
+							status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_1_5'] + '</option>';
 						}
 						if (item.type === 2) {
-							status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_d_ol'] + '</option>';
-							status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_d_us'] + '</option>';
-							status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_d_re'] + '</option>';
-							status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_d_so'] + '</option>';
-							status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
+							status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_2_5'] + '</option>';
+							status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_2_1'] + '</option>';
+							status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_2_2'] + '</option>';
+							status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_2_3'] + '</option>';
+							status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_2_4'] + '</option>';
 						}
 
 						return '<select t="' + item.type + '">' + status + '</select>';
@@ -991,19 +1064,19 @@ var database = {
 						var status = '';
 
 						if (x.arr[id].type === 1) {
-							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
-							status += '<option value="6"' + (x.arr[id].ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_p_ol'] + '</option>';
-							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_p_st'] + '</option>';
-							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_p_re'] + '</option>';
-							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_p_so'] + '</option>';
-							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_p_gi'] + '</option>';
+							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_1_1'] + '</option>';
+							status += '<option value="6"' + (x.arr[id].ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_1_6'] + '</option>';
+							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_1_2'] + '</option>';
+							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_1_3'] + '</option>';
+							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_1_4'] + '</option>';
+							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_1_5'] + '</option>';
 						}
 						if (x.arr[id].type === 2) {
-							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_d_ol'] + '</option>';
-							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_d_us'] + '</option>';
-							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_d_re'] + '</option>';
-							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_d_so'] + '</option>';
-							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
+							status += '<option value="5"' + (x.arr[id].ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_2_5'] + '</option>';
+							status += '<option value="1"' + (x.arr[id].ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_2_1'] + '</option>';
+							status += '<option value="2"' + (x.arr[id].ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_2_2'] + '</option>';
+							status += '<option value="3"' + (x.arr[id].ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_2_3'] + '</option>';
+							status += '<option value="4"' + (x.arr[id].ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_2_4'] + '</option>';
 						}
 
 						return '<select t="' + x.arr[id].type + '">' + status + '</select>';
@@ -1099,19 +1172,19 @@ var database = {
 							var status = '';
 
 							if (item.type === 1) {
-								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
-								status += '<option value="6"' + (item.ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_p_ol'] + '</option>';
-								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_p_st'] + '</option>';
-								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_p_re'] + '</option>';
-								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_p_so'] + '</option>';
-								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_p_gi'] + '</option>';
+								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_1_1'] + '</option>';
+								status += '<option value="6"' + (item.ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_1_6'] + '</option>';
+								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_1_2'] + '</option>';
+								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_1_3'] + '</option>';
+								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_1_4'] + '</option>';
+								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_1_5'] + '</option>';
 							}
 							if (item.type === 2) {
-								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_d_ol'] + '</option>';
-								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_d_us'] + '</option>';
-								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_d_re'] + '</option>';
-								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_d_so'] + '</option>';
-								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
+								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_2_5'] + '</option>';
+								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_2_1'] + '</option>';
+								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_2_2'] + '</option>';
+								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_2_3'] + '</option>';
+								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_2_4'] + '</option>';
 							}
 
 							return '<select t="' + item.type + '">' + status + '</select>';
@@ -1143,19 +1216,19 @@ var database = {
 							var status = '';
 
 							if (item.type === 1) {
-								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
-								status += '<option value="6"' + (item.ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_p_ol'] + '</option>';
-								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_p_st'] + '</option>';
-								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_p_re'] + '</option>';
-								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_p_so'] + '</option>';
-								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_p_gi'] + '</option>';
+								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_1_1'] + '</option>';
+								status += '<option value="6"' + (item.ed_status === 6 ? ' selected' : '') + '>' + lang['database_edition_f_1_6'] + '</option>';
+								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_1_2'] + '</option>';
+								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_1_3'] + '</option>';
+								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_1_4'] + '</option>';
+								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_1_5'] + '</option>';
 							}
 							if (item.type === 2) {
-								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_d_ol'] + '</option>';
-								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_d_us'] + '</option>';
-								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_d_re'] + '</option>';
-								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_d_so'] + '</option>';
-								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
+								status += '<option value="5"' + (item.ed_status === 5 ? ' selected' : '') + '>' + lang['database_edition_f_2_5'] + '</option>';
+								status += '<option value="1"' + (item.ed_status === 1 ? ' selected' : '') + '>' + lang['database_edition_f_2_1'] + '</option>';
+								status += '<option value="2"' + (item.ed_status === 2 ? ' selected' : '') + '>' + lang['database_edition_f_2_2'] + '</option>';
+								status += '<option value="3"' + (item.ed_status === 3 ? ' selected' : '') + '>' + lang['database_edition_f_2_3'] + '</option>';
+								status += '<option value="4"' + (item.ed_status === 4 ? ' selected' : '') + '>' + lang['database_edition_f_2_4'] + '</option>';
 							}
 
 							return '<select t="' + item.type + '">' + status + '</select>';
@@ -1743,19 +1816,19 @@ var database = {
 					var width = 100 / (6 - (el[6] ? 0 : 1));
 					var status = '';
 					if (type === 1) {
-						status += '<option value="1"' + (el[3] === 1 ? ' selected' : '') + '>' + lang['database_edition_f_p_np'] + '</option>';
-						status += '<option value="6"' + (el[3] === 6 ? ' selected' : '') + '>' + lang['database_edition_f_p_ol'] + '</option>';
-						status += '<option value="2"' + (el[3] === 2 ? ' selected' : '') + '>' + lang['database_edition_f_p_st'] + '</option>';
-						status += '<option value="3"' + (el[3] === 3 ? ' selected' : '') + '>' + lang['database_edition_f_p_re'] + '</option>';
-						status += '<option value="4"' + (el[3] === 4 ? ' selected' : '') + '>' + lang['database_edition_f_p_so'] + '</option>';
-						status += '<option value="5"' + (el[3] === 5 ? ' selected' : '') + '>' + lang['database_edition_f_p_gi'] + '</option>';
+						status += '<option value="1"' + (el[3] === 1 ? ' selected' : '') + '>' + lang['database_edition_f_1_1'] + '</option>';
+						status += '<option value="6"' + (el[3] === 6 ? ' selected' : '') + '>' + lang['database_edition_f_1_6'] + '</option>';
+						status += '<option value="2"' + (el[3] === 2 ? ' selected' : '') + '>' + lang['database_edition_f_1_2'] + '</option>';
+						status += '<option value="3"' + (el[3] === 3 ? ' selected' : '') + '>' + lang['database_edition_f_1_3'] + '</option>';
+						status += '<option value="4"' + (el[3] === 4 ? ' selected' : '') + '>' + lang['database_edition_f_1_4'] + '</option>';
+						status += '<option value="5"' + (el[3] === 5 ? ' selected' : '') + '>' + lang['database_edition_f_1_5'] + '</option>';
 					}
 					if (type === 2) {
-						status += '<option value="5"' + (el[3] === 5 ? ' selected' : '') + '>' + lang['database_edition_f_d_ol'] + '</option>';
-						status += '<option value="1"' + (el[3] === 1 ? ' selected' : '') + '>' + lang['database_edition_f_d_us'] + '</option>';
-						status += '<option value="2"' + (el[3] === 2 ? ' selected' : '') + '>' + lang['database_edition_f_d_re'] + '</option>';
-						status += '<option value="3"' + (el[3] === 3 ? ' selected' : '') + '>' + lang['database_edition_f_d_so'] + '</option>';
-						status += '<option value="4"' + (el[3] === 4 ? ' selected' : '') + '>' + lang['database_edition_f_d_gi'] + '</option>';
+						status += '<option value="5"' + (el[3] === 5 ? ' selected' : '') + '>' + lang['database_edition_f_2_5'] + '</option>';
+						status += '<option value="1"' + (el[3] === 1 ? ' selected' : '') + '>' + lang['database_edition_f_2_1'] + '</option>';
+						status += '<option value="2"' + (el[3] === 2 ? ' selected' : '') + '>' + lang['database_edition_f_2_2'] + '</option>';
+						status += '<option value="3"' + (el[3] === 3 ? ' selected' : '') + '>' + lang['database_edition_f_2_3'] + '</option>';
+						status += '<option value="4"' + (el[3] === 4 ? ' selected' : '') + '>' + lang['database_edition_f_2_4'] + '</option>';
 					}
 
 					var item = $('<div class="i" data="' + el[0] + '">\
@@ -1763,6 +1836,7 @@ var database = {
 						' + (el[6] ? '<div class="box p" style="width:' + width + '%">' + el[6] + '</div>' : '') + '\
 						<div class="box s t' + (type === 1 ? '1' : '2') + '" style="width:' + width + '%"><select>' + status + '</select></div>\
 						<div class="box f" style="width:' + width + '%">\
+							<div data="type" content="' + lang['database_edition_childs_type'] + '" contenteditable="true"></div>\
 							<div data="seller" content="' + lang['database_edition_childs_seller'] + '" contenteditable="true" style="display:none;"></div>\
 							<div data="client" content="' + lang['database_edition_childs_client'] + '" contenteditable="true" style="display:none;"></div>\
 							<div data="date" content="' + lang['database_edition_childs_date'] + '" contenteditable="true" style="display:none;"></div>\
@@ -1842,6 +1916,7 @@ var database = {
 			$.post('?database/edition_set_item_status', {id: id, status: val}, function(){}, 'json');
 
 			$('.f > div', parent).hide();
+			$('.f > div[data="type"]', parent).removeAttr('style');
 			$('.f .no', parent).show();
 			if (type === 1 && val === 2) {
 				$('.f > div[data="location"]', parent).removeAttr('style');
@@ -2053,19 +2128,19 @@ var database = {
 						$.each(json.items, function(i, el){
 							var status = '';
 							if (el[2] === 1) {
-								if (el[3] === 1) status = lang['database_edition_f_p_np'];
-								if (el[3] === 2) status = lang['database_edition_f_p_st'];
-								if (el[3] === 3) status = lang['database_edition_f_p_re'];
-								if (el[3] === 4) status = lang['database_edition_f_p_so'];
-								if (el[3] === 5) status = lang['database_edition_f_p_gi'];
-								if (el[3] === 6) status = lang['database_edition_f_p_ol'];
+								if (el[3] === 1) status = lang['database_edition_f_1_1'];
+								if (el[3] === 2) status = lang['database_edition_f_1_2'];
+								if (el[3] === 3) status = lang['database_edition_f_1_3'];
+								if (el[3] === 4) status = lang['database_edition_f_1_4'];
+								if (el[3] === 5) status = lang['database_edition_f_1_5'];
+								if (el[3] === 6) status = lang['database_edition_f_1_6'];
 							}
 							if (el[2] === 2) {
-								if (el[3] === 1) status = lang['database_edition_f_d_us'];
-								if (el[3] === 2) status = lang['database_edition_f_d_re'];
-								if (el[3] === 3) status = lang['database_edition_f_d_so'];
-								if (el[3] === 4) status = lang['database_edition_f_d_gi'];
-								if (el[3] === 5) status = lang['database_edition_f_d_ol'];
+								if (el[3] === 1) status = lang['database_edition_f_2_1'];
+								if (el[3] === 2) status = lang['database_edition_f_2_2'];
+								if (el[3] === 3) status = lang['database_edition_f_2_3'];
+								if (el[3] === 4) status = lang['database_edition_f_2_4'];
+								if (el[3] === 5) status = lang['database_edition_f_2_5'];
 							}
 							var f = '';
 							$.each($.parseJSON(el[4] || '{}'), function(i, el){
@@ -2488,19 +2563,19 @@ var database = {
 								$.each(json.items, function(i, el){
 									var status = '';
 									if (el[2] === 1) {
-										if (el[3] === 1) status = lang['database_edition_f_p_np'];
-										if (el[3] === 2) status = lang['database_edition_f_p_st'];
-										if (el[3] === 3) status = lang['database_edition_f_p_re'];
-										if (el[3] === 4) status = lang['database_edition_f_p_so'];
-										if (el[3] === 5) status = lang['database_edition_f_p_gi'];
-										if (el[3] === 6) status = lang['database_edition_f_p_ol'];
+										if (el[3] === 1) status = lang['database_edition_f_1_1'];
+										if (el[3] === 2) status = lang['database_edition_f_1_2'];
+										if (el[3] === 3) status = lang['database_edition_f_1_3'];
+										if (el[3] === 4) status = lang['database_edition_f_1_4'];
+										if (el[3] === 5) status = lang['database_edition_f_1_5'];
+										if (el[3] === 6) status = lang['database_edition_f_1_6'];
 									}
 									if (el[2] === 2) {
-										if (el[3] === 1) status = lang['database_edition_f_d_us'];
-										if (el[3] === 2) status = lang['database_edition_f_d_re'];
-										if (el[3] === 3) status = lang['database_edition_f_d_so'];
-										if (el[3] === 4) status = lang['database_edition_f_d_gi'];
-										if (el[3] === 5) status = lang['database_edition_f_d_ol'];
+										if (el[3] === 1) status = lang['database_edition_f_2_1'];
+										if (el[3] === 2) status = lang['database_edition_f_2_2'];
+										if (el[3] === 3) status = lang['database_edition_f_2_3'];
+										if (el[3] === 4) status = lang['database_edition_f_2_4'];
+										if (el[3] === 5) status = lang['database_edition_f_2_5'];
 									}
 									var f = '';
 									$.each($.parseJSON(el[4] || '{}'), function(i, el){
@@ -3279,9 +3354,10 @@ var database = {
 					fields.push(['image', lang['database_settings_fields_f_image']]);
 					fields.push(['uid', 'UID']);
 					fields.push(['title', lang['database_settings_fields_f_title']]);
+					fields.push(['status', lang['database_settings_fields_f_status']]);
 					fields.push(['date_added', lang['database_settings_fields_f_date_added']]);
 					var titles = {};
-					var value = ['id', 'image', 'uid', 'title', 'date_added'].concat(json.config.fields);
+					var value = ['id', 'image', 'uid', 'title', 'status', 'date_added'].concat(json.config.fields);
 					var combobox = null;
 
 					var start = function(){

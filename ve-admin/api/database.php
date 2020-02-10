@@ -19,7 +19,8 @@ if ($section === 'database')
 				$item['fields'],
 				$item['date_added'],
 				$item['date_change'],
-				$item['edited']
+				$item['edited'],
+				$item['ed_status']
 			];
 		}, $items);
 
@@ -32,19 +33,26 @@ if ($section === 'database')
 	{
 		$id = (int) $_POST['id'];
 		$ed = [];
-		
+		$status = [];
+
 		$item = $db->select('database', ['id'], ['id' => $id, 'del' => 0, 'unique' => 0], __FILE__, __LINE__);
 		if (!empty($item)) {
 			$editions = $db->select('editions', ['id'], ['item' => $id], __FILE__, __LINE__);
 			if (!empty($editions)) {
 				$editions = array_column($editions, 'id');
-				$editions_items = $db->select('editions_items', ['captions'], ['edition' => $editions], __FILE__, __LINE__);
+				$editions_items = $db->select('editions_items', ['type', 'status', 'fields', 'captions'], ['edition' => $editions], __FILE__, __LINE__);
 				foreach ($editions_items as $el) {
 					$json = json_decode($el['captions'], true);
 					foreach ($json as $i => $v) {
 						if (!isset($ed[$i])) $ed[$i] = [];
 						$ed[$i][] = $v;
 					}
+
+					// status
+					if (!isset($status[$el['type']])) $status[$el['type']] = [];
+					$fields = json_decode($el['fields'], true);
+					if (!isset($status[$el['type']][$fields['type']])) $status[$el['type']][$fields['type']] = [];
+					$status[$el['type']][$fields['type']][] = $el['status'] === 0 ? 1 : $el['status'];
 				}
 				foreach ($ed as $i => $v) {
 					$val = array_unique($v);
@@ -54,6 +62,7 @@ if ($section === 'database')
 				}
 			}
 		}
+		$ed['status'] = $status;
 
 		json(['edition' => $ed]);
 	}
