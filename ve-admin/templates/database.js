@@ -2409,12 +2409,12 @@ var database = {
 						var th = $(this);
 						var id = +th.attr('data');
 						var top = th.position().top + 120;
-						var load = th.data('load');
+						var load = th.data('load2');
 
 						if (load) return true;
 
 						if (ws < top && wsb > top) {
-							th.data('load', true);
+							th.data('load2', true);
 
 							Tasks.unshift(function(callback){
 								var li = false;
@@ -2499,7 +2499,7 @@ var database = {
 									}, 'json');
 								}
 							}, function(){
-								th.data('load', false);
+								th.data('load2', false);
 							});
 						}
 					});
