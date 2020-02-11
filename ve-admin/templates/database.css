@@ -411,8 +411,8 @@
 #pdf .form .wrapper .s3 .c .table .item.selected{background:#afa;}
 #pdf .form .wrapper .s3 .c .table .item > div{padding:20px;border-left:1px solid #ddd;flex-grow:1;}
 #pdf .form .wrapper .s3 .c .table .item > div:first-child{border:none;}
-#pdf .form .wrapper .s3 .c .table .item > div.image{width:140px !important;height:140px;flex-grow:0;}
-#pdf .form .wrapper .s3 .c .table .item > div.image .image{width:100px;height:100px;background-position:center;background-repeat:no-repeat;background-size:cover;}
+#pdf .form .wrapper .s3 .c .table .item > div.image{width:140px !important;display:flex;flex-grow:0;flex-shrink:0;}
+#pdf .form .wrapper .s3 .c .table .item > div.image .bg{width:100px;height:100px;margin:auto;background-color:#333;background-position:center;background-repeat:no-repeat;background-size:cover;}
 #pdf .form .wrapper .s3 .c .table .item.head{cursor:default;font-weight:bold;}
 #pdf .form .wrapper .s3 .c .table .item.head > div.image{height:auto;}
 #pdf .form .wrapper .s3 .c .table .item .loader{width:100%;height:100%;padding:0;position:absolute;top:0;left:0;background-color:rgba(0,0,0,.2);border:none;}

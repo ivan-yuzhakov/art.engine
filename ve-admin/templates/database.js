@@ -210,7 +210,7 @@ var database = {
 								});
 							if (id === 'image')
 								return m.template(template, {
-									type: 'image loader',
+									type: 'image',
 									value: '<div class="bg br3"></div>',
 									attr: ''
 								});
@@ -501,6 +501,7 @@ var database = {
 								$.each(json.edition, function(i, v){
 									if (i === 'status') {
 										var value = '';
+										var size = Object.keys(v).length;
 										$.each(v, function(k, val){
 											var t = '';
 											if (k == 1) t = 'physical';
@@ -517,7 +518,8 @@ var database = {
 													}, 0);
 													text.push(count + '/' + arr.length + ' ' + lang['database_edition_f_' + k + '_' + y]);
 												});
-												value += '<b>' + lang['database_form_type_' + t] + ' ' + type + ':</b><br>' + text.join('<br>') + '<br>';
+												var pre_type = size === 1 ? '' : lang['database_form_type_' + t] + ' ';
+												value += '<b>' + pre_type + type + ':</b><br>' + text.join('<br>') + '<br>';
 											});
 										});
 										$('.' + i, el[2]).html(value);
@@ -2395,6 +2397,114 @@ var database = {
 					}
 				});
 
+				$('.wrapper', x.el.parent).on('scroll', function(){
+					if (x.active !== 3) return false;
+
+					Tasks.clear();
+
+					var ws = $(this).scrollTop();
+					var wsb = ws + $(this).innerHeight();
+
+					x.el.step.filter('.s3').find('.c').find('.table').find('.item:not(.head):not(.hide)').each(function(){
+						var th = $(this);
+						var id = +th.attr('data');
+						var top = th.position().top + 120;
+						var load = th.data('load');
+
+						if (load) return true;
+
+						if (ws < top && wsb > top) {
+							th.data('load', true);
+
+							Tasks.unshift(function(callback){
+								var li = false;
+								var lf = false;
+
+								// image
+								var image = database.arr[id].image;
+								if (image) {
+									var bg = $('.bg', th);
+									var src = '/qrs/getfile/' + image + '/200/200/0';
+									m.preload(src, function(){
+										bg.css({backgroundImage: 'url(' + src + ')'});
+
+										li = true;
+										if (li && lf) callback();
+									});
+								} else {
+									li = true;
+									if (li && lf) callback();
+								}
+
+								if (database.arr[id].unique) {
+									lf = true;
+									if (li && lf) callback();
+									return false;
+								}
+
+								// unique field
+								if (database.ed[id]) {
+									$.each(database.ed[id], function(i, v){
+										if (i === 'status') {
+											$('.' + i, th).html(v);
+										} else {
+											$('.f_' + i, th).html(v);
+										}
+									});
+
+									lf = true;
+									if (li && lf) callback();
+								} else {
+									$.post('?database/get_itemEditions', {id: id}, function(json){
+										database.ed[id] = {};
+										$.each(json.edition, function(i, v){
+											if (i === 'status') {
+												var value = '';
+												var size = Object.keys(v).length;
+												$.each(v, function(k, val){
+													var t = '';
+													if (k == 1) t = 'physical';
+													if (k == 2) t = 'digital';
+													$.each(val, function(type, arr){
+														var temp = [];
+														var text = [];
+														$.each(arr, function(p, y){
+															if (temp.indexOf(y) + 1) return true;
+
+															temp.push(y);
+															var count = arr.reduce(function(prev, item){
+																return item === y ? prev+1 : prev;
+															}, 0);
+															text.push(count + '/' + arr.length + ' ' + lang['database_edition_f_' + k + '_' + y]);
+														});
+														var pre_type = size === 1 ? '' : lang['database_form_type_' + t] + ' ';
+														value += '<b>' + pre_type + type + ':</b><br>' + text.join('<br>') + '<br>';
+													});
+												});
+												$('.' + i, th).html(value);
+												database.ed[id][i] = value;
+											} else {
+												var type = fields.arr.fields[i].type;
+												value = $.map(v, function(el){
+													return fields.types[type].bases.view(el || '', i);
+												}).join('<br>');
+												$('.f_' + i, th).html(value);
+												database.ed[id][i] = value;
+											}
+										});
+
+										common.resize();
+										lf = true;
+										if (li && lf) callback();
+									}, 'json');
+								}
+							}, function(){
+								th.data('load', false);
+							});
+						}
+					});
+				});
+
 				x.el.step.filter('.s4').find('.c').empty();
 				x.el.step.filter('.s5').find('.c').empty();
 
@@ -2469,12 +2579,18 @@ var database = {
 				x.s3_filter = {
 					text: '',
 					use: false,
+					old: '',
 					change: function(){
 						var s = this;
 
 						var parent = $('.f', parent);
 
-						s.text = $('input', parent).val().trim().toLowerCase();
+						var text = $('input', parent).val().trim().toLowerCase();
+
+						if (text === s.old) return false;
+						s.old = text;
+
+						s.text = text;
 						s.use = !!s.text;
 
 						$('.clear, .count', parent).toggleClass('show', s.use);
@@ -2664,6 +2780,11 @@ var database = {
 											type: 'title',
 											value: lang['database_list_table_title']
 										});
+									if (id === 'status')
+										return m.template(template, {
+											type: 'status',
+											value: lang['database_list_table_status']
+										});
 									if (id === 'date_added')
 										return m.template(template, {
 											type: 'date_added',
@@ -2687,9 +2808,11 @@ var database = {
 									if (typeof id === 'number') {
 										if (fields.arr.fields[id]) {
 											var type = fields.arr.fields[id].type;
+											var value = $.inArray(id, database.config.unique) < 0 || !!el.unique ? fields.types[type].bases.view(el.fields[id] || '', id) : '';
+
 											return m.template(template, {
 												type: 'f_' + id + ' f_' + type,
-												value: fields.types[type].bases.view(el.fields[id] || '', id)
+												value: value
 											});
 										}
 									} else {
@@ -2701,7 +2824,7 @@ var database = {
 										if (id === 'image')
 											return m.template(template, {
 												type: 'image',
-												value: fields.types.file.bases.view(el.image)
+												value: '<div class="bg br3"></div>'
 											});
 										if (id === 'uid')
 											return m.template(template, {
@@ -2713,6 +2836,15 @@ var database = {
 												type: 'title',
 												value: el.private_title
 											});
+										if (id === 'status') {
+											var status = '';
+											if (!!el.unique) status = lang['database_edition_f_' + el.type + '_' + el.ed_status];
+
+											return m.template(template, {
+												type: 'status',
+												value: status
+											});
+										}
 										if (id === 'date_added')
 											return m.template(template, {
 												type: 'date_added',
@@ -2726,65 +2858,8 @@ var database = {
 						var empty = items.length ? '' : '<div class="empty">' + lang['database_list_table_empty'] + '</div>';
 
 						$('.c', parent).html('<div class="table br3">' + (items.length ? head + body : empty) + '</div>');
+						$('.wrapper', x.el.parent).trigger('scroll');
 					// }
-
-					if (database.config.view === 'grid1') {
-						var template = '<div class="item" data="{{id}}"><div class="inner br3">\
-							<div class="image" style="background-image:url({{image}});"></div>\
-							<div class="title">{{title}}</div>\
-							<div class="info">{{info}}</div>\
-						</div></div>';
-						var template_info = '<p><b>{{title}}</b>: {{value}}</p>';
-						var body = '';
-						$.each(items, function(i, el){
-							var date = new Date(el.date_added * 1000);
-							var day = date.getDate(); day = (day < 10 ? '0' : '') + day;
-							var month = date.getMonth() + 1; month = (month < 10 ? '0' : '') + month;
-							var year = date.getFullYear();
-							var hours = date.getHours(); hours = (hours < 10 ? '0' : '') + hours;
-							var minutes = date.getMinutes(); minutes = (minutes < 10 ? '0' : '') + minutes;
-
-							var info = $.map(database.config.display, function(id){
-								if (typeof id === 'number') {
-									if (fields.arr.fields[id]) {
-										var type = fields.arr.fields[id].type;
-										return m.template(template_info, {
-											title: fields.arr.fields[id].private_title,
-											value: fields.types[type].bases.view(el.fields[id] || '', id)
-										});
-									}
-								} else {
-									if (id === 'id')
-										return m.template(template_info, {
-											title: 'ID',
-											value: el.id
-										});
-									if (id === 'uid')
-										return m.template(template_info, {
-											title: 'UID',
-											value: el.uid
-										});
-									if (id === 'date_added')
-										return m.template(template_info, {
-											title: lang['database_list_table_date_added'],
-											value: day + '.' + month + '.' + year + ' ' + hours + ':' + minutes
-										});
-								}
-								return '';
-							}).join('');
-
-							body += m.template(template, {
-								image: '/qrs/getfile/' + (el.image || 0) + '/200/200/0',
-								title: el.private_title,
-								info: info,
-								id: el.id
-							});
-						});
-
-						var empty = items.length ? '' : '<div class="empty">' + lang['database_list_grid_empty'] + '</div>';
-
-						$('.c', parent).html('<div class="grid">' + (items.length ? body : empty) + '</div>');
-					}
 					// template end
 
 					$('.f input', parent).val('').trigger('keyup');
@@ -2846,7 +2921,9 @@ var database = {
 						});
 					} else {
 						$('.c .' + database.config.view, parent).append('<div class="empty">' + lang['database_list_' + database.config.view + '_empty'] + '</div>');
-					}1
+					}
+
+					$('.wrapper', x.el.parent).trigger('scroll');
 				};
 
 				x.s3_draw(function(){
