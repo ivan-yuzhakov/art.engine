@@ -890,12 +890,14 @@ var fields = {
 			},
 			bases: {
 				view: function(str, id){
+					var str = str + '';
 					var field = $.parseJSON(fields.arr.fields[id].value || '{}')[settings.arr['langFrontDefault']];
 					return $.map(str.split(';'), function(id){
 						if (id && field[id]) return field[id];
 					}).join(', ').short(100, ',');
 				},
 				sort: function(str, id){
+					var str = str + '';
 					var field = $.parseJSON(fields.arr.fields[id].value || '{}')[settings.arr['langFrontDefault']];
 					return $.map(str.split(';'), function(id){
 						if (id && field[id]) return field[id];

@@ -586,18 +586,15 @@ class Files
 
 				if ($w === 0 && $h === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
 					$path = $this->dir_files . $this->file['filename'];
-				}
-				if ($w >= $this->info['w'] && $h === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+				} else if ($w >= $this->info['w'] && $h === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
 					$path = $this->dir_files . $this->file['filename'];
-				}
-				if ($h >= $this->info['h'] && $w === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+				} else if ($h >= $this->info['h'] && $w === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
 					$path = $this->dir_files . $this->file['filename'];
-				}
-				if ($w >= $this->info['w'] && $h >= $this->info['h'] && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+				} else if ($w >= $this->info['w'] && $h >= $this->info['h'] && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
 					$path = $this->dir_files . $this->file['filename'];
+				} else {
+					$path = $this->getImage($id, $w, $h, $use_crop, $watermark, true);
 				}
-
-				$path = $this->getImage($id, $w, $h, $use_crop, $watermark, true);
 			break;
 
 			case 'document':
@@ -613,10 +610,14 @@ class Files
 
 			if (ob_get_level()) ob_end_clean();
 
-			header('Cache-Control: public');
+			header_remove('Pragma');
+			header_remove('Set-Cookie');
+			header('Accept-Ranges: bytes');
+			header('Cache-Control: max-age=31536000, public, immutable');
 			header('Content-Length: ' . filesize($path));
 			header('Content-Type: ' . $mime);
 			header('Expires: ' . gmdate('D, d M Y H:i:s', time() + 60*60*24*30) . ' GMT');
+			header('Last-Modified: ' . gmdate('D, d M Y H:i:s', filectime($path)) . ' GMT');
 
 			if ($fd = fopen($path, 'rb')) {
 				while (!feof($fd)) {

@@ -46,6 +46,7 @@ $lang['database_list_header_filter'] = 'Filter...';
 $lang['database_list_header_create_item'] = 'Create item';
 $lang['database_list_header_remove'] = 'Remove selected';
 $lang['database_list_header_pdf'] = 'PDF';
+$lang['database_list_header_report'] = 'Report';
 $lang['database_list_create_pdf_no_selected_item'] = 'No items selected!';
 // $lang['database_list_create_pdf_empty_template'] = 'No templates...';
 $lang['database_list_clone'] = 'Clone';
@@ -150,6 +151,7 @@ $lang['database_settings_uid_title'] = 'UID';
 $lang['database_settings_uid_mask'] = 'Mask';
 $lang['database_settings_uid_mask_ph'] = 'Mask text';
 $lang['database_settings_uid_sep_ph'] = 'Separate text';
+$lang['database_settings_style_title'] = 'Style';
 
 $lang['database_pdf_title'] = 'PDF';
 $lang['database_pdf_create'] = 'Create PDF';
@@ -166,10 +168,15 @@ $lang['database_pdf_new_next'] = 'Next';
 $lang['database_pdf_new_cancel'] = 'Cancel';
 $lang['database_pdf_new_s1_t'] = 'Select template';
 $lang['database_pdf_new_s2_t'] = 'Select language';
-$lang['database_pdf_new_s3_t'] = 'Select items';
+$lang['database_pdf_new_s3_t'] = 'Selected items';
 $lang['database_pdf_new_s3_fph'] = 'Filter...';
 $lang['database_pdf_new_s4_t'] = 'Fill in the fields of elements';
 $lang['database_pdf_new_s5_t'] = 'Fill in the general fields';
+
+$lang['database_report_selected'] = 'Selected items';
+$lang['database_report_create'] = 'Create report';
+$lang['database_report_cancel'] = 'Cancel';
+$lang['database_report_no_selected'] = 'No items selected...';
 
 /* ITEMS */
 

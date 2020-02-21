@@ -46,6 +46,7 @@ $lang['database_list_header_filter'] = 'Фильтрация...';
 $lang['database_list_header_create_item'] = 'Создать элемент';
 $lang['database_list_header_remove'] = 'Удалить выбранные';
 $lang['database_list_header_pdf'] = 'PDF';
+$lang['database_list_header_report'] = 'Отчёт';
 $lang['database_list_create_pdf_no_selected_item'] = 'Нет выбраных элементов!';
 // $lang['database_list_create_pdf_empty_template'] = 'Нет шаблонов...';
 $lang['database_list_clone'] = 'Клонировать';
@@ -150,6 +151,7 @@ $lang['database_settings_uid_title'] = 'Уникальный ID';
 $lang['database_settings_uid_mask'] = 'Маска';
 $lang['database_settings_uid_mask_ph'] = 'Текст маски';
 $lang['database_settings_uid_sep_ph'] = 'Текст разделителя';
+$lang['database_settings_style_title'] = 'Стили';
 
 $lang['database_pdf_title'] = 'PDF';
 $lang['database_pdf_create'] = 'Создать PDF';
@@ -166,10 +168,15 @@ $lang['database_pdf_new_next'] = 'Далее';
 $lang['database_pdf_new_cancel'] = 'Отмена';
 $lang['database_pdf_new_s1_t'] = 'Выберите шаблон';
 $lang['database_pdf_new_s2_t'] = 'Выберите язык';
-$lang['database_pdf_new_s3_t'] = 'Выберите элементы';
+$lang['database_pdf_new_s3_t'] = 'Выбрано элементов';
 $lang['database_pdf_new_s3_fph'] = 'Фильтрация...';
 $lang['database_pdf_new_s4_t'] = 'Заполните поля элементов';
 $lang['database_pdf_new_s5_t'] = 'Заполните общие поля';
+
+$lang['database_report_selected'] = 'Выбрано элементов';
+$lang['database_report_create'] = 'Создать отчёт';
+$lang['database_report_cancel'] = 'Отмена';
+$lang['database_report_no_selected'] = 'Нет выбранных элементов...';
 
 /* ITEMS */
 

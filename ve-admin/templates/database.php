@@ -21,6 +21,7 @@
 				<div class="br3 animate1 create create_item"><?php echo $lang['database_list_header_create_item']; ?></div>
 				<div class="br3 animate1 remove"><?php echo $lang['database_list_header_remove']; ?></div>
 				<div class="br3 animate1 create pdf"><?php echo $lang['database_list_header_pdf']; ?></div>
+				<div class="br3 animate1 create report"><?php echo $lang['database_list_header_report']; ?></div>
 				<div class="br3 menu">
 					<div class="icon"><p class="p1 br3"></p><p class="p2 br3"></p><p class="p3 br3"></p></div>
 					<div class="popup animate1"><div class="marker"></div><div class="wrapper br3">
@@ -277,6 +278,25 @@
 					</div>
 				</div>
 			</div>
+			<div class="container style">
+				<div class="field textarea">
+					<div class="head"><p><?php echo $lang['database_settings_style_title']; ?></p></div>
+					<div class="group">
+						<textarea class="br3 box animate1" rows="20"></textarea>
+					</div>
+				</div>
+			</div>
 		</div>
+	</div>
+
+	<div class="report_modal box animate2 br3">
+		<div class="header">
+			<div class="title"><?php echo $lang['database_list_header_report']; ?></div>
+			<div class="actions">
+				<div class="print"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M329.956 399.834H182.044c-9.425 0-17.067 7.641-17.067 17.067s7.641 17.067 17.067 17.067h147.911c9.425 0 17.067-7.641 17.067-17.067s-7.641-17.067-17.066-17.067zM329.956 346.006H182.044c-9.425 0-17.067 7.641-17.067 17.067s7.641 17.067 17.067 17.067h147.911c9.425 0 17.067-7.641 17.067-17.067s-7.641-17.067-17.066-17.067z"/><path d="M472.178 133.907h-54.303V35.132c0-9.425-7.641-17.067-17.067-17.067H111.192c-9.425 0-17.067 7.641-17.067 17.067v98.775H39.822C17.864 133.907 0 151.772 0 173.73v171.702c0 21.958 17.864 39.822 39.822 39.822h54.306v91.614c0 9.425 7.641 17.067 17.067 17.067h289.61c9.425 0 17.067-7.641 17.067-17.067v-91.614h54.306c21.958 0 39.822-17.864 39.822-39.822V173.73c0-21.957-17.864-39.823-39.822-39.823zm-343.92-81.708h255.483v81.708H128.258V52.199zm255.48 407.602H128.262V320.173h255.477l-.001 139.628zm17.07-225.679h-43.443c-9.425 0-17.067-7.641-17.067-17.067s7.641-17.067 17.067-17.067h43.443c9.425 0 17.067 7.641 17.067 17.067s-7.641 17.067-17.067 17.067z"/></svg></div>
+				<div class="close"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>
+			</div>
+		</div>
+		<div class="wrapper box"></div>
 	</div>
 </div>

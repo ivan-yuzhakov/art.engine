@@ -56,7 +56,7 @@ if ($section === 'database')
 				}
 				foreach ($ed as $i => $v) {
 					$val = array_unique($v);
-					$val = array_filter($val);
+					// $val = array_filter($val); // deleted 0 from flag fields
 					$val = array_values($val);
 					$ed[$i] = $val;
 				}
@@ -1070,6 +1070,32 @@ if ($section === 'database')
 		$items = array_unique($items);
 
 		json(['status' => true, 'items' => $items]);
+	}
+
+	if ($query === 'get_report')
+	{
+		$ids = $_POST['ids'];
+
+		$result = [];
+
+		foreach ($ids as $id) {
+			$i = [];
+			$dbi = $db->select('database', '*', ['id' => $id]);
+			$i['id'] = $dbi[0]['id'];
+			$i['image'] = $dbi[0]['image'];
+			$i['title'] = $dbi[0]['private_title'];
+			$i['uid'] = $dbi[0]['uid'];
+			$i['type'] = $dbi[0]['type'];
+			$i['unique'] = $dbi[0]['unique'];
+			$i['fields'] = json_decode($dbi[0]['fields'], true)['eng'];
+			$i['editions'] = $db->select('editions', ['title'], ['item' => $id]);
+			$i['editions'] = array_column($i['editions'], 'title');
+			$i['ed_status'] = $dbi[0]['ed_status'];
+			// dp($dbi);
+			$result[] = $i;
+		}
+
+		json(['status' => true, 'result' => $result]);
 	}
 }
 ?>
