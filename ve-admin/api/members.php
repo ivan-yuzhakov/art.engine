@@ -32,6 +32,10 @@ if ($section === 'members')
 		$users = array_column($users, null, 'id');
 
 		$groups = $db->select('members_groups', '*', [], __FILE__, __LINE__);
+		$groups = array_map(function($group){
+			$group['access'] = json_decode($group['access'], true);
+			return $group;
+		}, $groups);
 		$groups = array_column($groups, null, 'id');
 
 		$u_sorting = $db->select('settings', ['value'], ['variable' => ['sort_users_groups', 'sort_users_root']], __FILE__, __LINE__);
@@ -42,6 +46,7 @@ if ($section === 'members')
 			'users' => $users,
 			'groups' => $groups,
 			'logged' => $visitor->id,
+			'access2' => $visitor->access2,
 			'g_sorting' => $g_sorting,
 			'u_sorting' => $u_sorting
 		]);
@@ -51,8 +56,9 @@ if ($section === 'members')
 	{
 		if ($visitor->id == 1) {
 			$data = [
-				'title' => $_POST['title'],
-				'type'  => $_POST['type']
+				'title'  => $_POST['title'],
+				'type'   => $_POST['type'],
+				'access' => $_POST['access']
 			];
 
 			$json['id'] = $db->insert('members_groups', $data, __FILE__, __LINE__);
@@ -69,7 +75,8 @@ if ($section === 'members')
 	{
 		if ($visitor->id == 1) {
 			$data = [
-				'title' => $_POST['title']
+				'title'  => $_POST['title'],
+				'access' => $_POST['access']
 			];
 
 			$result = $db->update('members_groups', $data, 'id', $_POST['id'], __FILE__, __LINE__);
@@ -117,7 +124,7 @@ if ($section === 'members')
 				'address_1' => $_POST['address_1'],
 				'address_2' => $_POST['address_2'],
 				'access'    => $_POST['access'],
-				'groups'    => $_POST['groups']
+				'group'     => $_POST['group']
 			];
 
 			$json['id'] = $db->insert('members', $data, __FILE__, __LINE__);
@@ -132,7 +139,9 @@ if ($section === 'members')
 
 	if ($query === 'edit')
 	{
-		if ($visitor->id == 1 || $visitor->id == $_POST['id']) {
+		$id = (int) $_POST['id'];
+
+		if ($visitor->id == 1 || $visitor->id == $id) {
 			$data = [
 				'login'     => $_POST['login'],
 				'desc'      => $_POST['desc'],
@@ -145,15 +154,16 @@ if ($section === 'members')
 				'address_1' => $_POST['address_1'],
 				'address_2' => $_POST['address_2'],
 				'access'    => $_POST['access'],
-				'groups'    => $_POST['groups']
+				'group'     => $_POST['group']
 			];
+			if ($visitor->id == $id) unset($data['group']);
 			if (!empty($_POST['password'])) {
 				$salt = generate();
 				$data['salt'] = $salt;
 				$data['password'] = sha1($_POST['password'] . SALT . $salt);
 			}
 
-			$result = $db->update('members', $data, 'id', $_POST['id'], __FILE__, __LINE__);
+			$result = $db->update('members', $data, 'id', $id, __FILE__, __LINE__);
 
 			$json['status'] = $result ? true : false;
 		} else {

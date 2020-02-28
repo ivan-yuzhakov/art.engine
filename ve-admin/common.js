@@ -1213,7 +1213,7 @@ var common = {
 			common.resize();
 			common.menu.close();
 		} else {
-			location.hash = '/database';
+			location.hash = $('a', menu).attr('href');
 		}
 		$('a', menu).removeClass('active').filter('[href="#/' + hash.join('/') + '"]').addClass('active');
 		$('a', common.el.header).removeClass('active').filter('[href="#/' + hash.join('/') + '"]').addClass('active');

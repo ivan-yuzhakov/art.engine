@@ -152,6 +152,7 @@ $lang['database_settings_uid_mask'] = 'Маска';
 $lang['database_settings_uid_mask_ph'] = 'Текст маски';
 $lang['database_settings_uid_sep_ph'] = 'Текст разделителя';
 $lang['database_settings_style_title'] = 'Стили';
+$lang['database_settings_ed_type_title'] = 'Тип тиража по умолчанию';
 
 $lang['database_pdf_title'] = 'PDF';
 $lang['database_pdf_create'] = 'Создать PDF';
@@ -343,17 +344,30 @@ $lang['fields_types_base_popup_save'] = 'Сохранить';
 $lang['fields_types_base_popup_cancel'] = 'Отменить';
 $lang['fields_types_base_popup_empty'] = 'Элементов нет...';
 
+$lang['users_access_error'] = 'Это действие Вам недоступно. Недостаточно прав.';
 $lang['users_a_groups'] = 'Группы административных пользователей';
 $lang['users_a_users'] = 'Административные пользователи';
 $lang['users_s_groups'] = 'Группы пользователей сайта';
 $lang['users_s_users'] = 'Пользователи сайта';
 $lang['users_create_group'] = 'Создать группу';
 $lang['users_create_user'] = 'Создать пользователя';
-$lang['users_f_g_title_a'] = 'Введите название группы административных пользователей';
 $lang['users_f_g_title_s'] = 'Введите название группы пользователей сайта';
 $lang['users_f_g_default'] = 'Новая группа';
 $lang['users_f_g_title_edit'] = 'Введите новое название группы';
 $lang['users_f_g_title_remove'] = 'Удалить группу?';
+
+$lang['users_agf_title_add'] = 'Создание новой административной группы';
+$lang['users_agf_title_edit'] = 'Редактирование административной группы';
+$lang['users_agf_name'] = 'Название группы';
+$lang['users_agf_access'] = 'Права доступа';
+$lang['users_agf_access_view'] = 'Просмотр';
+$lang['users_agf_access_add'] = 'Создание';
+$lang['users_agf_access_edit'] = 'Редактирование';
+$lang['users_agf_access_remove'] = 'Удаление';
+$lang['users_agf_access_pdf_view'] = 'PDF - Просмотр';
+$lang['users_agf_access_pdf_add'] = 'PDF - Создание';
+$lang['users_agf_access_pdf_remove'] = 'PDF - Удаление';
+$lang['users_agf_access_settings'] = 'Настройки';
 
 $lang['users_create_user_a'] = 'Создание нового административного пользователя';
 $lang['users_create_user_s'] = 'Создание нового пользователя сайта';

@@ -31,10 +31,12 @@
 			<img src="/favicon.png">
 			<p><?php echo $settings['siteTitle']; ?></p>
 		</div>
-		<?php if ($visitor->access === 4) { ?>
+		<?php if ($visitor->id === 1 || @$visitor->access2->settings->view) { ?>
 			<a class="settings" href="#/settings" title="<?php echo $lang['section_settings']; ?>"><?php require_once('templates/settings.svg'); ?><i class="br10 animate2">!</i></a>
 		<?php } ?>
-		<a class="support" href="#/support" title="<?php echo $lang['section_support']; ?>"><?php require_once('templates/support.svg'); ?><i class="br10 animate2">!</i></a>
+		<?php if ($visitor->id === 1 || @$visitor->access2->support->view) { ?>
+			<a class="support" href="#/support" title="<?php echo $lang['section_support']; ?>"><?php require_once('templates/support.svg'); ?><i class="br10 animate2">!</i></a>
+		<?php } ?>
 		<div class="account">
 			<?php echo '<div class="user">' . $visitor->fname . '</div>'; ?>
 			<a class="logout" href="index.php?logout" title="<?php echo $lang['section_logout']; ?>">
@@ -46,32 +48,24 @@
 	<div id="menu">
 		<div class="overlay animate2"></div>
 		<div class="menu animate2">
-			<a class="animate" href="#/database"><?php require_once('templates/database.svg'); ?><p><?php echo $lang['section_database']; ?></p></a>
-			<a class="animate" href="#/items"><?php require_once('templates/items.svg'); ?><p><?php echo $lang['section_items']; ?></p></a>
-			<a class="animate" href="#/files"><?php require_once('templates/files.svg'); ?><p><?php echo $lang['section_files']; ?></p></a>
-			<?php
-				$sections = [];
-
-				//$sections[] = ['#/statistics', 'menu_statistics', 'Statistics'];
-				//$sections[] = ['#/order', 'menu_order', 'Orders'];
-				switch ($visitor->access) {
-					case '1':
-					case '2':
-					case '3':
-						// $sections[] = ['#/users', 'menu_users', $lang['section_users']];
-						break;
-					case '4':
-						$sections[] = ['#/fields', 'menu_fields', $lang['section_fields']];
-						// $sections[] = ['#/users', 'menu_users', $lang['section_users']];
-						break;
-				}
-				foreach ($sections as $section) {
-					$isPlugin = isset($section[3]);
-					echo '<a class="animate' . ($isPlugin ? ' hide ' . $section[3] : '') . '" href="' . $section[0] . '">' . $icons[$section[1]] . '<p>' . $section[2] . '</p></a>';
-				}
-			?>
-			<a class="animate" href="#/users"><?php require_once('templates/users.svg'); ?><p><?php echo $lang['section_users']; ?></p></a>
-			<a class="animate" href="#/plugins"><?php require_once('templates/plugins.svg'); ?><p><?php echo $lang['section_plugins']; ?></p></a>
+			<?php if ($visitor->id === 1 || @$visitor->access2->database->view) { ?>
+				<a class="animate" href="#/database"><?php require_once('templates/database.svg'); ?><p><?php echo $lang['section_database']; ?></p></a>
+			<?php } ?>
+			<?php if ($visitor->id === 1 || @$visitor->access2->items->view) { ?>
+				<a class="animate" href="#/items"><?php require_once('templates/items.svg'); ?><p><?php echo $lang['section_items']; ?></p></a>
+			<?php } ?>
+			<?php if ($visitor->id === 1 || @$visitor->access2->files->view) { ?>
+				<a class="animate" href="#/files"><?php require_once('templates/files.svg'); ?><p><?php echo $lang['section_files']; ?></p></a>
+			<?php } ?>
+			<?php if ($visitor->id === 1 || @$visitor->access2->fields->view) { ?>
+				<a class="animate" href="#/fields"><?php require_once('templates/fields.svg'); ?><p><?php echo $lang['section_fields']; ?></p></a>
+			<?php } ?>
+			<?php if ($visitor->id === 1 || @$visitor->access2->users->view) { ?>
+				<a class="animate" href="#/users"><?php require_once('templates/users.svg'); ?><p><?php echo $lang['section_users']; ?></p></a>
+			<?php } ?>
+			<?php if ($visitor->id === 1 || @$visitor->access2->plugins->view) { ?>
+				<a class="animate" href="#/plugins"><?php require_once('templates/plugins.svg'); ?><p><?php echo $lang['section_plugins']; ?></p></a>
+			<?php } ?>
 		</div>
 		<div class="search animate2">
 			<input class="br3 box" type="text" value="" placeholder="<?php echo $lang['search_input_placeholder']; ?>">

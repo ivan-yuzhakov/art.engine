@@ -152,6 +152,7 @@ $lang['database_settings_uid_mask'] = 'Mask';
 $lang['database_settings_uid_mask_ph'] = 'Mask text';
 $lang['database_settings_uid_sep_ph'] = 'Separate text';
 $lang['database_settings_style_title'] = 'Style';
+$lang['database_settings_ed_type_title'] = 'Default type of editions';
 
 $lang['database_pdf_title'] = 'PDF';
 $lang['database_pdf_create'] = 'Create PDF';
@@ -343,17 +344,30 @@ $lang['fields_types_base_popup_save'] = 'Save';
 $lang['fields_types_base_popup_cancel'] = 'Cancel';
 $lang['fields_types_base_popup_empty'] = 'Empty...';
 
+$lang['users_access_error'] = 'This action is not available to you. Not enough rights.';
 $lang['users_a_groups'] = 'Groups of administrative users';
 $lang['users_a_users'] = 'Administrative users';
 $lang['users_s_groups'] = 'Groups of site users';
 $lang['users_s_users'] = 'Site users';
 $lang['users_create_group'] = 'Create group';
 $lang['users_create_user'] = 'Create user';
-$lang['users_f_g_title_a'] = 'Enter the name group of administrative user';
 $lang['users_f_g_title_s'] = 'Enter the name group of site user';
 $lang['users_f_g_default'] = 'New group';
 $lang['users_f_g_title_edit'] = 'Enter the new name of group';
 $lang['users_f_g_title_remove'] = 'Remove group?';
+
+$lang['users_agf_title_add'] = 'Create new administrative group';
+$lang['users_agf_title_edit'] = 'Edit administrative group';
+$lang['users_agf_name'] = 'Name group';
+$lang['users_agf_access'] = 'Access rights';
+$lang['users_agf_access_view'] = 'View';
+$lang['users_agf_access_add'] = 'Add';
+$lang['users_agf_access_edit'] = 'Edit';
+$lang['users_agf_access_remove'] = 'Remove';
+$lang['users_agf_access_pdf_view'] = 'PDF - View';
+$lang['users_agf_access_pdf_add'] = 'PDF - Create';
+$lang['users_agf_access_pdf_remove'] = 'PDF - Remove';
+$lang['users_agf_access_settings'] = 'Settings';
 
 $lang['users_create_user_a'] = 'Create new administrative user';
 $lang['users_create_user_s'] = 'Create new site user';

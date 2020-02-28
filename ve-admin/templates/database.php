@@ -286,6 +286,14 @@
 					</div>
 				</div>
 			</div>
+			<div class="container ed_type">
+				<div class="field text">
+					<div class="head"><p><?php echo $lang['database_settings_ed_type_title']; ?></p></div>
+					<div class="group">
+						<input class="br3 box animate1" type="text" value="">
+					</div>
+				</div>
+			</div>
 		</div>
 	</div>
 

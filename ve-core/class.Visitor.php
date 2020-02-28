@@ -5,6 +5,7 @@ class Visitor
 	public $ip;
 	public $lang;
 	public $access;
+	public $access2; // access for CP
 	public $is_guest;
 	public $is_admin;
 	public $is_logged;
@@ -18,18 +19,24 @@ class Visitor
 		$this->ip = $_SERVER['REMOTE_ADDR'];
 		$this->lang = false;
 		$this->access = 0;
+		$this->access2 = [];
 		$this->is_guest = true;
 		$this->is_admin = false;
 		$this->is_logged = false;
 
 		if (isset($_SESSION['id']) && $_SESSION['id'] > 0 && isset($_SESSION['ip']) && $_SESSION['ip'] == $this->ip) {
-			$arr = $db->select('members', ['fname', 'access'], [
+			$arr = $db->select('members', ['fname', 'access', 'group'], [
 				'id' => (int) $_SESSION['id'],
 			], __FILE__, __LINE__);
 
 			if (!empty($arr)) {
+				$group = $db->select('members_groups', ['access'], [
+					'id' => $arr[0]['group'],
+				], __FILE__, __LINE__);
+
 				$this->id = $_SESSION['id'];
 				$this->access = (int) $arr[0]['access'];
+				$this->access2 = json_decode(@$group[0]['access']);
 				$this->is_guest = false;
 				$this->is_admin = $_SESSION['id'] === 1;
 				$this->is_logged = true;

@@ -37,28 +37,41 @@ if ($section === 'database')
 
 		$item = $db->select('database', ['id'], ['id' => $id, 'del' => 0, 'unique' => 0], __FILE__, __LINE__);
 		if (!empty($item)) {
-			$editions = $db->select('editions', ['id'], ['item' => $id], __FILE__, __LINE__);
+			$editions = $db->select('editions', ['id', 'title'], ['item' => $id], __FILE__, __LINE__);
 			if (!empty($editions)) {
-				$editions = array_column($editions, 'id');
-				$editions_items = $db->select('editions_items', ['type', 'status', 'fields', 'captions'], ['edition' => $editions], __FILE__, __LINE__);
+				$editions_ids = array_column($editions, 'id');
+				$editions_items = $db->select('editions_items', ['edition', 'type', 'status', 'fields', 'captions'], ['edition' => $editions_ids], __FILE__, __LINE__);
 				foreach ($editions_items as $el) {
 					$json = json_decode($el['captions'], true);
 					foreach ($json as $i => $v) {
 						if (!isset($ed[$i])) $ed[$i] = [];
 						$ed[$i][] = $v;
 					}
-
-					// status
-					if (!isset($status[$el['type']])) $status[$el['type']] = [];
-					$fields = json_decode($el['fields'], true);
-					if (!isset($status[$el['type']][$fields['type']])) $status[$el['type']][$fields['type']] = [];
-					$status[$el['type']][$fields['type']][] = $el['status'] === 0 ? 1 : $el['status'];
 				}
 				foreach ($ed as $i => $v) {
 					$val = array_unique($v);
-					// $val = array_filter($val); // deleted 0 from flag fields
 					$val = array_values($val);
 					$ed[$i] = $val;
+				}
+
+				// status
+				$config = $db->select('settings', ['value'], ['variable' => 'database'], __FILE__, __LINE__);
+				$config = json_decode($config[0]['value'], true);
+
+				foreach ($editions as $i => $sed) {
+					$status[$i] = ['title' => $sed['title'], 'type' => 1, 'items' => []];
+
+					foreach ($editions_items as $k => $sedi) {
+						if ($sed['id'] === $sedi['edition']) {
+							$fields = json_decode($sedi['fields'], true);
+							$type = isset($fields['type']) && !empty($fields['type']) ? $fields['type'] : $config['ed_type'];
+
+							$status[$i]['type'] = $sedi['type'];
+							$status[$i]['items'][$type][] = $sedi['status'] === 0 ? 1 : $sedi['status'];
+						}
+					}
+
+					ksort($status[$i]['items']);
 				}
 			}
 		}
@@ -886,6 +899,9 @@ if ($section === 'database')
 		$item = (int) $_POST['item'];
 		$captions = $_POST['captions'];
 
+		$config = $db->select('settings', ['value'], ['variable' => 'database'], __FILE__, __LINE__);
+		$config = json_decode($config[0]['value'], true);
+
 		$id = $db->insert('editions', [
 			'item' => $item,
 			'title' => $title,
@@ -921,7 +937,7 @@ if ($section === 'database')
 				'n' => $i,
 				'type' => $type,
 				'status' => $status,
-				'fields' => '',
+				'fields' => '{"type":"' . $config['ed_type'] . '"}',
 				'captions' => $captions,
 				'password' => $pass,
 				'note' => '',

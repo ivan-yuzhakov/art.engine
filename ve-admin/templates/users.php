@@ -64,6 +64,89 @@
 
 	<div class="overlay animate"></div>
 
+	<div class="agform box animate">
+		<div class="header">
+			<div class="actions">
+				<div class="br3 save"><?php echo $lang['global_save']; ?></div>
+				<div class="br3 saveclose"><?php echo $lang['global_save_and_close']; ?></div>
+				<div class="br3 close"><?php echo $lang['global_close']; ?></div>
+			</div>
+			<div class="title">{{title}}</div>
+		</div>
+		<div class="wrapper">
+			<div class="container system">
+				<div class="field text">
+					<div class="head"><p><?php echo $lang['users_agf_name']; ?></p></div>
+					<div class="group">
+						<input id="uagn" class="br3 box animate1" type="text" value="">
+					</div>
+				</div>
+			</div>
+			<div class="container system">
+				<div class="field access">
+					<div class="head"><p><?php echo $lang['users_agf_access']; ?></p></div>
+					<div class="group">
+						<div class="row br3" data="database">
+							<p><?php echo $lang['section_database']; ?></p>
+							<div class="childs">
+								<p data="view"><?php echo $lang['users_agf_access_view']; ?></p>
+								<p data="add"><?php echo $lang['users_agf_access_add']; ?></p>
+								<p data="edit"><?php echo $lang['users_agf_access_edit']; ?></p>
+								<p data="remove"><?php echo $lang['users_agf_access_remove']; ?></p>
+								<p data="pdf_view"><?php echo $lang['users_agf_access_pdf_view']; ?></p>
+								<p data="pdf_add"><?php echo $lang['users_agf_access_pdf_add']; ?></p>
+								<p data="pdf_remove"><?php echo $lang['users_agf_access_pdf_remove']; ?></p>
+								<p data="settings"><?php echo $lang['users_agf_access_settings']; ?></p>
+							</div>
+						</div>
+						<div class="row br3" data="items">
+							<p><?php echo $lang['section_items']; ?> (In developing)</p>
+							<div class="childs">
+								<p data="view"><?php echo $lang['users_agf_access_view']; ?></p>
+							</div>
+						</div>
+						<div class="row br3" data="files">
+							<p><?php echo $lang['section_files']; ?> (In developing)</p>
+							<div class="childs">
+								<p data="view"><?php echo $lang['users_agf_access_view']; ?></p>
+							</div>
+						</div>
+						<div class="row br3" data="fields">
+							<p><?php echo $lang['section_fields']; ?> (In developing)</p>
+							<div class="childs">
+								<p data="view"><?php echo $lang['users_agf_access_view']; ?></p>
+							</div>
+						</div>
+						<div class="row br3" data="users">
+							<p><?php echo $lang['section_users']; ?> (In developing)</p>
+							<div class="childs">
+								<p data="view"><?php echo $lang['users_agf_access_view']; ?></p>
+							</div>
+						</div>
+						<div class="row br3" data="plugins">
+							<p><?php echo $lang['section_plugins']; ?> (In developing)</p>
+							<div class="childs">
+								<p data="view"><?php echo $lang['users_agf_access_view']; ?></p>
+							</div>
+						</div>
+						<div class="row br3" data="settings">
+							<p><?php echo $lang['section_settings']; ?> (In developing)</p>
+							<div class="childs">
+								<p data="view"><?php echo $lang['users_agf_access_view']; ?></p>
+							</div>
+						</div>
+						<div class="row br3" data="support">
+							<p><?php echo $lang['section_support']; ?> (In developing)</p>
+							<div class="childs">
+								<p data="view"><?php echo $lang['users_agf_access_view']; ?></p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div class="form box animate">
 		<div class="header">
 			<div class="actions">
@@ -154,7 +237,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="container system">
+			<div class="container system groups">
 				<div class="field checkbox">
 					<div class="head"><p><?php echo $lang['users_input_groups']; ?></p></div>
 					<div class="group">{{groups}}<div class="clr"></div></div>

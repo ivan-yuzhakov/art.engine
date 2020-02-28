@@ -19,6 +19,7 @@ var users = {
 
 		x.el.list = $('.list', x.el.parent);
 		x.el.overlay = $('.overlay', x.el.parent);
+		x.el.agform = $('.agform', x.el.parent);
 		x.el.form = $('.form', x.el.parent);
 
 		x.template = {
@@ -26,9 +27,11 @@ var users = {
 			a_users: $('.overview', x.el.list).eq(1).html(),
 			s_groups: $('.overview', x.el.list).eq(2).html(),
 			s_users: $('.overview', x.el.list).eq(3).html(),
+			agform: x.el.agform.html(),
 			form: x.el.form.html()
 		};
 		$('.overview', x.el.list).empty();
+		x.el.agform.empty();
 		x.el.form.empty();
 
 		x.scrollbar_list = $('.scroll', x.el.list).map(function(el, i){
@@ -52,7 +55,9 @@ var users = {
 
 		x.el.list.on('click', '.header .create', function(){
 			x.parent = $(this).parents('.items').attr('parent');
-			if (x.parent === 'a_groups' || x.parent === 's_groups') x.groups_add();
+
+			if (x.parent === 'a_groups') x.ag_add();
+			if (x.parent === 's_groups') x.sg_add();
 			if (x.parent === 'a_users' || x.parent === 's_users') x.users_add();
 		}).on('click', '.g .remove', function(){
 			var th = $(this).parent();
@@ -63,7 +68,11 @@ var users = {
 		}).on('click', '.g:not(.n)', function(){
 			var id = +$(this).attr('data');
 
-			x.groups_edit(id);
+			if (x.arr.groups[id].type === 1) {
+				x.ag_edit(id);
+			} else {
+				x.groups_edit(id);
+			}
 		}).on('click', '.i .remove', function(){
 			var th = $(this).parent();
 
@@ -72,12 +81,33 @@ var users = {
 			return false;
 		}).on('click', '.i:not(.ne)', function(){
 			var id = +$(this).attr('data');
+			x.parent = $(this).parents('.items').attr('parent');
 
 			x.users_edit(id);
 		});
 
+		x.el.agform.on('click', '.header .close', function(){
+			x.ag_close();
+		}).on('click', '.header .saveclose', function(){
+			x.ag_save(true);
+		}).on('click', '.header .save', function(){
+			x.ag_save();
+		}).on('click', '.access p', function(){
+			var th = $(this);
+			var data = th.attr('data');
+
+			if (!data) {
+				th.parent().toggleClass('open').find('p[data="view"]').toggleClass('active');
+				return false;
+			}
+
+			th.toggleClass('active');
+
+			if (data === 'view') th.parents('.row').toggleClass('open');
+		});
+
 		x.el.form.on('click', '.header .close', function(){
-			x.users_close()
+			x.users_close();
 		}).on('click', '.header .saveclose', function(){
 			x.users_save(true);
 		}).on('click', '.header .save', function(){
@@ -122,6 +152,7 @@ var users = {
 			}
 			x.logged = json.logged;
 			x.access = x.arr.users[x.logged].access;
+			x.access2 = json.access2;
 
 			$.each(x.arr.users, function(i, el){
 				var k = $.inArray(i, x.sort.users) + 1;
@@ -177,18 +208,123 @@ var users = {
 		if (x.logged === 1) x.sortable();
 		common.resize();
 	},
-	groups_add: function()
+	ag_add: function()
 	{
 		var x = this;
 
-		var title = x.parent === 'a_groups' ? lang['users_f_g_title_a'] : lang['users_f_g_title_s']
+		x.mode = 0;
 
-		alertify.prompt(title, function(e, str){
+		var html = m.template(x.template.agform, {
+			title: lang['users_agf_title_add']
+		});
+
+		x.el.agform.html(html);
+
+		x.el.overlay.addClass('show');
+		x.el.agform.addClass('show');
+
+		setTimeout(function(){
+			$('#uagn', x.el.agform).focus();
+		}, 210);
+	},
+	ag_edit: function(id)
+	{
+		var x = this;
+
+		x.mode = id;
+
+		var html = m.template(x.template.agform, {
+			title: lang['users_agf_title_edit']
+		});
+
+		x.el.agform.html(html);
+
+		$('#uagn', x.el.agform).val(x.arr.groups[id].title);
+		$.each(x.arr.groups[id].access, function(section, vals){
+			var s = $('.row[data="' + section + '"]', x.el.agform);
+
+			$.each(vals, function(i, v){
+				$('p[data="' + i + '"]', s).toggleClass('active', v);
+
+				if (i === 'view' && v) s.addClass('open');
+			});
+		});
+
+		x.el.overlay.addClass('show');
+		x.el.agform.addClass('show');
+	},
+	ag_save: function(close)
+	{
+		var x = this;
+
+		loader.show();
+
+		var access = (function(){
+			var json = {};
+
+			$('.access .row', x.el.agform).each(function(){
+				var th = $(this);
+				var section = th.attr('data');
+				var j = {};
+
+				$('.childs p', th).each(function(){
+					var th = $(this);
+					var data = th.attr('data');
+
+					j[data] = th.hasClass('active');
+				});
+
+				json[section] = j;
+			});
+
+			return json;
+		})();
+		var data = {
+			title: $('#uagn', x.el.agform).val().trim(),
+			type: 1,
+			access: JSON.stringify(access)
+		};
+		if (x.mode) data.id = x.mode;
+
+		$.post('?members/groups_' + (x.mode ? 'edit' : 'add'), data, function(json){
+			if (json.status) {
+				if (x.mode) {
+					x.arr.groups[x.mode].title = data.title;
+					x.arr.groups[x.mode].access = access;
+					x.draw();
+				} else {
+					var id = json.id;
+					x.arr.groups[id] = $.extend({id: id}, data, {access: access});
+
+					x.sort.groups.push(id);
+					x.draw();
+					x.set_sorting('groups');
+				}
+
+				loader.hide();
+				if (close) x.ag_close();
+			}
+		}, 'json');
+	},
+	ag_close: function()
+	{
+		var x = this;
+
+		x.mode = false;
+
+		x.el.overlay.removeClass('show');
+		x.el.agform.removeClass('show');
+	},
+	sg_add: function()
+	{
+		var x = this;
+
+		alertify.prompt(lang['users_f_g_title_s'], function(e, str){
 			if (!e) return false;
 
 			x.el.overlay.addClass('show');
 
-			var data = {title: str, type: +!(users.parent === 'a_groups')+1};
+			var data = {title: str, type: 2};
 			$.post('?members/groups_add', data, function(json){
 				if (json.status) {
 					var id = json.id;
@@ -284,9 +420,7 @@ var users = {
 			title: vsprintf(lang['users_edit_user'], [x.arr.users[id].fname]),
 			groups: $.map(x.sort.groups, function(id){
 				if (id && x.arr.groups[id] && x.arr.groups[id].type === (x.parent === 'a_users' ? 1 : 2)) {
-					var g = arr.groups ? arr.groups.split(',') : [];
-					var k = $.inArray(id, g) + 1;
-					return '<p data="' + id + '" class="br3 animate1 ' + (k ? 'active' : '') + '">' + x.arr.groups[id].title + '</p>';
+					return '<p data="' + id + '" class="br3 animate1 ' + (arr.group == id ? 'active' : '') + '">' + x.arr.groups[id].title + '</p>';
 				}
 			}).join('')
 		});
@@ -305,6 +439,9 @@ var users = {
 
 		fields.types.tinymce.item_add($('.field.tinymce .group', x.el.form), arr.desc, null, 'users');
 		fields.types.file.item_add($('.field.file .group', x.el.form), arr.image, null, 'users');
+
+		// if user edit self
+		if (x.logged === id) $('.container.system.groups', x.el.form).hide();
 
 		x.el.overlay.addClass('show');
 		x.el.form.addClass('show');
@@ -329,7 +466,7 @@ var users = {
 			desc: fields.types.tinymce.item_save($('.field.tinymce .group', x.el.form)),
 			image: fields.types.file.item_save($('.field.file .group', x.el.form)),
 			access: x.mode === 1 ? 4 : x.logged === x.mode ? x.access : x.parent === 'a_users' ? 3 : 1,
-			groups: $('.field.checkbox .group p.active', x.el.form).map(function(){return $(this).attr('data')}).get().join(',')
+			group: +$('.field.checkbox .group p.active', x.el.form).attr('data') || 0
 		};
 
 		if (!data.login) {
@@ -418,6 +555,15 @@ var users = {
 		}).get();
 
 		$.post('?members/set_sort', {sort: x.sort[s].join(','), s: s}, function(json){}, 'json');
+	},
+	get_access: function(section, type)
+	{
+		var x = this;
+
+		if (x.logged === 1) return true;
+		if (x.access2[section] === undefined) return true;
+		if (x.access2[section][type] === undefined) return true;
+		return x.access2[section][type];
 	},
 	reinit_scrollbars: function()
 	{
