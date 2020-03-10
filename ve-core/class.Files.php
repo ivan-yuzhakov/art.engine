@@ -11,10 +11,10 @@ class Files
 	public $files_size = false;
 	public $files = [];
 
-    private $file;
-    private $path;
-    private $info;
-    private $cache;
+	private $file;
+	private $path;
+	private $info;
+	private $cache;
 
 	function __construct()
 	{
@@ -560,13 +560,14 @@ class Files
 		}
 	}
 
-	public function getFile($id = 0, $w = 0, $h = 0, $use_crop = false, $watermark = false)
+	public function getFile($id = 0, $w = 0, $h = 0, $use_crop = false, $watermark = false, $use_processing = 0)
 	{
 		$id = (int) $id;
 		$w = (int) $w; $w = max($w, 0);
 		$h = (int) $h; $h = max($h, 0);
 		$use_crop = !empty($use_crop);
 		$watermark = $this->verificationWatermark($watermark);
+		$use_processing = (int) $use_processing;
 
 		$this->file = $this->verificationFile($id);
 
@@ -584,13 +585,13 @@ class Files
 				$this->info['h'] = $info[1];
 				$this->info['mime'] = $info['mime'];
 
-				if ($w === 0 && $h === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+				if (!$use_processing && $w === 0 && $h === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
 					$path = $this->dir_files . $this->file['filename'];
-				} else if ($w >= $this->info['w'] && $h === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+				} else if (!$use_processing && $w >= $this->info['w'] && $h === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
 					$path = $this->dir_files . $this->file['filename'];
-				} else if ($h >= $this->info['h'] && $w === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+				} else if (!$use_processing && $h >= $this->info['h'] && $w === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
 					$path = $this->dir_files . $this->file['filename'];
-				} else if ($w >= $this->info['w'] && $h >= $this->info['h'] && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+				} else if (!$use_processing && $w >= $this->info['w'] && $h >= $this->info['h'] && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
 					$path = $this->dir_files . $this->file['filename'];
 				} else {
 					$path = $this->getImage($id, $w, $h, $use_crop, $watermark, true);

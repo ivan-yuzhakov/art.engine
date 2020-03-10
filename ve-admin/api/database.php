@@ -433,10 +433,10 @@ if ($section === 'database')
 		$list = $db->select('database_pdf', '*', [], __FILE__, __LINE__);
 		$list = array_map(function($el) use($lang) {
 			return [
-				$el['id'],
-				date($lang['global_format_date'], $el['date_create']),
-				$el['template'],
-				$el['file'],
+				0 => $el['id'],
+				1 => date($lang['global_format_date'], $el['date_create']),
+				2 => $el['template'],
+				3 => $el['file']
 			];
 		}, $list);
 		$list = array_reverse($list);
@@ -448,13 +448,24 @@ if ($section === 'database')
 	{
 		$id = (int) $_POST['id'];
 
-		$file = $db->select('database_pdf', ['file'], ['id' => $id], __FILE__, __LINE__);
-		$file = DIR_FILES . 'pdf/' . $file[0]['file'];
+		$file = DIR_FILES . 'pdf/' . str_pad($id, 7, '0', STR_PAD_LEFT) . '.pdf';
 		if (file_exists($file)) unlink($file);
 
 		$result = $db->delete('database_pdf', 'id', $id, __FILE__, __LINE__);
 
 		json(['status' => $result]);
+	}
+
+	if ($query === 'pdf_edit')
+	{
+		$id = (int) $_POST['id'];
+		$file = $_POST['file'];
+
+		$db->update('database_pdf', [
+			'file' => $file
+		], 'id', $id, __FILE__, __LINE__);
+
+		json(['status' => true]);
 	}
 
 	if ($query === 'pdf_template_fields')
@@ -754,7 +765,7 @@ if ($section === 'database')
 
 		$config = array_merge([
 			'debug' => false,
-			'title' => 'PDF.pdf',
+			'title' => 'PDF',
 			'orientation' => 'P', // L, P
 			'html' => [],
 			'fonts_dir' => DIR_THEME . 'fonts',
@@ -808,16 +819,48 @@ if ($section === 'database')
 		$id = $db->insert('database_pdf', [
 			'date_create' => time(),
 			'template' => $path_name,
-			'file' => '0',
+			'file' => $config['title']
 		], __FILE__, __LINE__);
-		$filename = $id . '_' . $config['title'];
-		$db->update('database_pdf', [
-			'file' => $filename,
-		], 'id', $id, __FILE__, __LINE__);
 
+		$filename = str_pad($id, 7, '0', STR_PAD_LEFT) . '.pdf';
 		$mpdf->Output(DIR_FILES . 'pdf/' . $filename, 'F');
 
-		json(['status' => true]);
+		json(['status' => true, 'id' => $id]);
+	}
+
+	if ($query === 'pdf_openfile')
+	{
+		$id = (int) $get[2];
+
+		$file = $db->select('database_pdf', ['file'], ['id' => $id], __FILE__, __LINE__);
+		$name = $file[0]['file'];
+		$file = DIR_FILES . 'pdf/' . str_pad($id, 7, '0', STR_PAD_LEFT) . '.pdf';
+
+		if (file_exists($file)) {
+			$mime = mime_content_type($file);
+
+			if (ob_get_level()) ob_end_clean();
+
+			header('Content-Description: File Transfer');
+			header('Content-Type: ' . $mime);
+			header('Content-Disposition: attachment; filename=' . $name . '.pdf');
+			header('Content-Transfer-Encoding: binary');
+			header('Expires: 0');
+			header('Cache-Control: must-revalidate');
+			header('Pragma: public');
+			header('Content-Length: ' . filesize($file));
+
+			if ($fd = fopen($file, 'rb')) {
+				while (!feof($fd)) {
+					print fread($fd, 1024);
+				}
+				fclose($fd);
+			}
+
+			exit;
+		} else {
+			die('Error!');
+		}
 	}
 
 	if ($query === 'get_itemsById') // for field type base

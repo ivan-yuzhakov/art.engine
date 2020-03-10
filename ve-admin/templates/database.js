@@ -2334,6 +2334,16 @@ var database = {
 					setTimeout(function(){
 						x.el.root.remove();
 					}, 210);
+				}).on('keydown', '.item.i .file', function(e){
+					if (e.keyCode === 13) $(this).blur();
+				}).on('blur', '.item.i .file', function(){
+					var th = $(this);
+					var id = +th.parent().attr('data');
+					var val = th.text().trim();
+					val = val.replace(/\~|\@|\#|\$|\%|\^|\&|\*|\+|\\|\}|\"|\?|\>|\:|\{|\<|\.|\/|\;|\'|\[|\]|\||\=|\`|\№/ig, '').trim();
+					th.text(val);
+
+					x.edit(id, val);
 				}).on('click', '.remove', function(){
 					if (!users.get_access('database', 'pdf_remove')) {
 						alertify.error(lang['users_access_error']);
@@ -2357,29 +2367,39 @@ var database = {
 				var x = this;
 
 				var width = 100 / 4;
-				var template = '<div class="item" data="{{id}}">\
-					<div class="box id" style="width:' + width + '%">{{id}}</div>\
+				var template = '<div class="item i" data="{{id}}">\
 					<div class="box date" style="width:' + width + '%">{{date}}</div>\
 					<div class="box template" style="width:' + width + '%">{{template}}</div>\
+					<div class="box file" style="width:' + width + '%" contenteditable="true">{{file}}</div>\
 					<div class="box actions" style="width:' + width + '%">{{actions}}</div>\
 				</div>';
 				var head = '<div class="item head">\
-					<div class="box id" style="width:' + width + '%">ID</div>\
 					<div class="box date" style="width:' + width + '%">' + lang['database_pdf_list_date'] + '</div>\
 					<div class="box template" style="width:' + width + '%">' + lang['database_pdf_list_template'] + '</div>\
+					<div class="box file" style="width:' + width + '%">' + lang['database_pdf_list_file'] + '</div>\
 					<div class="box actions" style="width:' + width + '%"></div>\
 				</div>';
 				var body = $.map(x.list, function(el){
 					return m.template(template, {
 						id: el[0],
 						date: el[1],
+						file: el[3],
 						template: el[2],
-						actions: '<a class="view br3" href="/ve-files/pdf/' + el[3] + '" title="' + lang['database_pdf_list_view'] + '" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3m0 8c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z"></path></svg></a><div class="remove br3" title="' + lang['database_pdf_list_remove'] + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>'
+						actions: '<a class="view br3" href="?database/pdf_openfile/' + el[0] + '" title="' + lang['database_pdf_list_view'] + '" target="_blank"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3m0 8c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5m0-12.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5z"></path></svg></a><div class="remove br3" title="' + lang['database_pdf_list_remove'] + '"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>'
 					});
 				}).join('');
 				var content = body ? head + body : '<div class="empty">' + lang['database_pdf_list_empty'] + '</div>';
 
 				$('.wrapper', x.el.parent).html('<div class="table br3">' + content + '</div>');
+			},
+			edit: function(id, val){
+				var x = this;
+
+				$.post('?database/pdf_edit', {id: id, file: val}, function(json){
+					if (json.status) {
+						WS.send('database/pdf_edit');
+					}
+				}, 'json');
 			},
 			remove: function(id){
 				var x = this;
@@ -2399,7 +2419,6 @@ var database = {
 							} else {
 								m.report(url, data, JSON.stringify(json));
 							}
-							
 						}, 'json');
 					}
 				});
@@ -3195,6 +3214,7 @@ var database = {
 							database.pdf.list.draw();
 							x.el.parent.removeClass('show');
 							x.el.overlay.removeClass('top');
+							$('.item.i[data="' + json.id + '"] .file', database.pdf.list.el.parent).focus();
 						});
 						WS.send('database/pdf_new');
 					} else {
@@ -4120,6 +4140,16 @@ var database = {
 			});
 		}
 		if (cmd === 'pdf_new') {
+			if (database.pdf.opened) {
+				WS.append(function(cb){
+					database.pdf.list.load(function(){
+						database.pdf.list.draw();
+						cb();
+					});
+				});
+			}
+		}
+		if (cmd === 'pdf_edit') {
 			if (database.pdf.opened) {
 				WS.append(function(cb){
 					database.pdf.list.load(function(){

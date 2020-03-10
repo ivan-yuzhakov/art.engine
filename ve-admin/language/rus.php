@@ -159,6 +159,7 @@ $lang['database_pdf_create'] = 'Создать PDF';
 $lang['database_pdf_close'] = 'Закрыть';
 $lang['database_pdf_list_empty'] = 'Пусто...';
 $lang['database_pdf_list_date'] = 'Дата';
+$lang['database_pdf_list_file'] = 'Файл';
 $lang['database_pdf_list_template'] = 'Шаблон';
 $lang['database_pdf_list_view'] = 'Просмотреть';
 $lang['database_pdf_list_remove'] = 'Удалить';

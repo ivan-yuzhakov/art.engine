@@ -22,7 +22,7 @@ $lang['global_enable_selected'] = 'Enable selected';
 $lang['global_disable_selected'] = 'Disable selected';
 $lang['global_error_report'] = 'An error occurred while sending a request to the server.<br>Administrator has already fixes this bug!';
 $lang['global_error_session'] = 'You are not authorized. Sign on <a href="/ve-admin/" target="_blank">this link</a>.';
-$lang['global_format_date'] = 'm.d.Y';
+$lang['global_format_date'] = 'm/d/Y';
 $lang['global_ws_error'] = 'Attempting to connect to server...';
 
 /* SEARCH */
@@ -159,6 +159,7 @@ $lang['database_pdf_create'] = 'Create PDF';
 $lang['database_pdf_close'] = 'Close';
 $lang['database_pdf_list_empty'] = 'Empty...';
 $lang['database_pdf_list_date'] = 'Date';
+$lang['database_pdf_list_file'] = 'File';
 $lang['database_pdf_list_template'] = 'Template';
 $lang['database_pdf_list_view'] = 'View';
 $lang['database_pdf_list_remove'] = 'Remove';

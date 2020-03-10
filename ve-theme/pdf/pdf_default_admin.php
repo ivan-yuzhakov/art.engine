@@ -14,7 +14,7 @@ foreach ($items as $id => $item) {
 
 $template = [
 	'debug' => false,
-	'title' => 'PDF.pdf',
+	'title' => 'PDF',
 	'html' => [$html],
 	// fonts
 	'fonts_dir' => DIR_THEME . 'fonts',

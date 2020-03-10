@@ -366,8 +366,9 @@
 #pdf .list .wrapper .table .item{border-top:1px solid #ddd;display:flex;justify-content:space-between;line-height:40px;}
 #pdf .list .wrapper .table .item > div{padding:20px;border-left:1px solid #ddd;flex-grow:1;}
 #pdf .list .wrapper .table .item > div:first-child{border:none;}
-#pdf .list .wrapper .table .item > div.id{width:70px !important;flex-grow:0;text-align:center;}
 #pdf .list .wrapper .table .item > div.date{width:120px !important;flex-grow:0;text-align:center;}
+#pdf .list .wrapper .table .item > div.template{width:120px !important;flex-grow:0;text-align:center;}
+#pdf .list .wrapper .table .item > div.file:focus{background:#dfd;outline:none;}
 #pdf .list .wrapper .table .item > div.actions{width:141px !important;height:80px;flex-grow:0;}
 #pdf .list .wrapper .table .item > div.actions .view{width:16px;height:16px;padding:12px;background:#333;display:block;float:left;}
 #pdf .list .wrapper .table .item > div.actions .view:hover{background:#238ba3;}

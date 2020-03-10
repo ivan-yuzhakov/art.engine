@@ -183,7 +183,7 @@ class Database
 		return $result;
 	}
 
-	function update($db_name, $fields = [], $id_key, $id_val, $file = null, $line = null)
+	function update($db_name, $fields = [], $id_key = false, $id_val = false, $file = null, $line = null)
 	{
 		$type = [];
 		$args = [];
@@ -198,16 +198,20 @@ class Database
 		$sql = implode(', ', $sql);
 
 		// where
-		$where = [];
-		$ids = is_array($id_val) ? $id_val : [$id_val];
-		foreach ($ids as $i => $id) {
-			$where[] = '`' . $id_key . '` = ?';
-			$type[] = is_int($id) ? 'i' : 's';
-			$args[] = &$ids[$i];
+		if ($id_key === false && $id_val === false) {
+			$where = '';
+		} else {
+			$where = [];
+			$ids = is_array($id_val) ? $id_val : [$id_val];
+			foreach ($ids as $i => $id) {
+				$where[] = '`' . $id_key . '` = ?';
+				$type[] = is_int($id) ? 'i' : 's';
+				$args[] = &$ids[$i];
+			}
+			$where = ' WHERE (' . implode(' OR ', $where) . ')';
 		}
-		$where = '(' . implode(' OR ', $where) . ')';
 
-		$stmt = $this->prepare('UPDATE `prefix_' . $db_name . '` SET ' . $sql . ' WHERE ' . $where, $type, $args, $file, $line);
+		$stmt = $this->prepare('UPDATE `prefix_' . $db_name . '` SET ' . $sql . $where, $type, $args, $file, $line);
 
 		$result = true;
 		$stmt->close();
