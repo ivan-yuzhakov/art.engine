@@ -1139,6 +1139,8 @@ var common = {
 	},
 	check_update: function()
 	{
+		if (!users.get_access('settings', 'view')) return false;
+
 		setTimeout(function(){
 			$.get('?updates/check_update', function(json){
 				if (json.status === 'MANUAL_UPDATE' || json.status === 'NEW_VERSION') {

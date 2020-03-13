@@ -110,7 +110,11 @@
 				<div class="items br3">
 					<div class="col box s">{{ed_status}}</div>
 					<div class="col box f">
-						<div data="type" content="<?php echo $lang['database_edition_childs_type']; ?>" contenteditable="true"></div>
+						<select>
+							<option value="Regular">Regular</option>
+							<option value="AP">AP</option>
+							<option value="MP">MP</option>
+						</select>
 						<div data="seller" content="<?php echo $lang['database_edition_childs_seller']; ?>" contenteditable="true" style="display:none;"></div>
 						<div data="client" content="<?php echo $lang['database_edition_childs_client']; ?>" contenteditable="true" style="display:none;"></div>
 						<div data="date" content="<?php echo $lang['database_edition_childs_date']; ?>" contenteditable="true" style="display:none;"></div>
@@ -149,10 +153,12 @@
 						<input id="ed_title" class="br3 box animate1" type="text" value="<?php echo $lang['database_edition_f_title_def']; ?>">
 					</div>
 				</label>
-				<label class="field box right text {{q}}">
+				<label class="field box right text {{q}} count">
 					<div class="head"><p><?php echo $lang['database_edition_f_count']; ?></p></div>
 					<div class="group">
-						<input id="count" class="br3 box animate1" type="text" value="">
+						<input class="br3 box animate1" type="text" value="" placeholder="Regular">
+						<input class="br3 box animate1" type="text" value="" placeholder="AP">
+						<input class="br3 box animate1" type="text" value="" placeholder="MP">
 					</div>
 				</label>
 				<div class="clr"></div>
@@ -287,10 +293,13 @@
 				</div>
 			</div>
 			<div class="container ed_type">
-				<div class="field text">
+				<div class="field select">
 					<div class="head"><p><?php echo $lang['database_settings_ed_type_title']; ?></p></div>
 					<div class="group">
-						<input class="br3 box animate1" type="text" value="">
+						<p class="br3" data="Regular">Regular</p>
+						<p class="br3" data="AP">AP</p>
+						<p class="br3" data="MP">MP</p>
+						<div class="clr"></div>
 					</div>
 				</div>
 			</div>

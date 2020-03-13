@@ -1892,6 +1892,52 @@ var fields = {
 					return str;
 				}
 			}
+		},
+		currency: {
+			title: lang['fields_types_currency_title'],
+			description: lang['fields_types_currency_desc'],
+			attr_add: function(){},
+			attr_edit: function(){},
+			attr_save: function(){
+				return '';
+			},
+			item_add: function(parent, value){
+				var val = value ? String(value) : '';
+				var input = $('<input type="text" class="br3 box animate1" value="">').val(val).appendTo(parent);
+				var mask = IMask(input.get(0), {
+					mask: Number,
+					scale: 2,
+					signed: false,
+					thousandsSeparator: ',',
+					padFractionalZeros: false,
+					normalizeZeros: true,
+					radix: '.',
+					mapToRadix: ['.']
+				});
+				input.data('mask', mask);
+			},
+			item_save: function(parent){
+				return $('input', parent).data('mask').unmaskedValue;
+			},
+			bases: {
+				view: function(str){
+					var mask = IMask.createMask({
+						mask: Number,
+						scale: 2,
+						signed: false,
+						thousandsSeparator: ',',
+						padFractionalZeros: false,
+						normalizeZeros: true,
+						radix: '.',
+						mapToRadix: ['.']
+					});
+					mask.resolve(str);
+					return mask.value;
+				},
+				sort: function(str){
+					return str;
+				}
+			}
 		}
 	}
 };

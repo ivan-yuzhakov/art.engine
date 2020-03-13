@@ -198,6 +198,7 @@
 #database .form .wrapper .w .edition_settings .items .col.s{width:140px;padding:10px;flex-grow:0;flex-shrink:0;}
 #database .form .wrapper .w .edition_settings .items .col.s select{width:100%;height:40px;border:none;display:block;font:normal 16px/20px 'PT Sans', sans-serif;}
 #database .form .wrapper .w .edition_settings .items .col.f{padding:0;}
+#database .form .wrapper .w .edition_settings .items .col.f > select{width:100%;height:60px;padding:0 15px;border:none;display:block;font:normal 16px/20px 'PT Sans', sans-serif;}
 #database .form .wrapper .w .edition_settings .items .col.f > div{min-height:20px;padding:20px;position:relative;}
 #database .form .wrapper .w .edition_settings .items .col.f > div:empty:after{position:absolute;top:20px;left:20px;content:attr(content);cursor:text;color:#999;}
 #database .form .wrapper .w .edition_settings .items .col.f .no{padding:0 20px;cursor:default;line-height:60px;color:#999;}
@@ -235,6 +236,7 @@
 #database .form .wrapper .w .editions .items .childs .i > div.s.t2{width:110px !important;}
 #database .form .wrapper .w .editions .items .childs .i > div.s select{height:40px;border:none;display:block;font:normal 16px/20px 'PT Sans', sans-serif;}
 #database .form .wrapper .w .editions .items .childs .i > div.f{padding:0;}
+#database .form .wrapper .w .editions .items .childs .i > div.f > select{width:100%;height:60px;padding:0 15px;border:none;display:block;font:normal 16px/20px 'PT Sans', sans-serif;}
 #database .form .wrapper .w .editions .items .childs .i > div.f > div{min-height:20px;padding:20px;position:relative;}
 #database .form .wrapper .w .editions .items .childs .i > div.f > div:empty:after{position:absolute;top:20px;left:20px;content:attr(content);cursor:text;color:#999;}
 #database .form .wrapper .w .editions .items .childs .i > div.f .no{padding:0 20px;cursor:default;line-height:60px;color:#999;}
@@ -271,6 +273,7 @@
 #database .edition_form .wrapper .w .captions .head{font-weight:bold;}
 #database .edition_form .wrapper .w .lock{width:100%;height:100%;position:absolute;top:0;left:0;z-index:1;background:rgba(0,0,0,.1);display:none;}
 #database .edition_form .wrapper .w .lock.show{display:block;}
+#database .edition_form .wrapper .w .field.count input{margin-top:10px;}
 #database .edition_form .wrapper .w .field.hide{display:none;}
 
 /* edition modal */
@@ -424,6 +427,7 @@
 #pdf .form .wrapper .s3 .c .table .item > div:first-child{border:none;}
 #pdf .form .wrapper .s3 .c .table .item > div.image{width:140px !important;display:flex;flex-grow:0;flex-shrink:0;}
 #pdf .form .wrapper .s3 .c .table .item > div.image .bg{width:100px;height:100px;margin:auto;background-color:#333;background-position:center;background-repeat:no-repeat;background-size:cover;}
+#pdf .form .wrapper .s3 .c .table .item > div.status{width:180px !important;flex-grow:0;flex-shrink:0;}
 #pdf .form .wrapper .s3 .c .table .item.head{cursor:default;font-weight:bold;}
 #pdf .form .wrapper .s3 .c .table .item.head > div.image{height:auto;}
 #pdf .form .wrapper .s3 .c .table .item .loader{width:100%;height:100%;padding:0;position:absolute;top:0;left:0;background-color:rgba(0,0,0,.2);border:none;}

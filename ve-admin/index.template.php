@@ -172,6 +172,7 @@
 			'plugins/jquery.Jcrop.min.js',
 			'plugins/sprintf.min.js',
 			'plugins/moment.js',
+			'plugins/imask_6.0.3.js',
 			'common.js',
 			//'order.js',
 			//'statistics.js',

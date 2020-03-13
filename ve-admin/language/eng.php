@@ -86,7 +86,6 @@ $lang['database_edition_title'] = 'Editions';
 $lang['database_edition_create'] = 'Create edition';
 $lang['database_edition_list_empty'] = 'Empty...';
 $lang['database_edition_list_remove_item'] = 'Delete edition?';
-$lang['database_edition_childs_type'] = 'Type';
 $lang['database_edition_childs_seller'] = 'Seller';
 $lang['database_edition_childs_client'] = 'Client';
 $lang['database_edition_childs_date'] = 'Date';
@@ -344,6 +343,8 @@ $lang['fields_types_base_popup_filter_ph'] = 'Filter...';
 $lang['fields_types_base_popup_save'] = 'Save';
 $lang['fields_types_base_popup_cancel'] = 'Cancel';
 $lang['fields_types_base_popup_empty'] = 'Empty...';
+$lang['fields_types_currency_title'] = 'Currency';
+$lang['fields_types_currency_desc'] = 'Input text for currency';
 
 $lang['users_access_error'] = 'This action is not available to you. Not enough rights.';
 $lang['users_a_groups'] = 'Groups of administrative users';

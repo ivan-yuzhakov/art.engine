@@ -1,5 +1,5 @@
 <?php
-define('VERSION', '0.0.19');
+define('VERSION', '0.0.21');
 define('VERSION_THEME', '1');
 define('SALT', 'saltstringforpassword:)');
 

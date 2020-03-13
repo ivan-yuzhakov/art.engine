@@ -928,19 +928,18 @@ if ($section === 'database')
 
 		$items = $db->select('editions', '*', ['item' => $id], __FILE__, __LINE__);
 
-		json([
-			'items' => $items
-		]);
+		json(['items' => $items]);
 	}
 	if ($query === 'edition_create_edition')
 	{
 		$title = $_POST['title'];
-		$count = (int) $_POST['count'];
+		$count = $_POST['count'];
 		$type = (int) $_POST['type'];
 		$status = (int) $_POST['status'];
 		$password = (int) $_POST['password'];
 		$item = (int) $_POST['item'];
 		$captions = $_POST['captions'];
+		$sum = (int) $_POST['sum'];
 
 		$config = $db->select('settings', ['value'], ['variable' => 'database'], __FILE__, __LINE__);
 		$config = json_decode($config[0]['value'], true);
@@ -948,7 +947,7 @@ if ($section === 'database')
 		$id = $db->insert('editions', [
 			'item' => $item,
 			'title' => $title,
-			'count' => $count
+			'count' => $sum
 		], __FILE__, __LINE__);
 
 		function generate(){
@@ -971,20 +970,25 @@ if ($section === 'database')
 			}
 		}
 
-		for ($i = 1; $i <= $count; $i++) {
-			$pass = '';
-			if ($password === 1) $pass = generate();
+		$n = 1;
+		foreach ($count as $index => $c) {
+			for ($i = 1; $i <= $c[1]; $i++) {
+				$pass = '';
+				if ($password === 1) $pass = generate();
 
-			$db->insert('editions_items', [
-				'edition' => $id,
-				'n' => $i,
-				'type' => $type,
-				'status' => $status,
-				'fields' => '{"type":"' . $config['ed_type'] . '"}',
-				'captions' => $captions,
-				'password' => $pass,
-				'note' => '',
-			], __FILE__, __LINE__);
+				$db->insert('editions_items', [
+					'edition' => $id,
+					'n' => $n,
+					'type' => $type,
+					'status' => $status,
+					'fields' => '{"type":"' . $c[0] . '"}',
+					'captions' => $captions,
+					'password' => $pass,
+					'note' => '',
+				], __FILE__, __LINE__);
+
+				$n++;
+			}
 		}
 
 		json(['id' => $id]);

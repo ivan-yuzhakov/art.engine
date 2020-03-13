@@ -86,7 +86,6 @@ $lang['database_edition_title'] = 'Тиражи';
 $lang['database_edition_create'] = 'Создать тираж';
 $lang['database_edition_list_empty'] = 'Пусто...';
 $lang['database_edition_list_remove_item'] = 'Удалить тираж?';
-$lang['database_edition_childs_type'] = 'Тип';
 $lang['database_edition_childs_seller'] = 'Продавец';
 $lang['database_edition_childs_client'] = 'Покупатель';
 $lang['database_edition_childs_date'] = 'Дата';
@@ -344,6 +343,8 @@ $lang['fields_types_base_popup_filter_ph'] = 'Фильтрация...';
 $lang['fields_types_base_popup_save'] = 'Сохранить';
 $lang['fields_types_base_popup_cancel'] = 'Отменить';
 $lang['fields_types_base_popup_empty'] = 'Элементов нет...';
+$lang['fields_types_currency_title'] = 'Валюта';
+$lang['fields_types_currency_desc'] = 'Текстовое поля для ввода валюты';
 
 $lang['users_access_error'] = 'Это действие Вам недоступно. Недостаточно прав.';
 $lang['users_a_groups'] = 'Группы административных пользователей';

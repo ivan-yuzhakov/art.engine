@@ -391,3 +391,9 @@ header .actions .back{background:#f55;}
 
 .container .field.base .group .item .inner > div.f_file{width:90px !important;height:90px;flex-grow:0;}
 .container .field.base .group .item .inner > div.f_file .image{width:70px;height:70px;background-position:center;background-repeat:no-repeat;background-size:cover;}
+/* currency */
+.container .field.currency{}
+.container .field.currency .group input{width:100%;height:48px;padding:10px 20px;background:#fff;border:1px solid #ddd;display:block;font-size:16px;color:#333;}
+.container .field.currency .group input:disabled{background:#eee;}
+.container .field.currency .group input:focus{border-color:#999;}
+.container .field.currency .group.error input{border-color:#f55;}

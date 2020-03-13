@@ -502,7 +502,9 @@ var database = {
 												if (k !== 0) value += '<br>';
 												value += '<b>' + t + ':</b><br>';
 
+												var prevalue = [];
 												$.each(val.items, function(type, arr){
+													var ty = type === 'AP' ? 2 : type === 'MP' ? 3 : 1;
 													var temp = [];
 													var text = [];
 													$.each(arr, function(p, y){
@@ -514,12 +516,23 @@ var database = {
 														}, 0);
 														text.push(count + '/' + arr.length + ' ' + lang['database_edition_f_' + val.type + '_' + y]);
 													});
-													value += '<b>' + type + ':</b><br>' + text.join('<br>') + '<br>';
+													prevalue.push([arr.length, ty, '<b>' + type + ':</b><br>' + text.join('<br>') + '<br>']);
+												});
+												prevalue.sort(function(a, b){
+													if (a[0] > b[0]) return -1;
+													if (a[0] < b[0]) return 1;
+													if (a[1] > b[1]) return 1;
+													if (a[1] < b[1]) return -1;
+												});
+												$.each(prevalue, function(ind, elem){
+													value += elem[2];
 												});
 											});
 										} else {
 											$.each(v, function(k, val){
+												var prevalue = [];
 												$.each(val.items, function(type, arr){
+													var ty = type === 'AP' ? 2 : type === 'MP' ? 3 : 1;
 													var temp = [];
 													var text = [];
 													$.each(arr, function(p, y){
@@ -531,7 +544,16 @@ var database = {
 														}, 0);
 														text.push(count + '/' + arr.length + ' ' + lang['database_edition_f_' + val.type + '_' + y]);
 													});
-													value += '<b>' + type + ':</b><br>' + text.join('<br>') + '<br>';
+													prevalue.push([arr.length, ty, '<b>' + type + ':</b><br>' + text.join('<br>') + '<br>']);
+												});
+												prevalue.sort(function(a, b){
+													if (a[0] > b[0]) return -1;
+													if (a[0] < b[0]) return 1;
+													if (a[1] > b[1]) return 1;
+													if (a[1] < b[1]) return -1;
+												});
+												$.each(prevalue, function(ind, elem){
+													value += elem[2];
 												});
 											});
 										}
@@ -763,7 +785,6 @@ var database = {
 			var parent = $('.edition_settings .col.f', x.el.form);
 
 			$('> div', parent).hide();
-			$('> div[data="type"]', parent).removeAttr('style');
 			$('.no', parent).show();
 			if (type === 1 && val === 2) {
 				$('> div[data="location"]', parent).removeAttr('style');
@@ -933,6 +954,7 @@ var database = {
 			$('#db_pr_title', x.el.form).focus();
 			$('.container.system .select.type p[data="' + x.config.type + '"]', x.el.form).addClass('active');
 			$('.container.system .select.unique p[data="1"]', x.el.form).addClass('active');
+			$('.edition_settings .col.f select', x.el.form).val(x.config.ed_type);
 
 			fields.types.file.item_add($('.container.system .field.file .group', x.el.form), '', null, 'database');
 
@@ -1478,6 +1500,7 @@ var database = {
 
 			if (i) ed_fields[i] = val;
 		});
+		ed_fields.type = $('.edition_settings .col.f > select', x.el.form).val();
 		var ed_note_el = $('.edition_settings .col.n', x.el.form);
 		var ed_note = ed_note_el.text();
 		if (!ed_note) ed_note_el.empty();
@@ -1608,9 +1631,12 @@ var database = {
 			}).on('click', '.item', function(){
 				var th = $(this);
 				x.edition_open(th);
-			}).on('change', '.childs .i select', function(){
+			}).on('change', '.childs .i .s select', function(){
 				var th = $(this);
 				x.item_select(th);
+			}).on('change', '.childs .i .f > select', function(){
+				var th = $(this);
+				x.fields_select_type(th);
 			}).on('focus', '.childs .i .f > div', function(){
 				var th = $(this);
 				x.item_input_focus(th);
@@ -1622,14 +1648,16 @@ var database = {
 				var th = $(this);
 				setTimeout(function(){
 					x.item_input(th);
-				}, 100);
+				}, 500);
+				if (!x.hover) th.next('.popup').remove();
 				x.focus = false;
 			}).on('click', '.childs .i .f .popup .v', function(){
 				var th = $(this);
 				var html = th.html();
 				var parent = th.parent();
-				parent.prev().html(html);
+				var el = parent.prev().html(html);
 				parent.remove();
+				x.item_input(el);
 			}).on('click', '.childs .i .c .button', function(){
 				var th = $(this);
 				x.item_captions(th);
@@ -1778,7 +1806,14 @@ var database = {
 			} else {
 				var data = {
 					title: $('#ed_title', x.el.form).val().trim(),
-					count: +$('#count', x.el.form).val().trim() || 0,
+					count: (function(){
+						var count = [];
+						$('.container.system .field.count input', x.el.form).each(function(){
+							var th = $(this);
+							count.push([th.attr('placeholder'), +th.val().trim() || 0]);
+						});
+						return count;
+					})(),
 					type: x.d.arr[x.d.mode].type || 1,
 					status: +$('.select.status.show p.active', x.el.form).attr('data'),
 					password: +$('.select.password p.active', x.el.form).attr('data'),
@@ -1796,10 +1831,11 @@ var database = {
 						return JSON.stringify(json);
 					})()
 				};
+				data.sum = data.count.reduce(function(s, c){return s + c[1]}, 0);
 
-				if (data.count === 0) {
+				if (data.sum === 0) {
 					alertify.error(lang['database_edition_f_error_count']);
-					$('#count', x.el.form).focus();
+					$('.container.system .field.count input', x.el.form).focus();
 					return false;
 				}
 			}
@@ -1819,7 +1855,7 @@ var database = {
 						}
 					});
 				} else {
-					x.editions.push({id: json.id, item: x.d.mode, title: data.title, count: data.count});
+					x.editions.push({id: json.id, item: x.d.mode, title: data.title, count: data.sum});
 					x.draw();
 				}
 
@@ -1903,7 +1939,11 @@ var database = {
 						' + (el[6] ? '<div class="box p" style="width:' + width + '%">' + el[6] + '</div>' : '') + '\
 						<div class="box s t' + (type === 1 ? '1' : '2') + '" style="width:' + width + '%"><select>' + status + '</select></div>\
 						<div class="box f" style="width:' + width + '%">\
-							<div data="type" content="' + lang['database_edition_childs_type'] + '" contenteditable="true"></div>\
+							<select>\
+								<option value="Regular">Regular</option>\
+								<option value="AP">AP</option>\
+								<option value="MP">MP</option>\
+							</select>\
 							<div data="seller" content="' + lang['database_edition_childs_seller'] + '" contenteditable="true" style="display:none;"></div>\
 							<div data="client" content="' + lang['database_edition_childs_client'] + '" contenteditable="true" style="display:none;"></div>\
 							<div data="date" content="' + lang['database_edition_childs_date'] + '" contenteditable="true" style="display:none;"></div>\
@@ -1941,8 +1981,9 @@ var database = {
 					var id = i.attr('data');
 					i.attr('f', fi[id]);
 					var f = $.parseJSON(fi[id]);
-					var val = +$('select', i).val();
+					var val = +$('.s select', i).val();
 
+					$('.f > select', i).val(f.type || 'Regular');
 					$.each(f, function(k, v){
 						$('.f > div[data="' + k + '"]', i).html(v);
 					});
@@ -2008,10 +2049,22 @@ var database = {
 				$('.f .no', parent).hide();
 			}
 		},
+		fields_select_type: function(th){
+			var x = this;
+
+			var parent_i = th.parents('.i');
+
+			var f_old = $.parseJSON(parent_i.attr('f'));
+			f_old.type = th.val();
+			f_old = JSON.stringify(f_old);
+			parent_i.attr('f', f_old);
+
+			var id = +parent_i.attr('data');
+			$.post('?database/edition_set_item_fields', {id: id, fields: f_old}, function(){}, 'json');
+		},
 		item_input: function(th){
 			var x = this;
 
-			if (!x.hover) th.next('.popup').remove();
 			var parent_f = th.parent();
 			var parent_i = th.parents('.i');
 
@@ -2024,6 +2077,7 @@ var database = {
 				if (!text) i.empty();
 				f_old[data] = i.html();
 			});
+			f_old.type = $('>select', parent_f).val();
 			f_old = JSON.stringify(f_old);
 
 			var id = +parent_i.attr('data');
@@ -2068,6 +2122,7 @@ var database = {
 			var h = el.innerHeight();
 			var t = el.position().top;
 			var popup = $('<div class="popup" style="top:' + (h+t) + 'px;"></div>');
+			x.hover = false;
 			popup.hover(function(){
 				x.hover = true;
 			}, function(){
@@ -2551,7 +2606,9 @@ var database = {
 														if (k !== 0) value += '<br>';
 														value += '<b>' + t + ':</b><br>';
 
+														var prevalue = [];
 														$.each(val.items, function(type, arr){
+															var ty = type === 'AP' ? 2 : type === 'MP' ? 3 : 1;
 															var temp = [];
 															var text = [];
 															$.each(arr, function(p, y){
@@ -2563,12 +2620,23 @@ var database = {
 																}, 0);
 																text.push(count + '/' + arr.length + ' ' + lang['database_edition_f_' + val.type + '_' + y]);
 															});
-															value += '<b>' + type + ':</b><br>' + text.join('<br>') + '<br>';
+															prevalue.push([arr.length, ty, '<b>' + type + ':</b><br>' + text.join('<br>') + '<br>']);
+														});
+														prevalue.sort(function(a, b){
+															if (a[0] > b[0]) return -1;
+															if (a[0] < b[0]) return 1;
+															if (a[1] > b[1]) return 1;
+															if (a[1] < b[1]) return -1;
+														});
+														$.each(prevalue, function(ind, elem){
+															value += elem[2];
 														});
 													});
 												} else {
 													$.each(v, function(k, val){
+														var prevalue = [];
 														$.each(val.items, function(type, arr){
+															var ty = type === 'AP' ? 2 : type === 'MP' ? 3 : 1;
 															var temp = [];
 															var text = [];
 															$.each(arr, function(p, y){
@@ -2580,7 +2648,16 @@ var database = {
 																}, 0);
 																text.push(count + '/' + arr.length + ' ' + lang['database_edition_f_' + val.type + '_' + y]);
 															});
-															value += '<b>' + type + ':</b><br>' + text.join('<br>') + '<br>';
+															prevalue.push([arr.length, ty, '<b>' + type + ':</b><br>' + text.join('<br>') + '<br>']);
+														});
+														prevalue.sort(function(a, b){
+															if (a[0] > b[0]) return -1;
+															if (a[0] < b[0]) return 1;
+															if (a[1] > b[1]) return 1;
+															if (a[1] < b[1]) return -1;
+														});
+														$.each(prevalue, function(ind, elem){
+															value += elem[2];
 														});
 													});
 												}
@@ -2629,6 +2706,8 @@ var database = {
 				if (direction === 'prev') {
 					x.active--;
 					if (x.active < 1) x.active = 1;
+					if (x.active === 2 && Object.keys(database.language.getLangs()).length === 1) x.active = 1;
+					if (x.active === 4 && (!x.temp.request.local || !x.temp.request.local.length)) x.active = 3;
 				}
 				if (direction === 'next') {
 					x.active++;
@@ -2677,6 +2756,7 @@ var database = {
 				var x = this;
 
 				x.el.prev.show();
+				if (database.config.pdf_templates.length === 1 && Object.keys(database.language.getLangs()).length === 1) x.el.prev.hide();
 
 				x.s3_filter = {
 					text: '',
@@ -3609,7 +3689,7 @@ var database = {
 				data.uid.template.push(+id || id);
 			});
 			data.style = $('.container.style textarea', database.el.settings).val();
-			data.ed_type = $('.container.ed_type input', database.el.settings).val().trim();
+			data.ed_type = $('.container.ed_type p.active', database.el.settings).attr('data');
 
 			loader.show();
 
@@ -4035,12 +4115,15 @@ var database = {
 				handlers: function(parent){
 					var x = this;
 
-					
+
+					parent.on('click', '.container.ed_type p', function(){
+						$(this).addClass('active').siblings().removeClass('active');
+					});
 				},
 				draw: function(parent, json){
 					var x = this;
 
-					$('.container.ed_type input', parent).val(json.config.ed_type);
+					$('.container.ed_type p[data="' + (json.config.ed_type || 'Regular') + '"]', parent).addClass('active');
 				}
 			}
 		}
