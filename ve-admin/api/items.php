@@ -426,8 +426,6 @@ if ($section === 'items')
 
 	if ($query === 'publishing_facebook_group')
 	{
-		require_once(DIR_CORE . 'library/Facebook/autoload.php');
-
 		$fb = new Facebook\Facebook([
 			'app_id' => $settings['facebookAppID'],
 			'app_secret' => $settings['facebookAppSecret'],
@@ -460,8 +458,6 @@ if ($section === 'items')
 
 	if ($query === 'publishing_facebook_pages')
 	{
-		require_once(DIR_CORE . 'library/Facebook/autoload.php');
-
 		$fb = new Facebook\Facebook([
 			'app_id' => $settings['facebookAppID'],
 			'app_secret' => $settings['facebookAppSecret'],

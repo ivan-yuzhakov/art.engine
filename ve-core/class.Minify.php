@@ -100,8 +100,6 @@ class Minify
 	{
 		global $helpers;
 
-		require_once(DIR_CORE . 'library/Unirest.php');
-
 		$body = Unirest\Request\Body::form([
 			'code_url' => URL_THEME . $file,
 			'compilation_level' => 'SIMPLE_OPTIMIZATIONS',
@@ -120,7 +118,7 @@ class Minify
 			foreach ($response->body->errors as $error) {
 				$message[] = '<p><b>Error:</b> ' . json_encode($error) . '</p>';
 			}
-			$helpers->mail('', MAIL_DEVELOPER_FRONTEND, 'Error minify JS', implode('', $message));
+			$helpers->mail(MAIL_DEVELOPER_FRONTEND, 'Error minify JS', implode('', $message));
 
 			return false;
 		}
@@ -132,7 +130,7 @@ class Minify
 			foreach ($response->body->warnings as $warning) {
 				$message[] = '<p><b>Warning:</b> ' . json_encode($warning) . '</p>';
 			}
-			$helpers->mail('', MAIL_DEVELOPER_FRONTEND, 'Warning minify JS', implode('', $message));
+			$helpers->mail(MAIL_DEVELOPER_FRONTEND, 'Warning minify JS', implode('', $message));
 
 			return false;
 		}
@@ -144,7 +142,7 @@ class Minify
 			foreach ($response->body->serverErrors as $error) {
 				$message[] = '<p><b>Warning:</b> ' . json_encode($error) . '</p>';
 			}
-			$helpers->mail('', MAIL_DEVELOPER_FRONTEND, 'Server error minify JS', implode('', $message));
+			$helpers->mail(MAIL_DEVELOPER_FRONTEND, 'Server error minify JS', implode('', $message));
 
 			return false;
 		}

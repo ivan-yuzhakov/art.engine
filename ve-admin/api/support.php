@@ -41,7 +41,6 @@ if ($section === 'support')
 		]);
 
 		try {
-			require_once(DIR_CORE . 'library/Unirest.php');
 			$response = Unirest\Request::post($settings['updateServerCore'], [], [
 				'section' => 'helpdesk',
 				'query' => 'create_ticket',
@@ -102,7 +101,6 @@ if ($section === 'support')
 
 		// send to server
 		try {
-			require_once(DIR_CORE . 'library/Unirest.php');
 			$response = Unirest\Request::post($settings['updateServerCore'], [], [
 				'section' => 'helpdesk',
 				'query' => 'send_message',
@@ -131,8 +129,6 @@ if ($section === 'support')
 
 		// if (!$cache) {
 			$server = $settings['updateServerCore'];
-
-			require_once(DIR_CORE . 'library/Unirest.php');
 
 			try {
 				$response = Unirest\Request::post($server, [], [

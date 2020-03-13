@@ -73,7 +73,7 @@ class Route
 		}
 
 		if ($urls[1] === 'report_error') {
-			$helpers->mail('phpmail', MAIL_DEVELOPER_BACKEND, URL_SITE_SHORT . ' - Error!', @$_REQUEST['message']);
+			$helpers->mail(MAIL_DEVELOPER_BACKEND, URL_SITE_SHORT . ' - Error!', @$_REQUEST['message']);
 			die;
 		}
 	}

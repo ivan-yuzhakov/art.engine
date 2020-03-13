@@ -36,8 +36,6 @@ class Plugin_square
 	{
 		$host = 'https://connect.squareup.com';
 
-		require_once(DIR_CORE . 'library/Unirest.php');
-
 		if ($method === 'POST') {
 			$response = Unirest\Request::post($host . $url, [
 				'Authorization' => 'Bearer ' . $this->fields->auth->access_token,

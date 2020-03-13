@@ -1,11 +1,10 @@
 <?php
 class Helpers
 {
-	public function mail($sender, $to, $subject, $message, $from_mail = MAIL_DEVELOPER_BACKEND, $from_name = 'Admin', $date = false)
+	public function mail($to, $subject, $message, $from_mail = MAIL_DEVELOPER_BACKEND, $from_name = 'Admin', $date = false)
 	{
-		require_once(DIR_CORE . 'library/class.phpmailer.php');
-
 		$mail = new PHPMailer();
+		$mail->charSet = 'UTF-8';
 
 		$mail->setFrom($from_mail, $from_name);
 		if (is_array($to)) {

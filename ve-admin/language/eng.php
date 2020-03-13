@@ -86,6 +86,7 @@ $lang['database_edition_title'] = 'Editions';
 $lang['database_edition_create'] = 'Create edition';
 $lang['database_edition_list_empty'] = 'Empty...';
 $lang['database_edition_list_remove_item'] = 'Delete edition?';
+$lang['database_edition_childs_type'] = 'Type';
 $lang['database_edition_childs_seller'] = 'Seller';
 $lang['database_edition_childs_client'] = 'Client';
 $lang['database_edition_childs_date'] = 'Date';

@@ -1,6 +1,9 @@
 {
     "require": {
         "cboden/ratchet": "^0.4.1",
-        "mpdf/mpdf": "^8.0"
+        "mpdf/mpdf": "^8.0",
+		"mashape/unirest-php": "3.0.4",
+		"phpmailer/phpmailer": "5.2.27",
+		"facebook/php-business-sdk": "5.0.0"
     }
 }

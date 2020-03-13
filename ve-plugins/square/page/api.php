@@ -40,8 +40,6 @@ class Plugin_square_page
 		$expires = strtotime($this->fields->auth->expires_at) - 14 * 24 * 60 * 60 < time();
 
 		if ($expires) {
-			require_once(DIR_CORE . 'library/Unirest.php');
-
 			$response = Unirest\Request::post('https://connect.squareup.com/oauth2/clients/' . $this->fields->app_id . '/access-token/renew', [
 				'Authorization' => 'Client ' . $this->fields->app_secret,
 				'Accept' => 'application/json',
@@ -69,8 +67,6 @@ class Plugin_square_page
 	private function request($method, $url)
 	{
 		$host = 'https://connect.squareup.com';
-
-		require_once(DIR_CORE . 'library/Unirest.php');
 
 		if ($method === 'GET') {
 			$response = Unirest\Request::get($host . $url, [

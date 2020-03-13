@@ -86,6 +86,7 @@ $lang['database_edition_title'] = 'Тиражи';
 $lang['database_edition_create'] = 'Создать тираж';
 $lang['database_edition_list_empty'] = 'Пусто...';
 $lang['database_edition_list_remove_item'] = 'Удалить тираж?';
+$lang['database_edition_childs_type'] = 'Тип';
 $lang['database_edition_childs_seller'] = 'Продавец';
 $lang['database_edition_childs_client'] = 'Покупатель';
 $lang['database_edition_childs_date'] = 'Дата';

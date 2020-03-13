@@ -92,7 +92,7 @@ class Database
 
 			return $stmt;
 		} else {
-			$helpers->mail('phpmail', MAIL_DEVELOPER_BACKEND, URL_SITE_SHORT . ': BD error!', 'Некорректный запрос в базу данных. Не удалось подготовить запрос.<br>Запрос: ' . $query . '<br>Файл: ' . $file . '<br>Линия: ' . $line . '<br>Типы данных: ' . implode(', ', $type) . '<br>Данные: ' . implode('<br>', $args));
+			$helpers->mail(MAIL_DEVELOPER_BACKEND, URL_SITE_SHORT . ': BD error!', 'Некорректный запрос в базу данных. Не удалось подготовить запрос.<br>Запрос: ' . $query . '<br>Файл: ' . $file . '<br>Линия: ' . $line . '<br>Типы данных: ' . implode(', ', $type) . '<br>Данные: ' . implode('<br>', $args));
 			die($this->errors['1016']);
 		}
 	}

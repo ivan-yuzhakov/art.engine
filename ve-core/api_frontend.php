@@ -801,11 +801,11 @@ function translit($string, $direction = true){
 	return strtr($string, ($direction ? $rus : $eng));
 };
 
-function send_mail($sender, $to, $subject, $message, $from_mail = MAIL_DEVELOPER_BACKEND, $from_name = 'Admin')
+function send_mail($to, $subject, $message, $from_mail = MAIL_DEVELOPER_BACKEND, $from_name = 'Admin')
 {
 	global $helpers;
 
-	return $helpers->mail($sender, $to, $subject, $message, $from_mail, $from_name);
+	return $helpers->mail($to, $subject, $message, $from_mail, $from_name);
 };
 
 function relative_date($time)
@@ -873,7 +873,7 @@ function get_image_matrix($image_scr){
 };
 
 // instagram_getFeed($username = false, $count = 10, $cache_minutes = 1440)
-// send_mail($sender, $to, $subject, $message, $from_mail = MAIL_DEVELOPER_BACKEND, $from_name = 'Admin')
+// send_mail($to, $subject, $message, $from_mail = MAIL_DEVELOPER_BACKEND, $from_name = 'Admin')
 /*
 get_fileUrl($id, $w, $h, $crop, [
 	// watermark

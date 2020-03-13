@@ -186,8 +186,6 @@ if ($section === 'plugins')
 
 		$server = $settings['updateServerCore'];
 
-		require_once(DIR_CORE . 'library/Unirest.php');
-
 		try {
 			$response = Unirest\Request::post($server, [], [
 				'section' => 'plugins',

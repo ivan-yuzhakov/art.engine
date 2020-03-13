@@ -24,6 +24,7 @@ if (ini_get('magic_quotes_gpc')) {
 
 session_start();
 
+require_once DIR_SITE . 'vendor/autoload.php';
 require_once('class.Database.php');
 require_once('class.Helpers.php');
 require_once('class.Visitor.php');

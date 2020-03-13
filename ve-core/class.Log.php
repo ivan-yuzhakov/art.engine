@@ -18,9 +18,8 @@ class Log
 		if (!$visitor->is_admin) {
 			$frontend = strpos($file, 've-theme') !== false;
 
-			require_once(DIR_CORE . 'library/class.phpmailer.php');
-
 			$mail = new PHPMailer();
+			$mail->charSet = 'UTF-8';
 			$mail->setFrom('admin@' . URL_SITE_SHORT);
 			$mail->addAddress($frontend ? MAIL_DEVELOPER_FRONTEND : MAIL_DEVELOPER_BACKEND);
 			$mail->isHTML(true);

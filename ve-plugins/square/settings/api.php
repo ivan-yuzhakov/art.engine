@@ -43,8 +43,6 @@ class Plugin_square_settings
 		$code = isset($_GET['code']) ? $_GET['code'] : false;
 
 		if ($code) {
-			require_once(DIR_CORE . 'library/Unirest.php');
-
 			$response = Unirest\Request::post('https://connect.squareup.com/oauth2/token', [
 				'Authorization' => 'Client ' . $this->fields->app_secret,
 				'Accept' => 'application/json',

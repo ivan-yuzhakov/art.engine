@@ -761,7 +761,6 @@ if ($section === 'database')
 			$res = $template['check']($items, $fields);
 			if ($res !== true) json(['status' => false, 'error' => $res]);
 		}
-		require_once DIR_SITE . 'vendor/autoload.php';
 
 		$config = array_merge([
 			'debug' => false,

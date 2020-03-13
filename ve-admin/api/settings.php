@@ -100,8 +100,6 @@ if ($section === 'settings')
 
 	if ($query === 'facebook_auth')
 	{
-		require_once(DIR_CORE . 'library/Facebook/autoload.php');
-
 		$app_id = $_POST['app_id'];
 		$app_secret = $_POST['app_secret'];
 
@@ -121,8 +119,6 @@ if ($section === 'settings')
 
 	if ($query === 'facebook_auth_callback')
 	{
-		require_once(DIR_CORE . 'library/Facebook/autoload.php');
-
 		$fb = new Facebook\Facebook([
 			'app_id' => $settings['facebookAppID'],
 			'app_secret' => $settings['facebookAppSecret'],

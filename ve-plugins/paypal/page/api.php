@@ -46,8 +46,6 @@ class Plugin_paypal_page
 		$expires = isset($this->fields->auth) ? $this->fields->auth->expires_in <= time() : true;
 
 		if ($expires) {
-			require_once(DIR_CORE . 'library/Unirest.php');
-
 			$response = Unirest\Request::post($this->host . '/v1/oauth2/token', [
 				'Accept' => 'application/json',
 				'Accept-Language' => 'en_US',
@@ -74,8 +72,6 @@ class Plugin_paypal_page
 
 	private function request($method, $url)
 	{
-		require_once(DIR_CORE . 'library/Unirest.php');
-
 		if ($method === 'GET') {
 			$response = Unirest\Request::get($this->host . $url, [
 				'Authorization' => 'Bearer ' . $this->access_token,

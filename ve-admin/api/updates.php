@@ -14,8 +14,6 @@ if ($section === 'updates')
 		if (empty($server)) {
 			json(['status' => 'UNKNOWN_HOST']);
 		} else {
-			require_once(DIR_CORE . 'library/Unirest.php');
-
 			try {
 				$response = Unirest\Request::post($server, [], [
 					'section' => 'core',
@@ -36,8 +34,6 @@ if ($section === 'updates')
 	if ($query === 'load_update')
 	{
 		$server = $settings['updateServerCore'];
-
-		require_once(DIR_CORE . 'library/Unirest.php');
 
 		$response = Unirest\Request::post($server, [], [
 			'section' => 'core',
