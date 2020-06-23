@@ -609,6 +609,7 @@ var fields = {
 			},
 			bases: {
 				view: function(str){
+					var str = str || '';
 					return str.short(100);
 				},
 				sort: function(str){
@@ -689,6 +690,7 @@ var fields = {
 			},
 			bases: {
 				view: function(str){
+					var str = str || '';
 					return str.short(100);
 				},
 				sort: function(str){
@@ -794,6 +796,7 @@ var fields = {
 			},
 			bases: {
 				view: function(str){
+					var str = str || '';
 					return str.replace(/<[^>]+>/g, '').short(100);
 				},
 				sort: function(str){
@@ -1441,21 +1444,101 @@ var fields = {
 		flag: {
 			title: lang['fields_types_flag_title'],
 			description: lang['fields_types_flag_desc'],
-			attr_add: function(){},
-			attr_edit: function(){},
-			attr_save: function(){
-				return '';
+			attr_add: function(parent){
+				var x = this;
+
+				x.parent = $('<div class="container system s_flag">').insertAfter(parent);
+
+				x.parent.append('\
+					<div class="field select">\
+						<div class="head"><p>' + lang['fields_types_flag_s_default'] + '</p></div>\
+						<div class="group">\
+							<p class="br3 animate1" data="1">' + lang['fields_types_flag_yes'] + '</p>\
+							<p class="br3 animate1 active" data="0">' + lang['fields_types_flag_no'] + '</p>\
+							<div class="clr"></div>\
+						</div>\
+					</div>\
+					<div class="switch enable">' + ui.switch.html() + '</div>\
+					<div class="block">\
+						<div class="switch reverse">' + ui.switch.html() + '</div>\
+						<div class="fs">' + $.map(fields.arr.fields['#'].childs, function(id){
+							var f = fields.arr.fields[id];
+							if (!f) return '';
+							if (fields.mode === id) return '';
+							return '<p class="animate1" data="' + id + '">' + f.public_title + '</p>';
+						}).join('') + '</div>\
+					</div>\
+				');
+				var sw_enable = $('.switch.enable .ui-switch', x.parent);
+				var sw_reverse = $('.switch.reverse .ui-switch', x.parent);
+
+				ui.switch.init(sw_enable, {
+					status: false,
+					change: function(status){
+						$('.block', x.parent).toggle(status);
+					},
+					text: lang['fields_types_flag_s_enable']
+				});
+				ui.switch.init(sw_reverse, {
+					status: true,
+					change: function(status){},
+					text: lang['fields_types_flag_s_reverse']
+				});
+				x.parent.on('click', '.fs p', function(){
+					$(this).toggleClass('active');
+				}).on('click', '.group p', function(){
+					$(this).addClass('active').siblings().removeClass('active');
+				});
 			},
-			item_add: function(parent, value, elems){
-				var val = parseInt(value) ? 1 : 0;
+			attr_edit: function(value){
+				var x = this;
+
+				if (!value) return false;
+
+				var json = $.parseJSON(value);
+
+				$('.select .group p[data="' + json.default + '"]', x.parent).trigger('click');
+				$('.switch.enable .ui-switch', x.parent).toggleClass('active', json.dependent.use);
+				$('.block', x.parent).toggle(json.dependent.use);
+				$('.switch.reverse .ui-switch', x.parent).toggleClass('active', !json.dependent.reverse);
+				$.map(json.dependent.fields, function(id){
+					$('.fs p[data="' + id + '"]', x.parent).addClass('active');
+				});
+			},
+			attr_save: function(){
+				var x = this;
+
+				var json = {
+					default: +$('.select .group p.active', x.parent).attr('data'),
+					dependent: {
+						use: ui.switch.get($('.switch.enable .ui-switch', x.parent)),
+						reverse: !ui.switch.get($('.switch.reverse .ui-switch', x.parent)),
+						fields: $('.fs p.active', x.parent).map(function(){
+							return +$(this).attr('data');
+						}).get()
+					}
+				};
+
+				return JSON.stringify(json);
+			},
+			item_add: function(parent, value, elems, notuse1, notuse2, dependent){
+				console.log(elems)
+				var json = $.parseJSON(elems || '{}');
+				var val = parseInt(value) ? 1 : json.default;
 
 				parent.html('\
 					<p class="br3 animate1' + (val === 1 ? ' active' : '') + '" data="1">' + lang['fields_types_flag_yes'] + '</p>\
 					<p class="br3 animate1' + (val === 0 ? ' active' : '') + '" data="0">' + lang['fields_types_flag_no'] + '</p>\
 					<div class="clr"></div>\
 				').on('click', 'p', function(){
-					$(this).addClass('active').siblings().removeClass('active');
+					var th = $(this);
+					var data = +th.attr('data');
+					th.addClass('active').siblings().removeClass('active');
+
+					if (dependent && json.dependent.use) dependent(data, json);
 				});
+
+				if (dependent && json.dependent.use) dependent(val, json);
 			},
 			item_save: function(parent){
 				return +$('p.active', parent).attr('data') || '';
@@ -1719,6 +1802,8 @@ var fields = {
 				};
 
 				parent.on('click', '.edit', function(){
+					var new_value = value.slice();
+
 					var bases = $('<div id="base_select_items">\
 						<div class="overlay loader animate2"></div>\
 						<div class="popup br3 animate2"></div>\
@@ -1768,9 +1853,7 @@ var fields = {
 						filter_val = '';
 						filter();
 					}).on('click', '.save', function(){
-						value = $('.item.selected', bases).map(function(){
-							return +$(this).attr('data');
-						}).get();
+						value = new_value.slice();
 
 						start();
 
@@ -1783,7 +1866,18 @@ var fields = {
 							bases.remove();
 						}, 210);
 					}).on('click', '.item', function(){
-						$(this).toggleClass('selected');
+						var th = $(this);
+						var id = +th.attr('data');
+
+						th.toggleClass('selected');
+
+						if (th.hasClass('selected')) {
+							new_value.unshift(id);
+						} else {
+							var k = $.inArray(id, new_value);
+							if (k + 1) new_value.splice(k, 1);
+						}
+
 						select();
 					});
 
@@ -1862,10 +1956,8 @@ var fields = {
 
 				if (value.length) {
 					$.post('?database/get_itemsById', {ids: value}, function(json){
-						value = [];
 						$.each(json.items, function(i, item){
 							items[item.id] = item;
-							value.push(item.id);
 						});
 						$.extend(base, json.base);
 

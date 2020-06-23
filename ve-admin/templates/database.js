@@ -1960,8 +1960,8 @@ var database = {
 
 					var captions = $.parseJSON(el[5] || '{}');
 					$.each(x.d.config.unique, function(i, v){
-						var capt = captions[v];
-						if (capt === undefined) return true;
+						var capt = captions[v] || '';
+						// if (capt === undefined) return true;
 						var field = fields.arr.fields[v];
 						if (!field) return true;
 						var container = $('<div class="container">\
@@ -2269,11 +2269,13 @@ var database = {
 								if (el) f += '<p><b>' + lang['database_edition_childs_' + i] + ':</b> ' + el + '</p>';
 							});
 							var d = '';
-							$.each($.parseJSON(el[5] || '{}'), function(i, el){
-								if (fields.arr.fields[i]) {
-									var type = fields.arr.fields[i].type;
-									var val = fields.types[type].bases.view(el, i);
-									if (val) d += '<p><b>' + fields.arr.fields[i].private_title + ':</b> ' + val + '</p>';
+							var captions = $.parseJSON(el[5] || '{}');
+							$.each(database.config.unique, function(i, v){
+								var capt = captions[v] || '';
+								if (fields.arr.fields[v]) {
+									var type = fields.arr.fields[v].type;
+									var val = fields.types[type].bases.view(capt, v);
+									if (val) d += '<p><b>' + fields.arr.fields[v].private_title + ':</b> ' + val + '</p>';
 								}
 							});
 							
@@ -2880,8 +2882,14 @@ var database = {
 										if (el) f += '<p><b>' + lang['database_edition_childs_' + i] + ':</b> ' + el + '</p>';
 									});
 									var d = '';
-									$.each($.parseJSON(el[5] || '{}'), function(i, el){
-										if (el && fields.arr.fields[i]) d += '<p><b>' + fields.arr.fields[i].private_title + ':</b> ' + el + '</p>';
+									var captions = $.parseJSON(el[5] || '{}');
+									$.each(database.config.unique, function(i, v){
+										var capt = captions[v] || '';
+										if (fields.arr.fields[v]) {
+											var type = fields.arr.fields[v].type;
+											var val = fields.types[type].bases.view(capt, v);
+											if (val) d += '<p><b>' + fields.arr.fields[v].private_title + ':</b> ' + val + '</p>';
+										}
 									});
 
 									x.editions[el[0]] = {

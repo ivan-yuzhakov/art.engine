@@ -925,6 +925,7 @@ var common = {
 
 						// clear memory tinymce
 						setInterval(function(){
+							if (!tinyMCE) return false;
 							$.each(tinyMCE.editors, function(i, el){
 								if (el && !$('textarea#' + el.id, common.el.body).length) el.remove();
 							});

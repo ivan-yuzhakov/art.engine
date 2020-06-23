@@ -395,7 +395,7 @@ class Template
 	}
 };
 
-$bases = new Bases();
+$GLOBALS['bases'] = $bases = new Bases();
 $cl_template = new Template();
 
 $g_users = $db->select('members', '*', [], __FILE__, __LINE__);

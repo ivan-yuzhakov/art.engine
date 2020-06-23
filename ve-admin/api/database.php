@@ -34,6 +34,11 @@ if ($section === 'database')
 		$id = (int) $_POST['id'];
 		$ed = [];
 		$status = [];
+		$config = $db->select('settings', ['value'], ['variable' => 'database'], __FILE__, __LINE__);
+		$config = json_decode($config[0]['value'], true);
+		foreach ($config['unique'] as $f) {
+			if (in_array($f, $config['display'])) $ed[$f] = [];
+		}
 
 		$item = $db->select('database', ['id'], ['id' => $id, 'del' => 0, 'unique' => 0], __FILE__, __LINE__);
 		if (!empty($item)) {
@@ -43,9 +48,8 @@ if ($section === 'database')
 				$editions_items = $db->select('editions_items', ['edition', 'type', 'status', 'fields', 'captions'], ['edition' => $editions_ids], __FILE__, __LINE__);
 				foreach ($editions_items as $el) {
 					$json = json_decode($el['captions'], true);
-					foreach ($json as $i => $v) {
-						if (!isset($ed[$i])) $ed[$i] = [];
-						$ed[$i][] = $v;
+					foreach ($ed as $i => $v) {
+						$ed[$i][] = isset($json[$i]) ? $json[$i] : '';
 					}
 				}
 				foreach ($ed as $i => $v) {
@@ -55,9 +59,6 @@ if ($section === 'database')
 				}
 
 				// status
-				$config = $db->select('settings', ['value'], ['variable' => 'database'], __FILE__, __LINE__);
-				$config = json_decode($config[0]['value'], true);
-
 				foreach ($editions as $i => $sed) {
 					$status[$i] = ['title' => $sed['title'], 'type' => 1, 'items' => []];
 
