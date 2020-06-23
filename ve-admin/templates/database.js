@@ -864,9 +864,11 @@ var database = {
 			$('#db_pu_title', s.el.form).val(arr.public_title);
 
 			$('.container.custom', s.el.form).remove();
+			x.dependent_appending = true;
 			$.each(database.config.fields, function(i, id){
 				if (id && fields.arr.fields[id]) s.append_fields(id);
 			});
+			x.dependent_appending = false;
 		},
 		set: function(s)
 		{
@@ -958,9 +960,11 @@ var database = {
 
 			fields.types.file.item_add($('.container.system .field.file .group', x.el.form), '', null, 'database');
 
+			x.dependent_appending = true;
 			$.each(x.config.fields, function(i, id){
 				if (id && fields.arr.fields[id]) x.append_fields(id);
 			});
+			x.dependent_appending = false;
 		}, 210);
 	},
 	edit_items: function(id, e)
@@ -1377,7 +1381,43 @@ var database = {
 			</div>\
 		</div>').insertBefore($('.edition_settings', x.el.form));
 
-		fields.types[field.type].item_add($('.group', container), x.language.fields[x.language.active].fields[id], field.value, 'database', x.language.active);
+		fields.types[field.type].item_add($('.group', container), x.language.fields[x.language.active].fields[id], field.value, 'database', x.language.active, function(val, data){
+			var t = setInterval(function(){
+				if (x.dependent_appending) return false;
+				clearInterval(t);
+
+				if (field.type === 'flag') {
+					$('.w .container.custom:not(.hide) .field', x.el.form).each(function(){
+						var th = $(this);
+						var id = +th.attr('data');
+						var parent = th.parent();
+
+						parent.toggle(!($.inArray(id, data.dependent.fields) > -1 && ((!val && !data.dependent.reverse) || (val && data.dependent.reverse))));
+					});
+					
+				}
+				if (field.type === 'select') {
+					if (val) {
+						var d = data[val].dependent;
+						$('.w .container.custom:not(.hide) .field', x.el.form).each(function(){
+							var th = $(this);
+							var id = +th.attr('data');
+							var parent = th.parent();
+
+							if ($.inArray(id, d.show) + 1) parent.show();
+							if ($.inArray(id, d.hide) + 1) parent.hide();
+						});
+					} else {
+						var fields = $('.w .container.custom:not(.hide) .field', x.el.form);
+						$.each(data, function(i, el){
+							$.map(el.dependent.hide, function(id){
+								fields.filter('[data="' + id + '"]').parent().hide();
+							});
+						});
+					}
+				}
+			}, 50);
+		});
 	},
 	draft:
 	{
@@ -1958,6 +1998,7 @@ var database = {
 
 					childs.append(item);
 
+					x.dependent_appending = true;
 					var captions = $.parseJSON(el[5] || '{}');
 					$.each(x.d.config.unique, function(i, v){
 						var capt = captions[v] || '';
@@ -1971,9 +2012,45 @@ var database = {
 							</div>\
 						</div>').appendTo($('.c', item));
 
-						fields.types[field.type].item_add($('.group', container), capt, field.value, 'database', x.d.language.active);
+						fields.types[field.type].item_add($('.group', container), capt, field.value, 'database', x.d.language.active, function(val, data){
+							var t = setInterval(function(){
+								if (x.dependent_appending) return false;
+								clearInterval(t);
+
+								if (field.type === 'flag') {
+									$('.c .container .field', item).each(function(){
+										var th = $(this);
+										var id = +th.attr('data');
+										var parent = th.parent();
+
+										parent.toggle(!($.inArray(id, data.dependent.fields) > -1 && ((!val && !data.dependent.reverse) || (val && data.dependent.reverse))));
+									});
+								}
+								if (field.type === 'select') {
+									if (val) {
+										var d = data[val].dependent;
+										$('.c .container .field', item).each(function(){
+											var th = $(this);
+											var id = +th.attr('data');
+											var parent = th.parent();
+
+											if ($.inArray(id, d.show) + 1) parent.show();
+											if ($.inArray(id, d.hide) + 1) parent.hide();
+										});
+									} else {
+										var fields = $('.c .container .field', item);
+										$.each(data, function(i, el){
+											$.map(el.dependent.hide, function(id){
+												fields.filter('[data="' + id + '"]').parent().hide();
+											});
+										});
+									}
+								}
+							}, 50);
+						});
 					});
 					if ($('.c', item).html() !== '') $('.c', item).append('<div class="button br3">' + lang['database_edition_childs_captions_save'] + '</div><div class="loader"></div>');
+					x.dependent_appending = false;
 				});
 
 				$('.i', th.next()).each(function(){
@@ -2512,7 +2589,10 @@ var database = {
 					th.addClass('active').siblings().removeClass('active');
 					x.step('next');
 				}).on('keyup', '.s3 .f input', function(){
-					x.s3_filter.change();
+					clearTimeout(x.timer); x.timer = null;
+					x.timer = setTimeout(function(){
+						x.s3_filter.change();
+					}, 500);
 				}).on('click', '.s3 .f .clear', function(){
 					$('.s3 .f input', x.el.parent).val('');
 					x.s3_filter.change();
@@ -2761,25 +2841,32 @@ var database = {
 				if (database.config.pdf_templates.length === 1 && Object.keys(database.language.getLangs()).length === 1) x.el.prev.hide();
 
 				x.s3_filter = {
-					text: '',
-					use: false,
-					old: '',
+					ids: false,
 					change: function(){
 						var s = this;
 
-						var parent = $('.f', parent);
+						var f = $('.f', parent);
 
-						var text = $('input', parent).val().trim().toLowerCase();
+						var text = $('input', f).val().trim().toLowerCase();
 
 						if (text === s.old) return false;
 						s.old = text;
 
-						s.text = text;
-						s.use = !!s.text;
+						$('.clear, .count', f).toggleClass('show', !!text);
+						s.ids = text ? [] : false;
 
-						$('.clear, .count', parent).toggleClass('show', s.use);
-
-						x.s3_draw_filter();
+						if (s.ajax) s.ajax.abort();
+						if (text) {
+							$('.c .' + database.config.view, parent).append('<div class="load"></div>');
+							s.ajax = $.post('?database/search', {text: text}, function(json){
+								if (json.status) {
+									s.ids = json.ids;
+									x.s3_draw_filter();
+								}
+							});
+						} else {
+							x.s3_draw_filter();
+						}
 					},
 					set: function(counts){
 						$('.f .count', parent).text(counts.join(' / '));
@@ -3057,60 +3144,29 @@ var database = {
 					callback();
 				};
 				x.s3_draw_filter = function(){
-					var items_full = $.map(database.arr, function(el){
-						var el = $.extend({}, el);
-						el.fields = $.parseJSON(el.fields || '{}')[settings.arr['langFrontDefault']];
-						return el;
-					});
-
-					// filter start
-					if (x.s3_filter.use) {
-						var items = items_full.filter(function(el) {
-							var valid = true;
-							var vars = $.map(database.config.display, function(id){
-								if (id) {
-									if (typeof id === 'number') {
-										if (fields.arr.fields[id]) {
-											var type = fields.arr.fields[id].type;
-											return fields.types[type].bases.view(el.fields[id] || '', id);
-										}
-									} else {
-										if (id === 'id') return el.id;
-										if (id === 'image') return el.image;
-										if (id === 'uid') return el.uid;
-										if (id === 'title') return el.private_title + ' ' + el.public_title;
-									}
-								}
-							}).join(' ').toLowerCase();
-
-							$.each(x.s3_filter.text.split(' '), function(i, text){
-								if (vars.indexOf(text) === -1) valid = false;
-							});
-
-							return valid;
-						});
-					} else {
-						var items = items_full;
-					}
-					// filter end
-					
-					x.s3_filter.set([items.length, items_full.length]);
-
-					var ids = [];
-					$.each(items, function(i, el){
-						ids.push(el.id);
-					});
-
-					$('.c .item', parent).addClass('hide');
 					$('.c .empty', parent).remove();
+					$('.c .load', parent).remove();
 
-					if (ids.length) {
-						$('.c .item.head', parent).removeClass('hide');
-						$.each(ids, function(i, id){
-							$('.c .item[data="' + id + '"]', parent).removeClass('hide');
-						});
+					if (x.s3_filter.ids === false) {
+						$('.c .item', parent).removeClass('hide');
 					} else {
-						$('.c .' + database.config.view, parent).append('<div class="empty">' + lang['database_list_' + database.config.view + '_empty'] + '</div>');
+						if (x.s3_filter.ids.length) {
+							$('.c .item', parent).each(function(i){
+								var th = $(this);
+								var id = +th.attr('data');
+
+								if (i) {
+									th.toggleClass('hide', !($.inArray(id, x.s3_filter.ids) + 1));
+								} else {
+									th.removeClass('hide');
+								}
+							});
+						} else {
+							$('.c .item', parent).addClass('hide');
+							$('.c .' + database.config.view, parent).append('<div class="empty">' + lang['database_list_' + database.config.view + '_empty'] + '</div>');
+						}
+
+						x.s3_filter.set([x.s3_filter.ids.length, $('.c .item', parent).length - 1]);
 					}
 
 					$('.wrapper', x.el.parent).trigger('scroll');
@@ -3361,6 +3417,9 @@ var database = {
 
 			x.el.modal.on('click', '.print', function(){
 				window.print();
+			}).on('click', '.menu .wrapper p', function(){
+				$(this).toggleClass('active');
+				x.fields();
 			}).on('click', '.close', function(){
 				x.el.modal.removeClass('show');
 				x.el.overlay.removeClass('show');
@@ -3395,84 +3454,187 @@ var database = {
 
 			setTimeout(function(){
 				$.post('?database/get_report/', {ids: x.selected}, function(json){
-					var html = '';
-					var w = 100 / json.result.length;
+					var f_currency = x.s.config.report_ids.currency;
+					var f_price = x.s.config.report_ids.price;
+					var f_dims = x.s.config.report_ids.dimension;
+					var f_medium = x.s.config.report_ids.medium;
 
-					html += '<div class="tr"><div class="head"></div>';
-					html += $.map(json.result, function(el){
-						return '<div class="v box" style="width:' + w + '%"><div class="image br3"><div class="bg" style="background-image:url(/qrs/getfile/' + el.image + '/200/200/0)"></div></div></div>';
-					}).join('');
-					html += '</div>';
+					var html = $.map(json.result, function(el){
+						var ff = $.map(x.s.config.fields, function(id){
+							var isUnique = $.inArray(id, x.s.config.unique) + 1;
+							if (isUnique) return '';
 
-					html += '<div class="tr"><div class="head">Title</div>';
-					html += $.map(json.result, function(el){
-						return '<div class="v box" style="width:' + w + '%">' + el.title + '</div>';
-					}).join('');
-					html += '</div>';
+							var field = fields.arr.fields[id];
+							if (!field) return '';
 
-					html += '<div class="tr"><div class="head">UID</div>';
-					html += $.map(json.result, function(el){
-						return '<div class="v box" style="width:' + w + '%">' + el.uid + '</div>';
-					}).join('');
-					html += '</div>';
-
-					html += '<div class="tr"><div class="head">Type</div>';
-					html += $.map(json.result, function(el){
-						var t = '';
-						if (el.type === 1) t = 'physical';
-						if (el.type === 2) t = 'digital';
-						return '<div class="v box" style="width:' + w + '%">' + lang['database_form_type_' + t] + '</div>';
-					}).join('');
-					html += '</div>';
-
-					html += '<div class="tr"><div class="head">Unique</div>';
-					html += $.map(json.result, function(el){
-						return '<div class="v box" style="width:' + w + '%">' + (el.unique ? 'Yes' : 'No') + '</div>';
-					}).join('');
-					html += '</div>';
-
-					$.each(x.s.config.unique, function(i, id){
-						var field = fields.arr.fields[id];
-						if (!field) return true;
-
-						html += '<div class="tr h"><div class="head">' + field.private_title + '</div>';
-						html += $.map(json.result, function(el){
-							var v = el.unique ? fields.types[field.type].bases.view(el.fields[id], id) : x.s.ed[el.id][id];
-							return '<div class="v box" style="width:' + w + '%">' + v + '</div>';
+							return '<div class="tr h" data="' + id + '">\
+								<div class="head">' + field.private_title + '</div>\
+								<div class="v box">' + fields.types[field.type].bases.view(el.fields[id], id) + '</div>\
+							</div>';
 						}).join('');
-						html += '</div>';
+
+						var fu = $.map(x.s.config.unique, function(id){
+							var field = fields.arr.fields[id];
+							if (!field) return '';
+							var v = el.unique ? fields.types[field.type].bases.view(el.fields[id], id) : (x.s.ed[el.id][id] || '');
+
+							return '<div class="tr" data="' + id + '">\
+								<div class="head">' + field.private_title + '</div>\
+								<div class="v box">' + v + '</div>\
+							</div>';
+						}).join('');
+
+						var editions = '';
+						if (f_currency && f_price && f_dims && f_medium) {
+							if (el.unique) {
+								editions = lang['database_edition_f_' + el.type + '_' + el.ed_status];
+							} else {
+								editions = $.map(el.editions, function(ed){
+									var count = 0; // count sold + gifted
+									var price = 999999999; // min price from stored + Not Produced
+									var currency = '';
+									var desc = {};
+									ed.items = $.map(ed.items, function(item){
+										var t = [];
+										var t1 = item.captions[f_medium] || '';
+										var t2 = item.captions[f_dims] || '';
+										if (t1) t.push(t1);
+										if (t2) t.push(t2);
+										t = t.join(', ');
+										item.t = t;
+
+										desc[t] = desc[t] ? desc[t] + 1 : 1;
+
+										return item;
+									});
+									var ndesc = [];
+									$.each(desc, function(i, d){
+										ndesc.push({text: i, n: d});
+									});
+									ndesc.sort(function(a, b){
+										if (a.n < b.n) return 1;
+										if (a.n > b.n) return -1;
+										return 0;
+									});
+									ndesc = $.map(ndesc, function(it){
+										return it.text;
+									});
+									var predesc = '', postdesc = [];
+									$.each(ndesc, function(i, d){
+										if (i === 0) {
+											predesc = d;
+										} else {
+											postdesc.push(i + '. ' + d);
+										}
+									});
+									postdesc = '<div class="desc m">' + postdesc.join('</div><div class="desc m">') + '</div>';
+
+									var ns = '';
+									var w = 100 / Math.min(10, ed.items.length);
+									$.each(ed.items, function(i, item){
+										if (i < 10) ns += '<div class="n h" style="width:' + w + '%"><p>#</p><p>Status</p></div>';
+									});
+									ns += $.map(ed.items, function(item){
+										var s = item.status || 1;
+										var p = +item.captions[f_price] || 0;
+										var t = '';
+										if (item.type === 1) { // physical
+											if (s === 1) t = 'NP'; // Not Produced
+											if (s === 2) t = 'STRD'; // Stored
+											if (s === 3) t = 'RSRVD'; // Reserved
+											if (s === 4) t = 'SOLD'; // Sold
+											if (s === 5) t = 'GIFT'; // Gifted
+											if (s === 6) t = 'On Loan'; // On Loan
+										}
+										if (item.type === 2) { // digital
+											if (s === 1) t = 'NP'; // Not Produced
+											if (s === 2) t = 'STRD'; // Stored
+											if (s === 3) t = 'RSRVD'; // Reserved
+											if (s === 4) t = 'SOLD'; // Sold
+											if (s === 5) t = 'GIFT'; // Gifted
+											if (s === 6) t = 'On Loan'; // On Loan
+										}
+
+										if (s === 4 || s === 5) count++;
+										if (p && (s === 1 || s === 2)) {
+											price = Math.min(price, p);
+											currency = item.captions[f_currency] || '';
+										}
+										var sup = '';
+										var key = $.inArray(item.t, ndesc);
+										if (key > 0) sup = '<sup>' + key + '</sup>';
+
+										return '<div class="n" style="width:' + w + '%"><p>' + item.n + sup + '</p><p>' + t + '</p></div>';
+									}).join('');
+
+									return '<div class="edition">\
+										<div class="name">' + ed.title + '</div>\
+										<div class="count">Count of sold and gifted: ' + count + '</div>\
+										<div class="price">Actual price: ' + fields.types.select.bases.view(currency, f_currency) + Number(price).toLocaleString('en-EN') + '</div>\
+										<div class="desc">' + predesc + '</div>\
+										<div class="t">' + ns + '</div>\
+										' + postdesc + '\
+									</div>';
+								}).join('');
+							}
+						}
+
+						return '\
+						<img class="image" src="/qrs/getfile/' + el.image + '/">\
+						<div class="title">' + el.title + '</div>\
+						<div class="uid">' + el.uid + '</div>\
+						<div class="table">\
+							' + ff + '\
+							' + fu + '\
+						</div>\
+						<div class="editions">' + editions + '</div>\
+						';
 					});
 
-					$.each(x.s.config.fields, function(i, id){
-						var isUnique = $.inArray(id, x.s.config.unique) + 1;
-						if (isUnique) return true;
+					x.el.modal.addClass('show').find('> .wrapper').html(html.join('<div style="page-break-after:always"></div>'));
+					$('.header .menu .wrapper', x.el.modal).html((function(){
+						var f = m.storage.get('report_fields_hide');
+						f = f ? f.split(';') : [];
 
-						var field = fields.arr.fields[id];
-						if (!field) return true;
+						return $.map(x.s.config.fields, function(id){
+							var isUnique = $.inArray(id, x.s.config.unique) + 1;
+							if (isUnique) return '';
 
-						html += '<div class="tr"><div class="head">' + field.private_title + '</div>';
-						html += $.map(json.result, function(el){
-							return '<div class="v box" style="width:' + w + '%">' + fields.types[field.type].bases.view(el.fields[id], id) + '</div>';
+							var field = fields.arr.fields[id];
+							if (!field) return '';
+
+							var non_active = $.inArray('' + id, f) + 1;
+							return '<p class="br3' + (non_active ? '' : ' active') + '" data="' + id + '">' + field.private_title + '</p>';
+						}).join('') + $.map(x.s.config.unique, function(id){
+							var field = fields.arr.fields[id];
+							if (!field) return '';
+
+							var non_active = $.inArray('' + id, f) + 1;
+							return '<p class="br3' + (non_active ? '' : ' active') + '" data="' + id + '">' + field.private_title + '</p>';
 						}).join('');
-						html += '</div>';
-					});
+					})());
 
-					html += '<div class="tr h"><div class="head">Editions</div>';
-					html += $.map(json.result, function(el){
-						return '<div class="v box" style="width:' + w + '%">' + (el.unique ? '-' : el.editions.join('<br>')) + '</div>';
-					}).join('');
-					html += '</div>';
-
-					html += '<div class="tr"><div class="head">Status</div>';
-					html += $.map(json.result, function(el){
-						var status = el.unique ? lang['database_edition_f_' + el.type + '_' + el.ed_status] : x.s.ed[el.id].status;
-						return '<div class="v box" style="width:' + w + '%">' + status + '</div>';
-					}).join('');
-					html += '</div>';
-
-					x.el.modal.addClass('show').find('.wrapper').html('<div class="table br3">' + html + '</div>');
+					x.fields();
 				}, 'json');
 			}, 210);
+		},
+		fields: function(){
+			var x = this;
+
+			var ids_hide = [];
+				// var f = m.storage.get('report_fields_hide');
+				// f = f ? f.split(';') : [];
+			$('.header .menu .wrapper p', x.el.modal).each(function(){
+				var th = $(this);
+				var id = th.attr('data');
+				var active = th.hasClass('active');
+
+				if (!active) ids_hide.push(id);
+
+				$('.wrapper .table .tr[data="' + id + '"]', x.el.modal).toggleClass('hide', !active);
+			});
+
+			m.storage.set('report_fields_hide', ids_hide.join(';'));
 		},
 		cancel: function(){
 			var x = this;
@@ -3609,6 +3771,7 @@ var database = {
 			x.types.uid.handlers(database.el.settings);
 			x.types.style.handlers(database.el.settings);
 			x.types.ed_type.handlers(database.el.settings);
+			x.types.report_ids.handlers(database.el.settings);
 		},
 		load: function(callback){
 			var x = this;
@@ -3635,6 +3798,7 @@ var database = {
 					x.types.uid.draw(database.el.settings, json);
 					x.types.style.draw(database.el.settings, json);
 					x.types.ed_type.draw(database.el.settings, json);
+					x.types.report_ids.draw(database.el.settings, json);
 
 					database.el.settings.addClass('show');
 				});
@@ -3657,7 +3821,8 @@ var database = {
 					template: []
 				},
 				style: '',
-				ed_type: ''
+				ed_type: '',
+				report_ids: {}
 			};
 
 			$('.container.pdf .i', database.el.settings).each(function(){
@@ -3698,6 +3863,10 @@ var database = {
 			});
 			data.style = $('.container.style textarea', database.el.settings).val();
 			data.ed_type = $('.container.ed_type p.active', database.el.settings).attr('data');
+			data.report_ids.currency = $('.container.report_ids .report_currency', database.el.settings).val().trim();
+			data.report_ids.price = $('.container.report_ids .report_price', database.el.settings).val().trim();
+			data.report_ids.dimension = $('.container.report_ids .report_dimension', database.el.settings).val().trim();
+			data.report_ids.medium = $('.container.report_ids .report_medium', database.el.settings).val().trim();
 
 			loader.show();
 
@@ -4109,8 +4278,6 @@ var database = {
 				template: '',
 				handlers: function(parent){
 					var x = this;
-
-					
 				},
 				draw: function(parent, json){
 					var x = this;
@@ -4123,7 +4290,6 @@ var database = {
 				handlers: function(parent){
 					var x = this;
 
-
 					parent.on('click', '.container.ed_type p', function(){
 						$(this).addClass('active').siblings().removeClass('active');
 					});
@@ -4132,6 +4298,21 @@ var database = {
 					var x = this;
 
 					$('.container.ed_type p[data="' + (json.config.ed_type || 'Regular') + '"]', parent).addClass('active');
+				}
+			},
+			report_ids: {
+				template: '',
+				handlers: function(parent){
+					var x = this;
+				},
+				draw: function(parent, json){
+					var x = this;
+
+					var config = json.config.report_ids || {};
+					$('.container.report_ids .report_currency', parent).val(config.currency || '');
+					$('.container.report_ids .report_price', parent).val(config.price || '');
+					$('.container.report_ids .report_dimension', parent).val(config.dimension || '');
+					$('.container.report_ids .report_medium', parent).val(config.medium || '');
 				}
 			}
 		}

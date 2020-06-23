@@ -147,5 +147,11 @@
 			</div>
 			<div class="lock {{lock}}"></div>
 		</div></div>
+		<div class="warning {{warning}}"><div class="outer">
+			<div class="title"><?php echo $lang['items_form_warning_title']; ?></div>
+			{{groups}}
+			<p class="br3 clear" data="0"><?php echo $lang['items_form_clear_fields']; ?></p>
+			<div class="br3 cancel"><?php echo $lang['global_cancel']; ?></div>
+		</div></div>
 	</div>
 </div>

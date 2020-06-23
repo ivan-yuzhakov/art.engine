@@ -299,28 +299,17 @@ class Template
 
 		if (!is_array($ids) || empty($ids)) return [];
 
-		$type = [];
 		$args = [];
 
 		$sql = [];
 		foreach ($ids as $i => $id) {
 			$sql[] = '`id`=?';
-			$type[] = 'i';
-			$args[] = &$ids[$i];
+			$args[] = $id;
 		}
 		$sql = ' WHERE (' . implode(' OR ', $sql) . ')';
 
-		$stmt = $db->prepare('SELECT * FROM `prefix_files`' . $sql, $type, $args, __FILE__, __LINE__);
-
-		$result = $stmt->get_result();
-		$stmt->close();
-
-		$arr = [];
-		if ($result->num_rows > 0) {
-			while ($row = $result->fetch_assoc()) {
-				$arr[$row['id']] = $row;
-			}
-		}
+		$arr = $db->prepare('SELECT * FROM `prefix_files`' . $sql, $args, __FILE__, __LINE__);
+		$arr = array_column($arr, null, 'id');
 
 		$items = [];
 		foreach ($ids as $i => $id) {
@@ -409,15 +398,40 @@ $g_users = array_map(function($val){
 $g_fields = $db->select('fields', '*', [], __FILE__, __LINE__);
 $g_fields = array_column($g_fields, null, 'id');
 $g_fields = array_map(function($el){
-	global $cl_template;
+	global $cl_template, $settings, $visitor;
 
-	if ($el['type'] == 'multiple_text' || $el['type'] == 'checkbox' || $el['type'] == 'select') {
+	if ($el['type'] == 'multiple_text' || $el['type'] == 'checkbox') {
 		$value = $cl_template->get_lang_fields($el['value']);
 		foreach ($value as $index => $val) {
 			$value[$index] = str_replace('~^~', '"', htmlspecialchars_decode($val));
 		}
 		$el['value'] = $value;
 	}
+
+	if ($el['type'] == 'select') {
+		$lang_current = $visitor->lang;
+		$lang_default = $settings['langFrontDefault'];
+		$value = json_decode($el['value'], true);
+
+		foreach ($value as $id => $val) {
+			$v = $val['lang'];
+
+			if (isset($v[$lang_current]) && !empty($v[$lang_current])) {
+				$v = $v[$lang_current];
+			} else if (isset($v[$lang_default])) {
+				$v = $v[$lang_default];
+			} else if (array_key_first($v) !== null) {
+				$v = $v[array_key_first($v)];
+			} else {
+				$v = '';
+			}
+
+			$value[$id] = $v;
+		}
+
+		$el['value'] = $value;
+	}
+
 	return $el;
 }, $g_fields);
 

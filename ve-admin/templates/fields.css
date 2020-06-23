@@ -46,21 +46,58 @@
 #fields .form .switches .switch.image{margin-top:20px;}
 
 #fields .form .fields{}
-#fields .form .fields .add_field{float:left;cursor:pointer;font-size:14px;line-height:20px;}
-#fields .form .fields .add_field:hover{color:#000;}
-#fields .form .fields .langs{float:right;}
-#fields .form .fields .langs .lang{margin-left:20px;float:left;cursor:pointer;font-size:14px;line-height:20px;}
-#fields .form .fields .langs .lang.active{color:#000;text-decoration:underline;}
-#fields .form .fields .langs .lang:hover{color:#000;}
-#fields .form .fields .rows .row{margin-top:20px;}
-#fields .form .fields .rows .row .drag{width:9px;height:24px;padding:12px 20px 12px 0;float:left;cursor:move;}
+#fields .form .fields .add{position:absolute;top:-30px;right:0;cursor:pointer;font-weight:bold;font-size:14px;line-height:20px;color:#777;}
+#fields .form .fields .add:hover{color:#000;}
+#fields .form .fields .rows{position:relative;}
+#fields .form .fields .rows .row{margin-bottom:40px;display:flex;}
+#fields .form .fields .rows .row:last-child{margin:0;}
+#fields .form .fields .rows .row > div{width:100%;}
+#fields .form .fields .rows .row .drag{width:9px;height:24px;padding:13px 20px 13px 0;display:none;float:left;cursor:move;flex-grow:0;flex-shrink:0;}
 #fields .form .fields .rows .row .drag svg{width:100%;height:100%;fill:#aaa;}
-#fields .form .fields .rows .row .remove{width:10px;height:10px;padding:19px;float:right;cursor:pointer;}
+#fields .form .fields .rows .row .input{background:#fff;border:1px solid #ddd;}
+#fields .form .fields .rows .row .input label{position:relative;border-top:1px solid #ddd;display:block;}
+#fields .form .fields .rows .row .input label:first-child{border-top:none;}
+#fields .form .fields .rows .row .input label input{width:100%;height:48px;padding:10px 20px 10px 70px;background:#fff;border:none;display:block;font-size:16px;color:#333;}
+#fields .form .fields .rows .row .input label p{width:49px;height:48px;position:absolute;top:0;left:0;border-right:1px solid #ddd;cursor:pointer;line-height:47px;text-align:center;color:#777;}
+#fields .form .fields .rows .row .remove{width:10px;height:10px;padding:20px;float:right;cursor:pointer;flex-grow:0;flex-shrink:0;}
 #fields .form .fields .rows .row .remove svg{width:100%;height:100%;display:block;fill:#333;}
 #fields .form .fields .rows .row .remove:hover svg{fill:#f00;}
-#fields .form .fields .rows .row .input{margin:0 48px 0 29px;}
-#fields .form .fields .rows .row .input input{width:100%;height:48px;padding:10px 20px;background:#fff;border:1px solid #ddd;display:block;font-size:16px;color:#333;}
-#fields .form .fields .rows .row .input input:focus{border-color:#999;}
+
+#fields .form .select{}
+#fields .form .select .add{position:absolute;top:-30px;right:0;cursor:pointer;font-weight:bold;font-size:14px;line-height:20px;color:#777;}
+#fields .form .select .add:hover{color:#000;}
+#fields .form .select .rows{position:relative;}
+#fields .form .select .rows .row{margin-bottom:40px;display:flex;}
+#fields .form .select .rows .row:last-child{margin:0;}
+#fields .form .select .rows .row > div{width:100%;}
+#fields .form .select .rows .row .drag{width:9px;height:24px;padding:13px 20px 13px 0;display:none;float:left;cursor:move;flex-grow:0;flex-shrink:0;}
+#fields .form .select .rows .row .drag svg{width:100%;height:100%;fill:#aaa;}
+#fields .form .select .rows .row .input{}
+#fields .form .select .rows .row .input .labels{background:#fff;border:1px solid #ddd;}
+#fields .form .select .rows .row .input .labels label{position:relative;border-top:1px solid #ddd;display:block;}
+#fields .form .select .rows .row .input .labels label:first-child{border-top:none;}
+#fields .form .select .rows .row .input .labels label input{width:100%;height:48px;padding:10px 20px 10px 70px;background:#fff;border:none;display:block;font-size:16px;color:#333;}
+#fields .form .select .rows .row .input .labels label p{width:49px;height:48px;position:absolute;top:0;left:0;border-right:1px solid #ddd;cursor:pointer;line-height:47px;text-align:center;color:#777;}
+#fields .form .select .rows .row .input .switch.default{margin-top:10px;font-size:0;line-height:0;}
+#fields .form .select .rows .row .input .switch.dependent{margin-top:10px;font-size:0;line-height:0;}
+#fields .form .select .rows .row .input .block{display:none;}
+#fields .form .select .rows .row .input .block .fs{margin-top:30px;position:relative;border:1px solid #ddd;display:flex;flex-wrap:wrap;}
+#fields .form .select .rows .row .input .block .fs div{position:absolute;top:-20px;left:0;font-weight:bold;}
+#fields .form .select .rows .row .input .block .fs p{padding:0 5px;background:#fff;border:1px solid #ddd;flex:1 0 auto;cursor:pointer;font-size:14px;line-height:32px;color:#333;text-align:center;}
+#fields .form .select .rows .row .input .block .fs p:hover{background:#eee;}
+#fields .form .select .rows .row .input .block .fs p.active{background:#777;color:#fff;}
+#fields .form .select .rows .row .remove{width:10px;height:10px;padding:20px;float:right;cursor:pointer;flex-grow:0;flex-shrink:0;}
+#fields .form .select .rows .row .remove svg{width:100%;height:100%;display:block;fill:#333;}
+#fields .form .select .rows .row .remove:hover svg{fill:#f00;}
+
+#fields .form .s_flag{}
+#fields .form .s_flag .switch.enable{margin-top:20px;font-size:0;line-height:0;}
+#fields .form .s_flag .block{margin-top:20px;display:none;}
+#fields .form .s_flag .block .switch.reverse{margin-bottom:20px;font-size:0;line-height:0;}
+#fields .form .s_flag .block .fs{display:flex;flex-wrap:wrap;border:1px solid #ddd;}
+#fields .form .s_flag .block .fs p{padding:0 10px;background:#fff;border:1px solid #ddd;flex:1 0 auto;cursor:pointer;line-height:38px;color:#333;text-align:center;}
+#fields .form .s_flag .block .fs p:hover{background:#eee;}
+#fields .form .s_flag .block .fs p.active{background:#777;color:#fff;}
 
 #fields .form .s_items .group .add{position:absolute;top:-30px;right:0;cursor:pointer;color:#333;}
 #fields .form .s_items .group .add:hover{color:#000;}

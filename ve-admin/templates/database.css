@@ -350,6 +350,9 @@
 #database .settings .wrapper .container.style{}
 #database .settings .wrapper .container.style textarea{font-size:12px;line-height:18px;font-family:monospace;}
 
+#database .settings .wrapper .container.report_ids{}
+#database .settings .wrapper .container.report_ids input{margin-top:10px;}
+
 /* PDF */
 
 #pdf{width:100%;height:100%;position:absolute;top:0;left:0;z-index:110;cursor:default;}
@@ -419,7 +422,7 @@
 #pdf .form .wrapper .s3 .f .clear svg{width:100%;height:100%;display:block;fill:#222;}
 #pdf .form .wrapper .s3 .f .clear:hover svg{fill:#f55;}
 
-#pdf .form .wrapper .s3 .c .table{margin-top:40px;background:#fff;border:1px solid #ddd;border-top:none;}
+#pdf .form .wrapper .s3 .c .table{margin-top:40px;position:relative;background:#fff;border:1px solid #ddd;border-top:none;}
 #pdf .form .wrapper .s3 .c .table .item{position:relative;border-top:1px solid #ddd;display:flex;flex-wrap:wrap;justify-content:space-between;cursor:pointer;}
 #pdf .form .wrapper .s3 .c .table .item.hide{display:none;}
 #pdf .form .wrapper .s3 .c .table .item.selected{background:#afa;}
@@ -445,6 +448,7 @@
 #pdf .form .wrapper .s3 .c .table .item .editions .childs .c .n{width:46px;padding:20px 10px;flex-grow:0;font-family:monospace;text-align:center;}
 #pdf .form .wrapper .s3 .c .table .item .editions .childs .c .st{width:115px;padding:20px 10px;flex-grow:0;overflow:hidden;text-overflow:ellipsis;}
 #pdf .form .wrapper .s3 .c .table .empty{padding:20px;border-top:1px solid #ddd;text-align:center;}
+#pdf .form .wrapper .s3 .c .table .load{width:100%;height:100%;position:absolute;top:0;left:0;background-color:rgba(0,0,0,.7);}
 
 #pdf .form .wrapper .s3 .c .grid{margin:0 -20px;display:flex;flex-wrap:wrap;align-content:flex-start;}
 #pdf .form .wrapper .s3 .c .grid .item{width:20%;margin-top:40px;}
@@ -476,19 +480,49 @@
 #database .report_modal .header .actions .print{width:20px;padding:0 20px 0 40px;cursor:pointer;}
 #database .report_modal .header .actions .print svg{width:100%;height:100%;display:block;fill:#222;}
 #database .report_modal .header .actions .print:hover svg{fill:#238ba3;}
+
+#database .report_modal .header .actions .menu{height:40px;margin-top:19px;padding:0 10px;position:relative;background:#333;cursor:pointer;}
+#database .report_modal .header .actions .menu .icon{width:20px;height:100%;position:relative;cursor:pointer;}
+#database .report_modal .header .actions .menu .icon p{width:100%;height:2px;margin-top:-1px;position:absolute;top:50%;left:0;background:#fff;}
+#database .report_modal .header .actions .menu .icon p.p2{margin-top:-6px;}
+#database .report_modal .header .actions .menu .icon p.p3{margin-top:4px;}
+#database .report_modal .header .actions .menu .popup{padding-top:10px;position:absolute;top:45px;right:0;z-index:1;opacity:0;visibility:hidden;}
+#database .report_modal .header .actions .menu:hover .popup{top:40px;opacity:1;visibility:visible;}
+#database .report_modal .header .actions .menu .popup .marker{position:absolute;top:-2px;right:14px;border:6px solid transparent;border-bottom-color:#333;}
+#database .report_modal .header .actions .menu .popup .wrapper{max-height:320px;padding:10px 20px;background:#333;}
+#database .report_modal .header .actions .menu .popup .wrapper::-webkit-scrollbar{width:5px;}
+#database .report_modal .header .actions .menu .popup .wrapper::-webkit-scrollbar-thumb{background:#ddd;}
+#database .report_modal .header .actions .menu .popup .wrapper p{margin-top:5px;padding:0 10px;cursor:pointer;font-size:14px;line-height:24px;color:#fff;white-space:nowrap;}
+#database .report_modal .header .actions .menu .popup .wrapper p:first-child{margin:0;}
+#database .report_modal .header .actions .menu .popup .wrapper p.active{background:#fff;color:#333;}
+#database .report_modal .header .actions .menu .popup .wrapper p:hover{background:#fff;color:#333;}
+
 #database .report_modal .header .actions .close{width:20px;padding:0 40px 0 20px;cursor:pointer;}
 #database .report_modal .header .actions .close svg{width:100%;height:100%;display:block;fill:#222;}
 #database .report_modal .header .actions .close:hover svg{fill:#f55;}
 #database .report_modal .wrapper{height:100%;padding:40px;overflow:hidden;overflow-y:auto;}
-#database .report_modal .wrapper .table{background:#fff;border:1px solid #ddd;}
+#database .report_modal .wrapper .image{max-width:100%;max-height:500px;margin-bottom:20px;display:block;}
+#database .report_modal .wrapper .table{margin:20px 0;position:relative;background:#fff;border:1px solid #ddd;border-top:none;}
 #database .report_modal .wrapper .table .tr{border-top:1px solid #ddd;display:flex;}
 #database .report_modal .wrapper .table .tr.h{background:#f8f8f8;}
-#database .report_modal .wrapper .table .tr:first-child{border:none;}
+#database .report_modal .wrapper .table .tr.hide{display:none;}
 #database .report_modal .wrapper .table .tr > div{width:100%;padding:10px;}
 #database .report_modal .wrapper .table .tr > div.head{width:150px;display:flex;justify-content:flex-end;align-items:center;flex-grow:0;flex-shrink:0;font-weight:bold;text-align:right;}
 #database .report_modal .wrapper .table .tr > div.v{border-left:1px solid #ddd;}
-#database .report_modal .wrapper .table .tr > div.v .image{max-width:200px;margin:0 auto;overflow:hidden;}
-#database .report_modal .wrapper .table .tr > div.v .image .bg{width:100%;padding-top:100%;background-color:#333;background-position:center;background-repeat:no-repeat;background-size:cover;}
+#database .report_modal .wrapper .editions .edition{margin-top:20px;}
+#database .report_modal .wrapper .editions .edition:first-child{margin:0;}
+#database .report_modal .wrapper .editions .edition .name{font-weight:bold;}
+#database .report_modal .wrapper .editions .edition .count{font-size:14px;}
+#database .report_modal .wrapper .editions .edition .price{font-size:14px;}
+#database .report_modal .wrapper .editions .edition .desc{font-size:14px;}
+#database .report_modal .wrapper .editions .edition .desc.m{font-size:12px;line-height:14px;}
+#database .report_modal .wrapper .editions .edition .t{margin:5px 0;border-top:1px solid #777;border-left:1px solid #777;display:flex;flex-wrap:wrap;}
+#database .report_modal .wrapper .editions .edition .t .n{background:#fff;border:1px solid #777;border-top:none;border-left:none;display:flex;box-sizing:border-box;line-height:24px;}
+#database .report_modal .wrapper .editions .edition .t .n.h{background:#eee;}
+#database .report_modal .wrapper .editions .edition .t .n p{font-size:14px;}
+#database .report_modal .wrapper .editions .edition .t .n p:first-child{width:25px;flex-grow:0;flex-shrink:0;text-align:center;}
+#database .report_modal .wrapper .editions .edition .t .n p:last-child{padding:0 4px;border-left:1px solid #ddd;}
+#database .report_modal .wrapper .editions .edition .t .n p sup{position:relative;top:-5px;vertical-align:top;font-size:10px;}
 
 @media print {
 	body{height:auto;padding:0;background:#fff;overflow:auto;}

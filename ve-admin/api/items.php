@@ -106,7 +106,7 @@ if ($section === 'items')
 	if ($query === 'close_item_edit')
 	{
 		$id = (int) $_POST['id'];
-
+// $db->update('items', ['date_change' => time()], 'id', $id, __FILE__, __LINE__);
 		$db->update('items', ['edited' => 0], 'id', $id, __FILE__, __LINE__);
 
 		json(['status' => true]);

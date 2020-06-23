@@ -82,7 +82,7 @@ class Plugin_paypal
 				'Content-Type' => 'application/json'
 			], Unirest\Request\Body::json($data));
 		}
-
+// dp($response);
 		return $response->body;
 	}
 
@@ -132,7 +132,7 @@ class Plugin_paypal
 		];*/
 
 		$response = $this->request('POST', '/v1/payments/payment', $data);
-
+// dp($response);
 		if (empty($response->name)) {
 			return ['status' => 'OK', 'transaction' => $response->transactions[0]];
 		} else {

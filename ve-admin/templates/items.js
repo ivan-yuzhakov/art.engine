@@ -299,7 +299,11 @@ var items = {
 			th.addClass('active').siblings().removeClass('active');
 			$('.container.custom', x.el.form).remove();
 
-			if (!x.group) return false;
+			if (!x.group) {
+				$('.container.system .field.tinymce', x.el.form).parent().addClass('hide');
+				$('.container.system .field.file', x.el.form).parent().addClass('hide');
+				return false;
+			}
 
 			var settings = $.parseJSON(fields.arr.groups[x.group].settings);
 
@@ -353,6 +357,15 @@ var items = {
 			var public_title = $('.main #public_title', x.el.form);
 			var public_title_val = public_title.val().trim();
 			if (!public_title_val) public_title.val(val);
+		});
+
+		// warning
+		x.el.form.on('click', '.warning p', function(){
+			var id = +$(this).attr('data');
+			$('.header .menu .groups p[data="' + id + '"]', x.el.form).trigger('click');
+			$('.warning', x.el.form).remove();
+		}).on('click', '.warning .cancel', function(){
+			x.closeItem();
 		});
 	},
 	loadList: function(callback)
@@ -630,7 +643,8 @@ var items = {
 			vo: 'hide',
 			rd: 'hide',
 			gr: '',
-			lock: ''
+			lock: '',
+			warning: 'show'
 		});
 		x.el.form.html(template);
 
@@ -701,7 +715,8 @@ var items = {
 					vo: 'hide',
 					rd: 'hide',
 					gr: 'hide',
-					lock: 'show'
+					lock: 'show',
+					warning: ''
 				});
 
 				x.el.form.html(template);
@@ -786,7 +801,8 @@ var items = {
 					vo: '',
 					rd: x.arr[x.mode].edited ? 'hide' : '',
 					gr: x.arr[x.mode].edited ? 'hide' : '',
-					lock: x.arr[x.mode].edited ? 'show' : ''
+					lock: x.arr[x.mode].edited ? 'show' : '',
+					warning: ''
 				});
 
 				x.el.form.html(template);
@@ -877,7 +893,8 @@ var items = {
 					vo: 'hide',
 					rd: 'hide',
 					gr: '',
-					lock: ''
+					lock: '',
+					warning: ''
 				});
 
 				x.el.form.html(template);
@@ -982,7 +999,8 @@ var items = {
 						vo: json.draft ? '' : 'hide',
 						rd: 'hide',
 						gr: 'hide',
-						lock: 'show'
+						lock: 'show',
+						warning: ''
 					});
 				} else {
 					WS.send('items/item_edit_start/' + id);
@@ -1007,7 +1025,8 @@ var items = {
 						vo: json.draft ? '' : 'hide',
 						rd: json.draft ? '' : 'hide',
 						gr: '',
-						lock: ''
+						lock: '',
+						warning: ''
 					});
 				}
 
@@ -1402,6 +1421,7 @@ var items = {
 	{
 		var x = this;
 
+		x.dependent_appending = true;
 		$.each(ids, function(i, id){
 			var field = fields.arr.fields[id];
 
@@ -1414,8 +1434,44 @@ var items = {
 				</div>\
 			</div>').appendTo($('.main', x.el.form));
 
-			fields.types[field.type].item_add($('.group', container), x.lang.fields[x.lang.active].fields[id], field.value, 'items', x.lang.active);
+			fields.types[field.type].item_add($('.group', container), x.lang.fields[x.lang.active].fields[id], field.value, 'items', x.lang.active, function(val, data){
+				var t = setInterval(function(){
+					if (x.dependent_appending) return false;
+					clearInterval(t);
+
+					if (field.type === 'flag') {
+						$('.main .container.custom .field', x.el.form).each(function(){
+							var th = $(this);
+							var id = +th.attr('data');
+							var parent = th.parent();
+
+							parent.toggle(!($.inArray(id, data.dependent.fields) > -1 && ((!val && !data.dependent.reverse) || (val && data.dependent.reverse))));
+						});
+					}
+					if (field.type === 'select') {
+						if (val) {
+							var d = data[val].dependent;
+							$('.main .container.custom .field', x.el.form).each(function(){
+								var th = $(this);
+								var id = +th.attr('data');
+								var parent = th.parent();
+
+								if ($.inArray(id, d.show) + 1) parent.show();
+								if ($.inArray(id, d.hide) + 1) parent.hide();
+							});
+						} else {
+							var fields = $('.main .container.custom .field', x.el.form);
+							$.each(data, function(i, el){
+								$.map(el.dependent.hide, function(id){
+									fields.filter('[data="' + id + '"]').parent().hide();
+								});
+							});
+						}
+					}
+				}, 50);
+			});
 		});
+		x.dependent_appending = false;
 	},
 	getCount: function(id)
 	{

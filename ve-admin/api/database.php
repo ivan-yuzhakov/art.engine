@@ -111,99 +111,165 @@ if ($section === 'database')
 
 	if ($query === 'search')
 	{
-		$text = explode(' ', $_POST['text']);
+		$text = $_POST['text'];
 		$ids = [];
 
-		require_once(DIR_CORE . 'api_frontend.php');
+		$text = explode('|', $text);
+		$text = array_filter($text);
+		$text = array_values($text);
+		$text = array_map(function($t){
+			$t = trim($t);
+			$t = str_replace(',', '', $t);
+			$t = explode(' ', $t);
+			$t = array_filter($t);
+			$t = array_values($t);
+			return $t;
+		}, $text);
 
-		$new_text = [];
-		foreach ($text as $t) {
-			$new_text[] = '%' . $t . '%';
+		// $start = microtime(true);
+		$fields = $db->select('fields', ['id', 'type', 'value'], [], __FILE__, __LINE__);
+		$fields = array_column($fields, null, 'id');
+		$users = $db->select('members', ['id', 'fname', 'lname'], [], __FILE__, __LINE__);
+		$users = array_column($users, null, 'id');
+
+		$database = $db->select('database', ['id', 'uid', 'unique', 'private_title', 'public_title', 'fields', 'ed_fields', 'ed_note'], ['del' => 0], __FILE__, __LINE__);
+		$eds = $db->select('editions', ['id', 'item'], [], __FILE__, __LINE__);
+		$edis = $db->select('editions_items', ['edition', 'fields', 'captions', 'note'], [], __FILE__, __LINE__);
+		$database = array_column($database, null, 'id');
+		$eds = array_column($eds, 'item', 'id');
+		foreach ($edis as $i => $edi) {
+			if (!isset($eds[$edi['edition']])) continue;
+			if (!isset($database[$eds[$edi['edition']]])) continue;
+			$database[$eds[$edi['edition']]]['items'][] = $edi;
+		}
+		// dp(microtime(true) - $start);
+
+		function val(&$v, $k, $data){
+			global $helpers;
+
+			if ((empty($v) && $v !== 0 && $v !== '0') || !isset($data['fields'][$k])) {
+				$v = '';
+				return;
+			}
+
+			switch ($data['fields'][$k]['type']) {
+				case 'currency':
+					$v = (float) $v;
+					$v = $v . ' ' . number_format($v, 2, '.', ',');
+					break;
+				case 'tinymce':
+					$v = strip_tags($v);
+					break;
+				case 'checkbox':
+					$ids = explode(';', $v);
+					$ids = array_filter($ids);
+					$new_v = [];
+					$val = json_decode($data['fields'][$k]['value'], true);
+					foreach ($ids as $id) {
+						foreach ($val as $value) {
+							if (isset($value[$id])) $new_v[] = $value[$id];
+						}
+					}
+					$v = implode(' ', $new_v);
+					break;
+				case 'select':
+					$val = json_decode($data['fields'][$k]['value'], true);
+					$v = isset($val[$v]) ? implode(' ', $val[$v]['lang']) : '';
+					break;
+				case 'users':
+					if (isset($data['users'][$v])) {
+						$v = $data['users'][$v]['fname'] . ' ' . $data['users'][$v]['lname'];
+					} else {
+						$v = '';
+					}
+					break;
+				case 'text':
+				case 'textarea':
+					break;
+				case 'file':
+				case 'multiple_files':
+				case 'video':
+				case 'date':
+				case 'calendar':
+				case 'color':
+				case 'flag':
+				case 'items':
+				case 'base':
+					$v = '';
+					break;
+				default:
+					$helpers->mail(MAIL_DEVELOPER_BACKEND, URL_SITE_SHORT . ' - database search warning!', '<p>The database search function does not consider a field with a type "' . $data['fields'][$k]['type'] . '"</p>');
+			}
 		}
 
-		$edis = $db->search('editions_items', ['edition', 'fields', 'captions', 'note'], [['fields' => $new_text, 'captions' => $new_text, 'note' => $new_text]], __FILE__, __LINE__);
-		$edition = array_map(function($i){
-			return $i['edition'];
-		}, $edis);
-		$edition = array_unique($edition);
-		$edition = array_values($edition);
-
-		$database = $db->select('database', ['id', 'private_title', 'public_title', 'fields'], ['del' => 0], __FILE__, __LINE__);
+		// $start = microtime(true);
 		foreach ($database as $dbi) {
-			$public_title = json_decode($dbi['public_title'], true);
-			$fields = json_decode($dbi['fields'], true);
-			
-			$fields = array_map(function($f){
-				foreach ($f as $k => $v) {
-					$f[$k] = get_value($f, $k);
+			$vars = [];
+
+			$vars[] = (string) $dbi['id'];
+			$vars[] = $dbi['uid'];
+			$vars[] = $dbi['private_title'];
+			$vars[] = implode(' ', json_decode($dbi['public_title'], true));
+			foreach (json_decode($dbi['fields'], true) as $v) {
+				array_walk($v, 'val', ['fields' => $fields, 'users' => $users]);
+				// TODO remove fields from $v that are filled in editions_items
+				$vars = array_merge($vars, $v);
+			}
+			if ($dbi['unique']) {
+				$vars[] = strip_tags($dbi['ed_note']);
+				foreach (json_decode($dbi['ed_fields'], true) as $v) {
+					$vars[] = strip_tags($v);
 				}
-				return json_encode($f);
-			}, $fields);
-
-			$vals = [$dbi['id'], $dbi['private_title'], implode(' ', $public_title), implode(' ', $fields)];
-			$vals = implode(' ', $vals);
-			$vals1 = strtolower($vals);
-
-			$find = true;
-
-			foreach ($text as $t) {
-				$pos = strpos($vals1, $t);
-				if ($pos === false) {
-					$find = false;
-					break;
+			} else {
+				if (isset($dbi['items'])) {
+					foreach ($dbi['items'] as $item) {
+						$vars[] = strip_tags($item['note']);
+						foreach (json_decode($item['fields'], true) as $v) {
+							$vars[] = strip_tags($v);
+						}
+						$captions = json_decode($item['captions'], true);
+						array_walk($captions, 'val', ['fields' => $fields, 'users' => $users]);
+						$vars = array_merge($vars, $captions);
+					}
 				}
 			}
 
-			if ($find) {
-				$ids[] = $dbi['id'];
-			} else {
-				$editions = $db->select('editions', ['id', 'title'], ['item' => $dbi['id']], __FILE__, __LINE__);
-				$vals = array_map(function($e){
-					return $e['title'];
-				}, $editions);
-				$vals = implode(' ', $vals);
-				$vals2 = strtolower($vals);
+			$vars = array_map('strtolower', $vars);
+			$vars = array_filter($vars);
+			$vars = array_unique($vars);
+			$vars = array_values($vars);
 
-				$find = true;
+			$valid = true;
 
-				foreach ($text as $t) {
-					$pos = strpos($vals2, $t);
-					if ($pos === false) {
-						$find = false;
+			foreach ($text as $s) {
+				$sf = false;
+
+				foreach ($vars as $v) {
+					$vf = true;
+
+					foreach ($s as $st) {
+						$pos = strpos($v, $st);
+						if ($pos === false) {
+							$vf = false;
+							break;
+						}
+					}
+
+					if ($vf) {
+						$sf = true;
 						break;
 					}
 				}
 
-				if ($find) {
-					$ids[] = $dbi['id'];
-				} else {
-					$vals = [];
-					foreach ($editions as $ed) {
-						foreach ($edis as $edi) {
-							if ($ed['id'] === $edi['edition']) {
-								$vals[] = implode(' ', (array) json_decode($edi['fields'], true));
-								$vals[] = implode(' ', (array) json_decode($edi['captions'], true));
-								$vals[] = $edi['note'];
-							}
-						}
-					}
-					$vals3 = implode(' ', $vals);
-					$vals = $vals1 . ' ' . $vals2 . ' ' . $vals3;
-					$vals = strtolower($vals);
-
-					$find = true;
-
-					foreach ($text as $t) {
-						$pos = strpos($vals, $t);
-						if ($pos === false) {
-							$find = false;
-							break;
-						}
-					}
-					if ($find) $ids[] = $dbi['id'];
+				if ($sf === false) {
+					$valid = false;
+					break;
 				}
 			}
+
+			if ($valid) $ids[] = $dbi['id'];
 		}
+		// dp(microtime(true) - $start, $ids);
 
 		json(['status' => true, 'ids' => $ids]);
 	}
@@ -645,8 +711,8 @@ if ($section === 'database')
 							break;
 
 						case 'select':
-							if (isset($f_value[$lang][$value])) {
-								$value = $f_value[$lang][$value];
+							if (isset($f_value[$value]) && isset($f_value[$value]['lang'][$lang])) {
+								$value = $f_value[$value]['lang'][$lang];
 							}
 							break;
 
@@ -1151,10 +1217,27 @@ if ($section === 'database')
 			$i['type'] = $dbi[0]['type'];
 			$i['unique'] = $dbi[0]['unique'];
 			$i['fields'] = json_decode($dbi[0]['fields'], true)['eng'];
-			$i['editions'] = $db->select('editions', ['title'], ['item' => $id]);
-			$i['editions'] = array_column($i['editions'], 'title');
+
+			$i['editions'] = $db->select('editions', ['id', 'title'], ['item' => $id]);
+			foreach ($i['editions'] as $k => $e) {
+				$items = $db->select('editions_items', ['n', 'type', 'status', 'fields', 'captions'], ['edition' => $e['id']]);
+				usort($items, function($a, $b){
+					$a = $a['n'];
+					$b = $b['n'];
+
+					if ($a == $b) return 0;
+					return ($a < $b) ? -1 : 1;
+				});
+				$items = array_map(function($i){
+					$i['fields'] = json_decode($i['fields'], true);
+					$i['captions'] = json_decode($i['captions'], true);
+					return $i;
+				}, $items);
+				$i['editions'][$k]['items'] = $items;
+			}
+
 			$i['ed_status'] = $dbi[0]['ed_status'];
-			// dp($dbi);
+
 			$result[] = $i;
 		}
 

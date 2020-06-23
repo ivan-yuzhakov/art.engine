@@ -453,142 +453,89 @@ var fields = {
 			if (!id) {
 				id = 0;
 				$('.row', x.rows).each(function(){
-					var q = parseInt($(this).attr('data'));
-					if (q > id) id = q;
-				}).get();
+					id = Math.max(id, +$(this).attr('data'));
+				});
 				id++;
 			}
 
+			var json = $.parseJSON(settings.arr['langFront'] || '{}');
+
 			var row = $('<div data="' + id + '" class="row">\
 				<div class="drag">' + icons.drag + '</div>\
+				<div class="input br3">' + $.map(json, function(t, l){
+					return '<label data="' + l + '">\
+						<input class="box br3 animate1" type="text" placeholder="Value">\
+						<p title="' + t + '">' + l + '</p>\
+					</label>';
+				}).join('') + '</div>\
 				<div class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>\
-				<div class="input">\
-					<input type="text" class="br3 box animate1" value="">\
-				</div>\
-				<div class="clr"></div>\
 			</div>');
-			$('input', row).val(value || '');
+			$.each(value, function(l, v){
+				$('label[data="' + l + '"] input', row).val(v || '');
+			});
 			x.rows.append(row);
+			if (!value) $('input', row).eq(0).focus();
 
 			x.rows.sortable({axis: 'y', items: '.row', handle: '.drag'});
 		},
 		add: function(parent){
 			var x = this;
 
-			var json = $.parseJSON(settings.arr['langFront'] || '{}');
-			x.lang_active = false;
-			x.lang_default = false;
-			x.lang_save = {};
-			$.each(json, function(alias){
-				x.lang_save[alias] = {};
-			});
-
-			x.fields = $('<div class="container system fields">\
-				<div class="add_field">' + lang['fields_types_common_add_field'] + '</div>\
-				<div class="langs">' + (function(){
-					x.lang_active = x.lang_default = settings.arr['langFrontDefault'];
-
-					return $.map(json, function(title, alias){
-						var def = (x.lang_active == alias);
-						return '<div class="lang' + (def ? ' default active' : '') + '" data="' + alias + '">' + title + (def ? ' (' + lang['fields_types_common_default'] + ')' : '') + '</div>';
-					}).join('');
-				})() + '</div>\
-				<div class="clr"></div>\
-				<div class="rows"></div>\
-			</div>').insertAfter(parent);
+			x.fields = $('<div class="container system fields"><div class="field">\
+				<div class="head"><p>' + lang['fields_types_common_title'] + '</p></div>\
+				<div class="group">\
+					<div class="add">' + lang['fields_types_common_add'] + '</div>\
+					<div class="rows"></div>\
+				</div>\
+			</div></div>').insertAfter(parent);
 			x.rows = $('.rows', x.fields);
 
-			var lang_redraw = function(){
-				var ids = $('.row', x.rows).map(function(){
-					return $(this).attr('data');
-				}).get();
-
-				$.each(x.lang_save, function(lang, json){
-					x.lang_save[lang] = {};
-					$.each(ids, function(i, id){
-						x.lang_save[lang][id] = json[id] || '';
-					});
-				});
-			};
-			var lang_select = function(active){
-				var old = lang_set();
-
-				x.lang_active = active;
-
-				var arr = x.lang_save[x.lang_active];
-				$.each(old, function(id, value){
-					if (!arr[id]) arr[id] = value;
-				});
-
-				$('.row', x.rows).each(function(){
-					var th = $(this);
-					var id = th.attr('data');
-					$('input', th).val(arr[id]);
-				});
-			};
-			var lang_set = function(){
-				var data = {};
-
-				$('.row', x.rows).each(function(){
-					var th = $(this);
-					var id = th.attr('data');
-					data[id] = $('input', th).val().trim();
-				});
-
-				return x.lang_save[x.lang_active] = data;
-			};
-
-			x.fields.on('click', '.add_field', function(){
-				x.append_row(false, false);
-				lang_redraw();
-			}).on('click', '.lang', function(){
-				var th = $(this);
-				var data = th.attr('data');
-				th.addClass('active').siblings().removeClass('active');
-				lang_select(data);
+			x.fields.on('click', '.add', function(){
+				x.append_row();
 			}).on('click', '.remove', function(){
 				$(this).parent().remove();
-				lang_redraw();
 			});
+
+			x.append_row();
 		},
 		edit: function(elems){
 			var x = this;
 
 			var elems = $.parseJSON(elems || '{}');
+			var arr = {};
+			x.rows.empty();
 
 			$.each(elems, function(i, el){
-				x.lang_save[i] = el;
+				$.each(el, function(k, v){
+					if (!arr[k]) arr[k] = {};
+					arr[k][i] = v;
+				});
 			});
 
-			$.each(x.lang_save[x.lang_default], function(id, value){
+			$.each(arr, function(id, value){
 				x.append_row(id, value);
 			});
 		},
 		save: function(){
 			var x = this;
 
-			// save active lang
 			var json = {};
 
 			$('.row', x.rows).each(function(){
 				var th = $(this);
-				var id = th.attr('data');
-				json[id] = $('input', th).val().trim();
-			});
+				var id = +th.attr('data');
 
-			x.lang_save[x.lang_active] = json;
+				$('label', th).each(function(){
+					var th = $(this);
+					var lang = th.attr('data');
+					var val = $('input', th).val().trim();
 
-			// save
-			var value = {};
-			$.each(x.lang_save, function(lang, val){
-				$.each(val, function(id, value){
-					var q = value.replace(/"|&quot;/g, '~^~');
-					val[id] = q;
+					if (!json[lang]) json[lang] = {};
+					json[lang][id] = val;
 				});
-				value[lang] = val;
 			});
 
-			return JSON.stringify(value);
+			return JSON.stringify(json);
 		}
 	},
 	types: {
@@ -860,51 +807,228 @@ var fields = {
 			title: lang['fields_types_select_title'],
 			description: lang['fields_types_select_desc'],
 			attr_add: function(parent){
-				fields.types_attr.add(parent);
+				var x = this;
+
+				x.append_row = function(id, value){
+					var x = this;
+
+					var id = id;
+					if (!id) {
+						id = 0;
+						$('.row', x.rows).each(function(){
+							id = Math.max(id, +$(this).attr('data'));
+						});
+						id++;
+					}
+
+					var json = $.parseJSON(settings.arr['langFront'] || '{}');
+
+					var row = $('<div data="' + id + '" class="row">\
+						<div class="drag">' + icons.drag + '</div>\
+						<div class="input br3">\
+							<div class="labels">\
+								' + $.map(json, function(t, l){
+									return '<label data="' + l + '">\
+										<input class="box br3 animate1" type="text" placeholder="Value">\
+										<p title="' + t + '">' + l + '</p>\
+									</label>';
+								}).join('') + '\
+							</div>\
+							<div class="switch default">' + ui.switch.html() + '</div>\
+							<div class="switch dependent">' + ui.switch.html() + '</div>\
+							<div class="block">\
+								<div class="fs show"><div>Show fields</div>' + $.map(fields.arr.fields['#'].childs, function(id){
+									var f = fields.arr.fields[id];
+									if (!f) return '';
+									if (fields.mode === id) return '';
+									return '<p class="animate1" data="' + id + '">' + f.public_title + '</p>';
+								}).join('') + '</div>\
+								<div class="fs hide"><div>Hide fields</div>' + $.map(fields.arr.fields['#'].childs, function(id){
+									var f = fields.arr.fields[id];
+									if (!f) return '';
+									if (fields.mode === id) return '';
+									return '<p class="animate1" data="' + id + '">' + f.public_title + '</p>';
+								}).join('') + '</div>\
+							</div>\
+						</div>\
+						<div class="remove"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 212.982 212.982"><path d="M131.804 106.49l75.936-75.935c6.99-6.99 6.99-18.323 0-25.312-6.99-6.99-18.322-6.99-25.312 0L106.49 81.18 30.555 5.242c-6.99-6.99-18.322-6.99-25.312 0-6.99 6.99-6.99 18.323 0 25.312L81.18 106.49 5.24 182.427c-6.99 6.99-6.99 18.323 0 25.312 6.99 6.99 18.322 6.99 25.312 0L106.49 131.8l75.938 75.937c6.99 6.99 18.322 6.99 25.312 0 6.99-6.99 6.99-18.323 0-25.313l-75.936-75.936z"></path></svg></div>\
+					</div>');
+					x.rows.append(row);
+					x.rows.sortable({axis: 'y', items: '.row', handle: '.drag'});
+
+					var s_default = false;
+					var s_dependent = false;
+					if (value) {
+						$.each(value.lang, function(l, v){
+							$('label[data="' + l + '"] input', row).val(v || '');
+						});
+						$.map(value.dependent.show, function(id){
+							$('.block .show p[data="' + id + '"]', row).trigger('click');
+						});
+						$.map(value.dependent.hide, function(id){
+							$('.block .hide p[data="' + id + '"]', row).trigger('click');
+						});
+						s_default = value.default;
+						s_dependent = value.dependent.use;
+					} else {
+						$('input', row).eq(0).focus();
+					}
+
+					ui.switch.init($('.switch.default .ui-switch', row), {
+						status: s_default,
+						change: function(status){
+							if (status) {
+								row.siblings('.row').find('.switch.default  .ui-switch').removeClass('active');
+							}
+						},
+						text: lang['fields_types_select_default']
+					});
+
+					ui.switch.init($('.switch.dependent .ui-switch', row), {
+						status: s_dependent,
+						change: function(status){
+							$('.block', row).toggle(status);
+						},
+						text: lang['fields_types_select_s_enable']
+					});
+				};
+
+				x.fields = $('<div class="container system select"><div class="field">\
+					<div class="head"><p>' + lang['fields_types_select_values'] + ' <span title="' + lang['fields_types_select_faq'] + '">( ? )</span></p></div>\
+					<div class="group">\
+						<div class="add">' + lang['fields_types_select_add'] + '</div>\
+						<div class="rows"></div>\
+					</div>\
+				</div></div>').insertAfter(parent);
+				x.rows = $('.rows', x.fields);
+
+				x.fields.on('click', '.add', function(){
+					x.append_row();
+				}).on('click', '.remove', function(){
+					$(this).parent().remove();
+				}).on('click', '.block .show p', function(){
+					var th = $(this);
+					var id = +th.attr('data');
+					var parent = th.parents('.block');
+					th.toggleClass('active');
+					$('.hide p[data="' + id + '"]', parent).removeClass('active').toggle(!th.hasClass('active'));
+				}).on('click', '.block .hide p', function(){
+					var th = $(this);
+					var id = +th.attr('data');
+					var parent = th.parents('.block');
+					th.toggleClass('active');
+					$('.show p[data="' + id + '"]', parent).removeClass('active').toggle(!th.hasClass('active'));
+				});
+
+				x.append_row();
 			},
 			attr_edit: function(elems){
-				fields.types_attr.edit(elems);
-			},
-			attr_save: function(){
-				return fields.types_attr.save();
-			},
-			item_add: function(parent, value, elems, section, lang_active){
-				var section = section || 'items';
-				var lang_active = lang_active || window[section].lang_active;
+				var x = this;
 
-				var lang_save = {};
 				var elems = $.parseJSON(elems || '{}');
 
-				$.each(elems, function(i, el){
-					lang_save[i] = el;
-				});
-				lang_save = lang_save[lang_active];
+				if (elems.eng) {
+					// старое открытие для совместимости
+					// удалить когда все поля select будут пересохранены
+					var arr = {};
 
-				var value = value ? value.split(';') : [];
-				parent.append($.map(lang_save, function(el, i){
-					var active = $.inArray(i, value) > -1 ? ' active' : '';
-					return '<p class="animate1 br3' + active + '" data="' + i + '">' + el + '</p>';
-				}).join(''), '<div class="clr"></div>').on('click', 'p', function(){
-					$(this).addClass('active').siblings().removeClass('active');
+					$.each(elems, function(l, els){
+						$.each(els, function(k, v){
+							if (!arr[k]) arr[k] = {lang: {}, dependent: {use: false, show: [], hide: []}, default: false};
+							arr[k].lang[l] = v;
+						});
+					});
+
+					elems = $.extend({}, arr);
+				}
+
+				x.rows.empty();
+				$.each(elems, function(id, value){
+					x.append_row(id, value);
 				});
+			},
+			attr_save: function(){
+				var x = this;
+
+				var json = {};
+
+				$('.row', x.rows).each(function(){
+					var th = $(this);
+					var id = +th.attr('data');
+
+					json[id] = {lang: {}, dependent: {use: false, show: [], hide: []}, default: false};
+
+					$('.labels label', th).each(function(){
+						var th = $(this);
+						var lang = th.attr('data');
+						var val = $('input', th).val().trim();
+
+						json[id].lang[lang] = val;
+					});
+
+					json[id].dependent.use = ui.switch.get($('.switch.dependent .ui-switch', th));
+					json[id].default = ui.switch.get($('.switch.default .ui-switch', th));
+
+					$('.block .show p.active', th).each(function(){
+						var th = $(this);
+						var data = +th.attr('data');
+						json[id].dependent.show.push(data);
+					});
+					$('.block .hide p.active', th).each(function(){
+						var th = $(this);
+						var data = +th.attr('data');
+						json[id].dependent.hide.push(data);
+					});
+				});
+
+				return JSON.stringify(json);
+			},
+			item_add: function(parent, value, elems, section, lang_active, dependent){
+				var section = section || 'items';
+				var lang_active = lang_active || window[section].lang_active;
+				var elems = $.parseJSON(elems || '{}');
+
+				var fs = $.map(elems, function(el, id){
+					var val = el.lang[lang_active] || el.lang[settings.arr.langFrontDefault] || '';
+					return '<p class="animate1 br3" data="' + id + '">' + val + '</p>';
+				}).join('') + '<div class="clr"></div>';
+
+				parent.append(fs).on('click', 'p', function(){
+					var th = $(this);
+					var data = +th.attr('data');
+					th.addClass('active').siblings().removeClass('active');
+
+					if (dependent && elems[data].dependent.use) dependent(data, elems);
+				});
+
+				if (value && elems[value]) {
+					$('p[data="' + value + '"]', parent).trigger('click');
+				} else {
+					$.each(elems, function(id, val){
+						if (val.default) {
+							$('p[data="' + id + '"]', parent).trigger('click');
+							return false;
+						}
+					});
+
+					if (dependent) dependent(false, elems);
+				}
 			},
 			item_save: function(parent){
 				return $('p.active', parent).attr('data') || '';
 			},
 			bases: {
 				view: function(str, id){
-					var str = str + '';
-					var field = $.parseJSON(fields.arr.fields[id].value || '{}')[settings.arr['langFrontDefault']];
-					return $.map(str.split(';'), function(id){
-						if (id && field[id]) return field[id];
-					}).join(', ').short(100, ',');
+					var json = $.parseJSON(fields.arr.fields[id].value || '{}');
+
+					if (json[str]) return json[str].lang[settings.arr.langFrontDefault] || '';
+					return '';
 				},
 				sort: function(str, id){
-					var str = str + '';
-					var field = $.parseJSON(fields.arr.fields[id].value || '{}')[settings.arr['langFrontDefault']];
-					return $.map(str.split(';'), function(id){
-						if (id && field[id]) return field[id];
-					}).join(', ');
+					var json = $.parseJSON(fields.arr.fields[id].value || '{}');
+
+					if (json[str]) return json[str].lang[settings.arr.langFrontDefault] || '';
+					return '';
 				}
 			}
 		},
@@ -1522,7 +1646,6 @@ var fields = {
 				return JSON.stringify(json);
 			},
 			item_add: function(parent, value, elems, notuse1, notuse2, dependent){
-				console.log(elems)
 				var json = $.parseJSON(elems || '{}');
 				var val = parseInt(value) ? 1 : json.default;
 

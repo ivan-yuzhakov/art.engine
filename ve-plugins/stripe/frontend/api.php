@@ -86,58 +86,20 @@ class Plugin_stripe
 		return $response->body;
 	}
 
-	public function createTransaction($data = [])
+	public function get_clientSecret($amount, $email = false)
 	{
-		$this->check();
+		\Stripe\Stripe::setApiKey($this->private_key);
 
-		/*$data = [
-			'intent' => 'sale',
-			'payer' => [
-				'payment_method' => 'credit_card',
-				'funding_instruments' => [
-					[
-						'credit_card' => [
-							'number' => '1111222233334444',
-							'type' => '', //visa, mastercard, discover, amex.
-							'expire_month' => 02,
-							'expire_year' => 2020,
-							'cvv2' => '111',
-							'first_name' => 'Betsy',
-							'last_name' => 'Buyer',
-							'billing_address' => [
-								'line1' => '111 First Street',
-								'city' => 'Saratoga',
-								'state' => 'CA',
-								'postal_code' => '95070',
-								'country_code' => 'US'
-							]
-						]
-					]
-				]
-			],
-			'transactions' => [
-				[
-					'amount' => [
-						'total' => '0.01',
-						'currency' => 'USD',
-						'details' => [
-							'subtotal' => '0.01',
-							'tax' => '0',
-							'shipping' => '0'
-						]
-					],
-					'description' => 'The payment transaction description.'
-				]
-			]
-		];*/
+		$arr = [
+			'amount' => $amount, // cent, min 50
+			'currency' => 'usd',
+			'metadata' => ['integration_check' => 'accept_a_payment']
+		];
+		if ($email) $arr['receipt_email'] = $email;
 
-		$response = $this->request('POST', '/v1/payments/payment', $data);
+		$intent = \Stripe\PaymentIntent::create($arr);
 
-		if (empty($response->name)) {
-			return ['status' => 'OK', 'transaction' => $response->transactions[0]];
-		} else {
-			return ['status' => 'FAIL', 'error' => $response];
-		}
+		return $intent;
 	}
 }
 

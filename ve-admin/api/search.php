@@ -11,19 +11,14 @@ if ($section === 'search')
 		// items
 		$f = '%' . mb_strtolower($val, 'UTF-8') . '%';
 		$sql = ' WHERE (LOWER(CONCAT(`id`, `private_title`, `public_title`, `alias`, `desc`, `fields`)) LIKE ?)';
-		$type = ['s'];
-		$args = [&$f];
-		$stmt = $db->prepare('SELECT `id`,`image` FROM `prefix_items`' . $sql, $type, $args, __FILE__, __LINE__);
-		$result = $stmt->get_result();
-		$stmt->close();
+		$args = [$f];
+		$arr = $db->prepare('SELECT `id`,`image` FROM `prefix_items`' . $sql, $args, __FILE__, __LINE__);
 
-		if ($result->num_rows > 0) {
-			while ($row = $result->fetch_assoc()) {
-				$row['image'] = $helpers->get_langs($row['image']);
-				$row['image'] = (int) ($row['image'][$settings['langFrontDefault']] ?: 0);
+		foreach ($arr as $v) {
+			$v['image'] = $helpers->get_langs($v['image']);
+			$v['image'] = (int) ($v['image'][$settings['langFrontDefault']] ?: 0);
 
-				$items[] = $row;
-			}
+			$items[] = $v;
 		}
 
 		$items = array_map(function($item){
@@ -45,17 +40,8 @@ if ($section === 'search')
 		// files
 		$f = '%' . mb_strtolower($val, 'UTF-8') . '%';
 		$sql = ' WHERE (LOWER(CONCAT(`id`, `title`, `desc`)) LIKE ?)';
-		$type = ['s'];
-		$args = [&$f];
-		$stmt = $db->prepare('SELECT `id` FROM `prefix_files`' . $sql, $type, $args, __FILE__, __LINE__);
-		$result = $stmt->get_result();
-		$stmt->close();
-
-		if ($result->num_rows > 0) {
-			while ($row = $result->fetch_assoc()) {
-				$files[] = $row;
-			}
-		}
+		$args = [$f];
+		$files = $db->prepare('SELECT `id` FROM `prefix_files`' . $sql, $args, __FILE__, __LINE__);
 
 		$files = array_map(function($item){
 			global $core;
@@ -72,17 +58,10 @@ if ($section === 'search')
 		// database
 		$f = '%' . mb_strtolower($val, 'UTF-8') . '%';
 		$sql = ' WHERE (LOWER(CONCAT(`id`, `uid`, `private_title`, `public_title`, `fields`)) LIKE ?) AND (`del` = 0)';
-		$type = ['s'];
-		$args = [&$f];
-		$stmt = $db->prepare('SELECT `id` FROM `prefix_database`' . $sql, $type, $args, __FILE__, __LINE__);
-		$result = $stmt->get_result();
-		$stmt->close();
+		$args = [$f];
+		$arr = $db->prepare('SELECT `id` FROM `prefix_database`' . $sql, $args, __FILE__, __LINE__);
 
-		if ($result->num_rows > 0) {
-			while ($row = $result->fetch_assoc()) {
-				$database[] = $row['id'];
-			}
-		}
+		$database = array_column($arr, 'id');
 		$database = array_reverse($database);
 
 		json([

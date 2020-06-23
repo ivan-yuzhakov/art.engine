@@ -159,3 +159,13 @@
 
 #items .form .lock{width:100%;height:100%;position:absolute;top:0;left:0;z-index:1;background:rgba(0,0,0,.1);display:none;}
 #items .form .lock.show{display:block;}
+
+#items .form .warning{width:100%;height:100%;position:absolute;top:0;left:0;background:rgba(0,0,0,.8);display:none;overflow:hidden;overflow-y:auto;text-align:center;}
+#items .form .warning.show{display:block;}
+#items .form .warning .outer{max-width:100%;padding:40px 0;display:inline-block;text-align:left;}
+#items .form .warning .outer .title{margin-bottom:20px;padding:0 20px;font-size:24px;line-height:24px;color:#fff;text-align:center;}
+#items .form .warning .outer p{margin:10px 0;padding:0 20px;background:#fff;cursor:pointer;line-height:40px;}
+#items .form .warning .outer p:hover{background:#bbb;}
+#items .form .warning .outer p.clear{background:#fcc;}
+#items .form .warning .outer p.clear:hover{background:#faa;}
+#items .form .warning .outer .cancel{margin-top:20px;padding:0 20px;background:#f55;cursor:pointer;line-height:40px;color:#fff;text-align:center;}
