@@ -163,6 +163,10 @@ if ($section === 'updates')
 		foreach ($list as $f) {
 			$oldname = DIR_SITE . 'updates/update/core/' . $f;
 			$newname = DIR_SITE . $f;
+
+			$info = pathinfo($newname);
+			if (!is_dir($info['dirname'])) mkdir($info['dirname'], 0777, true);
+
 			rename($oldname, $newname);
 		}
 
