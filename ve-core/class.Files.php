@@ -114,10 +114,18 @@ class Files
 
 			$id = $db->insert('files', [
 				'user' => (isset($visitor->id) ? $visitor->id : -1),
+				'filename' => 'temp.jpg',
 				'title' => $info['filename'],
-				'filename_original' => $name,
-				'filename' => 'temp.jpg'
+				'desc' => '',
+				'size' => '',
+				'crop' => '',
+				'filename_original' => $name
 			], __FILE__, __LINE__);
+
+			if ($id === 0) {
+				$json['error'] = "Failed to create file in database!";
+				continue;
+			}
 
 			$filename = str_pad($id, 7, '0', STR_PAD_LEFT) . '.' . $ext;
 

@@ -93,11 +93,11 @@ if ($section === 'fields')
 
 		$items = [];
 		if (!empty($ids)) {
-			$items = $db->select('items', ['id', 'private_title'], ['id' => $ids], __FILE__, __LINE__);
-			$items = array_column($items, 'private_title', 'id');
+			$elems = $db->select('items', ['id', 'private_title'], ['id' => $ids], __FILE__, __LINE__);
+			$elems = array_column($elems, 'private_title', 'id');
 			$ids = array_flip($ids);
-			$temp = array_replace($ids, $items);
-			$items = [];
+			$temp = array_replace($ids, $elems);
+
 			foreach ($temp as $id => $v) {
 				$items[] = [(int) $id, $v];
 			}

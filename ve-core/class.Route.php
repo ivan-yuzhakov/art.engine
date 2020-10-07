@@ -5,6 +5,10 @@ class Route
 	{
 		global $urls, $visitor, $core, $helpers;
 
+		if (isset($urls[0]) && $urls[0] === 'plugin') {
+			$this->plugin();
+		}
+
 		if (isset($urls[0]) && $urls[0] === 'lang') {
 			$visitor->set_lang(@$urls[1]);
 		}
@@ -38,6 +42,29 @@ class Route
 		}
 	}
 
+	private function plugin()
+	{
+		global $db, $urls;
+
+		if (!isset($urls[1]) || empty($urls[1])) die('Plugin empty!');
+
+		$plugin = $db->select('plugins', '*', ['alias' => $urls[1]]);
+
+		if (empty($plugin)) die('Plugin not found!');
+
+		$plugin = $plugin[0];
+		if ($plugin['status'] === 0) die('Plugin is disabled!');
+
+		$public = DIR_PLUGINS . $urls[1] . '/public.php';
+		
+		if (file_exists($public)) {
+			require_once($public);
+			new Plugin($plugin);
+		} else {
+			die('Plugin does not contain public functions!');
+		}
+	}
+
 	private function support_helpdesk()
 	{
 		global $db;
@@ -60,7 +87,6 @@ class Route
 			]);
 
 			json(['status' => true, 'id_item' => $id_item]);
-			
 		}
 	}
 
@@ -69,7 +95,7 @@ class Route
 		global $core, $urls, $helpers;
 
 		if ($urls[1] === 'getfile') {
-			$core->files->getFile(@$urls[2], @$urls[3], @$urls[4], @$urls[5], false, @$urls[6]);
+			$core->files->getFile(@$urls[2], @$urls[3], @$urls[4], @$urls[5], false, @$urls[6], @$urls[7]);
 		}
 
 		if ($urls[1] === 'report_error') {

@@ -39,55 +39,58 @@ class Helpers
 		global $db, $core, $settings, $urls, $visitor, $g_fields, $cl_template, $locations;
 
 		require_once(DIR_CORE . 'api_frontend.php');
-
 		$locations = [];
 
-		function recursive($i, $date = false) {
-			global $locations;
+		if (file_exists(DIR_THEME . 'sitemap.php')) {
+			require_once DIR_THEME . 'sitemap.php';
+		} else {
+			function recursive($i, $date = false) {
+				global $locations;
 
-			$find = strrpos($i, '*');
+				$find = strrpos($i, '*');
 
-			if ($find === false) {
-				$date = $date ? $date : time();
-				$date = date('Y-m-d\TH:i:s+00:00', $date);
-				$url = '<url><loc>' . URL_SITE . $i . '</loc><lastmod>' . $date . '</lastmod></url>';
-				$locations[] = str_replace(URL_PROTOKOL . ':/', URL_PROTOKOL . '://', str_replace('//', '/', $url));
-			} else {
-				$str = explode('/', $i);
-				foreach ($str as $k => $v) {
-					if ($v === '*') {
-						$parent = $str[$k - 1];
+				if ($find === false) {
+					$date = $date ? $date : time();
+					$date = date('Y-m-d\TH:i:s+00:00', $date);
+					$url = '<url><loc>' . URL_SITE . $i . '</loc><lastmod>' . $date . '</lastmod></url>';
+					$locations[] = str_replace(URL_PROTOKOL . ':/', URL_PROTOKOL . '://', str_replace('//', '/', $url));
+				} else {
+					$str = explode('/', $i);
+					foreach ($str as $k => $v) {
+						if ($v === '*') {
+							$parent = $str[$k - 1];
 
-						// get id parent
-						if (empty($parent)) {
-							$parent = '#';
-						} else {
-							$item = get_itemByAlias($parent);
-
-							if ($item) {
-								$parent = $item['id'];
+							// get id parent
+							if (empty($parent)) {
+								$parent = '#';
 							} else {
-								break;
+								$item = get_itemByAlias($parent);
+
+								if ($item) {
+									$parent = $item['id'];
+								} else {
+									break;
+								}
 							}
-						}
 
-						// get items of parent
-						$items = get_items($parent);
-						foreach ($items as $item) {
-							$str[$k] = $item['alias'];
-							recursive(implode('/', $str), $item['date_change']);
-						}
+							// get items of parent
+							$items = get_items($parent);
+							foreach ($items as $item) {
+								$str[$k] = $item['alias'];
+								recursive(implode('/', $str), $item['date_change']);
+							}
 
-						break;
+							break;
+						}
 					}
 				}
+			};
+
+			$routing = json_decode($settings['routing'], true);
+
+			foreach ($routing as $i => $el) {
+				if ((isset($el[2]) && $el[2]) || !isset($el[2])) recursive($i);
 			}
-		};
-
-		$routing = json_decode($settings['routing'], true);
-
-		foreach ($routing as $i => $el) {
-			if ((isset($el[2]) && $el[2]) || !isset($el[2])) recursive($i);
 		}
 
 		$sitemap = '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . implode('', $locations) . '</urlset>';

@@ -74,10 +74,10 @@ class Database
 
 		$stmt = $this->msi->prepare($query);
 
-		if ($stmt) {
-			$args = [];
-			$type = [];
+		$args = [];
+		$type = [];
 
+		if ($stmt) {
 			foreach ($vars as $i => $v) {
 				$args[] = &$vars[$i];
 				$type[] = is_int($v) ? 'i' : 's';

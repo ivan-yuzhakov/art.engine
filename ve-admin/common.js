@@ -1283,16 +1283,26 @@ var m = {
 
 		if (!src) return false;
 
-		if (x.preload_array[src]) {
+		if (x.preload_array[src] === true) {
 			var image = $('img', m.cache.el).filter('[src="' + src + '"]');
 			if (callback && typeof callback == 'function') callback(image.get(0));
+		} else if (x.preload_array[src] === 'load') {
+			setTimeout(function(){
+				m.preload(src, callback);
+			}, 100);
 		} else {
-			$('<img src="' + src + '" />').on('load', function(){
+			x.preload_array[src] = 'load';
+			var img = $('<img />');
+			img.on('load', function(){
 				x.preload_array[src] = true;
 				if (callback && typeof callback == 'function') callback(this);
-			}).on('error', function(e){
-				if (error && typeof error == 'function') error(e);
-			}).appendTo(m.cache.el);
+			}).on('error', function(){
+				img.remove();
+				x.preload_array[src] = false;
+				m.preload(src, callback);
+			});
+			img.appendTo(m.cache.el);
+			img.attr('src', src);
 		}
 	},
 	log: (function(){

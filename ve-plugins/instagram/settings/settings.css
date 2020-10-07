@@ -1,0 +1,4 @@
+#plugin_instagram_settings .status{height:40px;margin:40px 0;position:relative;background:#238ba3;overflow:hidden;text-align:center;line-height:40px;color:#fff;}
+#plugin_instagram_settings .status.error{background:#f55;cursor:pointer;}
+#plugin_instagram_settings .status .loader{width:100%;height:100%;position:absolute;top:0;left:0;background-color:rgba(0,0,0,.3);}
+#plugin_instagram_settings .status a{height:100%;display:block;color:#fff;}
