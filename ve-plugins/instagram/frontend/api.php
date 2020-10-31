@@ -38,20 +38,24 @@ class Plugin_instagram
 		} else {
 			$response = Unirest\Request::get('https://graph.instagram.com/me/media?fields=id,caption,media_type,media_url,permalink,thumbnail_url,timestamp,username&access_token=' . $this->fields['access_token'], []);
 
-			$data = array_slice($response->body->data, 0, $count);
-			$data = array_map(function($d){
-				return (array) $d;
-			}, $data);
+			if (isset($response->body->data)) {
+				$data = array_slice($response->body->data, 0, $count);
+				$data = array_map(function($d){
+					return (array) $d;
+				}, $data);
 
-			$core->cache->setCache($key, ['data' => $data], $cache_minutes * 60);
+				$core->cache->setCache($key, ['data' => $data], $cache_minutes * 60);
 
-			return ['data' => $data];
+				return ['data' => $data];
+			} else {
+				return ['data' => []];
+			}
 		}
 	}
 
 	private function refresh()
 	{
-		global $db;
+		global $db, $helpers;
 
 		if (!isset($this->fields['expires'])) return false;
 		if ($this->fields['expires'] <= time()) return false;
