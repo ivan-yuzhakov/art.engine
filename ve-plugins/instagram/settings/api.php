@@ -24,7 +24,6 @@ class Plugin_instagram_settings
 		$url = 'https://api.instagram.com/oauth/authorize?client_id=' . $this->fields['app_id'] . '&redirect_uri=' . urlencode($url) . '&scope=user_profile,user_media&response_type=code';
 
 		if (!isset($this->fields['access_token']) || empty($this->fields['access_token']) || time() >= (int) @$this->fields['expires']) {
-
 			json(['status' => false, 'url' => $url]);
 		}
 
