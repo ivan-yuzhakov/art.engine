@@ -27,7 +27,7 @@ class Files
 
 		$this->files_types = [
 			'image'    => ['jpg', 'jpeg', 'png', 'gif'],
-			'document' => ['pdf', 'doc', 'docx', 'xls', 'xlsx'],
+			'document' => ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'epub', 'mobi'],
 			'archive'  => ['zip', 'rar'],
 			'audio'    => ['mp3'],
 			'video'    => ['mp4', 'webm']

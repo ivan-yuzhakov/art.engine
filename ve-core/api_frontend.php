@@ -580,7 +580,13 @@ function get_value($arr, $key, $default_value = '')
 				if ($v[0] == 'vimeo') {
 					// https://vimeo.com/api/v2/video/54178821.json
 					$url = 'https://vimeo.com/api/v2/video/' . $v[1] . '.json';
-					$thumb = json_decode(file_get_contents($url), true)[0]['thumbnail_large'];
+					$json = @file_get_contents($url);
+					if ($json) {
+						$thumb = json_decode($json, true)[0]['thumbnail_large'];
+					} else {
+						$thumb = URL_SITE . 'placeholder/500/500';
+					}
+
 					$link = '//player.vimeo.com/video/' . $v[1] . '?loop=1';
 				}
 
