@@ -1998,58 +1998,112 @@ var database = {
 
 					childs.append(item);
 
+					var button_hide = true;
 					x.dependent_appending = true;
 					var captions = $.parseJSON(el[5] || '{}');
 					$.each(x.d.config.unique, function(i, v){
-						var capt = captions[v] || '';
-						// if (capt === undefined) return true;
 						var field = fields.arr.fields[v];
 						if (!field) return true;
-						var container = $('<div class="container">\
-							<div class="field ' + field.type + '" data="' + v + '">\
-								<div class="head"><p>' + field.private_title + '</p></div>\
-								<div class="group"></div>\
-							</div>\
-						</div>').appendTo($('.c', item));
+						var capt = captions[v] || '';
 
-						fields.types[field.type].item_add($('.group', container), capt, field.value, 'database', x.d.language.active, function(val, data){
-							var t = setInterval(function(){
-								if (x.dependent_appending) return false;
-								clearInterval(t);
+						if (field.type === 'text' || field.type === 'select' || field.type === 'users' || field.type === 'flag' || field.type === 'currency') {
+							var container = $('<div class="container"><div class="field"></div></div>').appendTo($('.c', item));
 
-								if (field.type === 'flag') {
-									$('.c .container .field', item).each(function(){
-										var th = $(this);
-										var id = +th.attr('data');
-										var parent = th.parent();
+							$('.field', container).field({
+								id: v,
+								value: capt,
+								lang: x.d.language.active,
+								on: {
+									change: function(){
+										$('.c .button', item).trigger('click');
+									}
+								},
+								dependence: function(val, data){
+									var t = setInterval(function(){
+										if (x.dependent_appending) return false;
+										clearInterval(t);
 
-										parent.toggle(!($.inArray(id, data.dependent.fields) > -1 && ((!val && !data.dependent.reverse) || (val && data.dependent.reverse))));
-									});
+										if (field.type === 'flag') {
+											$('.c .container .field', item).each(function(){
+												var th = $(this);
+												var id = +th.attr('data');
+												var parent = th.parent();
+
+												parent.toggle(!($.inArray(id, data.dependent.fields) > -1 && ((!val && !data.dependent.reverse) || (val && data.dependent.reverse))));
+											});
+										}
+										if (field.type === 'select') {
+											if (val) {
+												var d = data[val].dependent;
+												$('.c .container .field', item).each(function(){
+													var th = $(this);
+													var id = +th.attr('data');
+													var parent = th.parent();
+
+													if ($.inArray(id, d.show) + 1) parent.show();
+													if ($.inArray(id, d.hide) + 1) parent.hide();
+												});
+											} else {
+												var fields = $('.c .container .field', item);
+												$.each(data, function(i, el){
+													$.map(el.dependent.hide, function(id){
+														fields.filter('[data="' + id + '"]').parent().hide();
+													});
+												});
+											}
+										}
+									}, 50);
 								}
-								if (field.type === 'select') {
-									if (val) {
-										var d = data[val].dependent;
+							});
+						} else {
+							button_hide = false;
+							var container = $('<div class="container">\
+								<div class="field ' + field.type + '" data="' + v + '">\
+									<div class="head"><p>' + field.private_title + '</p></div>\
+									<div class="group"></div>\
+								</div>\
+							</div>').appendTo($('.c', item));
+
+							fields.types[field.type].item_add($('.group', container), capt, field.value, 'database', x.d.language.active, function(val, data){
+								var t = setInterval(function(){
+									if (x.dependent_appending) return false;
+									clearInterval(t);
+
+									if (field.type === 'flag') {
 										$('.c .container .field', item).each(function(){
 											var th = $(this);
 											var id = +th.attr('data');
 											var parent = th.parent();
 
-											if ($.inArray(id, d.show) + 1) parent.show();
-											if ($.inArray(id, d.hide) + 1) parent.hide();
-										});
-									} else {
-										var fields = $('.c .container .field', item);
-										$.each(data, function(i, el){
-											$.map(el.dependent.hide, function(id){
-												fields.filter('[data="' + id + '"]').parent().hide();
-											});
+											parent.toggle(!($.inArray(id, data.dependent.fields) > -1 && ((!val && !data.dependent.reverse) || (val && data.dependent.reverse))));
 										});
 									}
-								}
-							}, 50);
-						});
+									if (field.type === 'select') {
+										if (val) {
+											var d = data[val].dependent;
+											$('.c .container .field', item).each(function(){
+												var th = $(this);
+												var id = +th.attr('data');
+												var parent = th.parent();
+
+												if ($.inArray(id, d.show) + 1) parent.show();
+												if ($.inArray(id, d.hide) + 1) parent.hide();
+											});
+										} else {
+											var fields = $('.c .container .field', item);
+											$.each(data, function(i, el){
+												$.map(el.dependent.hide, function(id){
+													fields.filter('[data="' + id + '"]').parent().hide();
+												});
+											});
+										}
+									}
+								}, 50);
+							});
+						}
 					});
-					if ($('.c', item).html() !== '') $('.c', item).append('<div class="button br3">' + lang['database_edition_childs_captions_save'] + '</div><div class="loader"></div>');
+					button_hide = button_hide ? 'hide' : '';
+					if ($('.c', item).html() !== '') $('.c', item).append('<div class="button br3 ' + button_hide + '">' + lang['database_edition_childs_captions_save'] + '</div><div class="loader"></div>');
 					x.dependent_appending = false;
 				});
 
@@ -2173,8 +2227,13 @@ var database = {
 			$('.container', parent).each(function(){
 				var th = $(this);
 				var id = +$('.field', th).attr('data');
-				var field = fields.arr.fields[id];
-				json[id] = fields.types[field.type].item_save(th.find('.group'));
+				var data = $('.field', th).data('field');
+				if (data && data.getValue) {
+					json[id] = data.getValue();
+				} else {
+					var field = fields.arr.fields[id];
+					json[id] = fields.types[field.type].item_save(th.find('.group'));
+				}
 			});
 
 			$.post('?database/edition_set_item_captions', {id: item, captions: JSON.stringify(json)}, function(){

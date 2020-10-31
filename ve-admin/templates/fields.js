@@ -2157,4 +2157,188 @@ var fields = {
 	}
 };
 
+$.fn.field = function(options){
+	var el = this;
+	var options = $.extend(true, {
+		id: 0,
+		value: '',
+		lang: 'eng',
+		on: {
+			change: false
+		},
+		dependence: false
+	}, options);
+
+	if (!el.length) {
+		console.error('$.fn.field', options);
+		return el;
+	}
+	if (!fields.arr.fields[options.id]) return el;
+	var field = fields.arr.fields[options.id];
+
+	el.addClass(field.type).attr('data', options.id).append('<div class="head"><p>' + field.private_title + '</p></div><div class="group"></div>');
+
+	var group = $('.group', el);
+	var data = {
+		getValue: function(){
+			console.error('Get value error: no handler for this field!', options);
+			return '';
+		}
+	};
+
+	if (field.type === 'text') {
+		var old_val = options.value ? String(options.value) : '';
+		var input = $('<input type="text" class="br3 box animate1" value="">');
+		input.val(old_val).appendTo(group);
+		data.getValue = function(){
+			return input.val().trim();
+		};
+		input.on('keydown', function(e){
+			if (e.keyCode === 13) input.blur();
+		});
+		if (typeof options.on.change === 'function') {
+			input.on('blur', function(){
+				var new_val = data.getValue();
+
+				if (new_val !== old_val) {
+					old_val = new_val;
+					options.on.change();
+				}
+			});
+		}
+	}
+	if (field.type === 'select') {
+		var old_val = +options.value;
+		var elems = $.parseJSON(field.value || '{}');
+
+		var fs = $.map(elems, function(el, id){
+			var val = el.lang[options.lang] || el.lang[settings.arr.langFrontDefault] || '';
+			return '<p class="animate1 br3" data="' + id + '">' + val + '</p>';
+		}).join('') + '<div class="clr"></div>';
+
+		data.getValue = function(){
+			return +$('p.active', group).attr('data') || 0;
+		};
+		group.append(fs).on('click', 'p', function(){
+			var th = $(this);
+
+			if (th.hasClass('active')) return false;
+
+			var data = +th.attr('data');
+			th.addClass('active').siblings().removeClass('active');
+
+			if (typeof options.on.change === 'function') {
+				if (data !== old_val) {
+					old_val = data;
+					options.on.change();
+				}
+			}
+
+			if (options.dependence && elems[data].dependent.use) options.dependence(data, elems);
+		});
+
+		if (old_val && elems[old_val]) {
+			$('p[data="' + old_val + '"]', group).trigger('click');
+		} else {
+			var s = true;
+			$.each(elems, function(id, val){
+				if (val.default) {
+					s = false;
+					$('p[data="' + id + '"]', group).trigger('click');
+					return false;
+				}
+			});
+
+			if (s && options.dependence) options.dependence(false, elems);
+		}
+	}
+	if (field.type === 'users') {
+		var old_val = options.value;
+
+		data.getValue = function(){
+			return +$('p.active', group).attr('data') || 0;
+		};
+		group.append($.map(users.arr.users, function(el, i){
+			if (el && el.id !== 1) {
+				return '<p class="br3 animate1" data="' + i + '">' + el.fname + '</p>';
+			}
+		}).join('') + '<div class="clr"></div>');
+
+		group.on('click', 'p', function(){
+			var th = $(this);
+			var id = +th.attr('data');
+			th.toggleClass('active').siblings().removeClass('active');
+			if (typeof options.on.change === 'function') {
+				if (id !== old_val) {
+					old_val = id;
+					options.on.change();
+				}
+			}
+		});
+
+		$('p[data="' + old_val + '"]', group).trigger('click');
+	}
+	if (field.type === 'flag') {
+		var json = $.parseJSON(field.value || '{}');
+		var old_val = +!!+options.value || json.default;
+
+		data.getValue = function(){
+			return +$('p.active', group).attr('data') || 0;
+		};
+		group.html('\
+			<p class="br3 animate1" data="1">' + lang['fields_types_flag_yes'] + '</p>\
+			<p class="br3 animate1" data="0">' + lang['fields_types_flag_no'] + '</p>\
+			<div class="clr"></div>\
+		').on('click', 'p', function(){
+			var th = $(this);
+			if (th.hasClass('active')) return false;
+			var data = +th.attr('data');
+			th.addClass('active').siblings().removeClass('active');
+
+			if (typeof options.on.change === 'function') {
+				if (data !== old_val) {
+					old_val = data;
+					options.on.change();
+				}
+			}
+
+			if (options.dependence && json.dependent.use) options.dependence(data, json);
+		});
+
+		$('p[data="' + old_val + '"]', group).trigger('click');
+	}
+	if (field.type === 'currency') {
+		var old_val = options.value ? String(options.value) : '';
+		var input = $('<input type="text" class="br3 box animate1" value="">');
+		input.val(old_val).appendTo(group);
+		var mask = IMask(input.get(0), {
+			mask: Number,
+			scale: 2,
+			signed: false,
+			thousandsSeparator: ',',
+			padFractionalZeros: false,
+			normalizeZeros: true,
+			radix: '.',
+			mapToRadix: ['.']
+		});
+		data.getValue = function(){
+			return mask.unmaskedValue;
+		};
+		if (typeof options.on.change === 'function') {
+			input.on('blur', function(){
+				var new_val = data.getValue();
+
+				if (new_val !== old_val) {
+					old_val = new_val;
+					options.on.change();
+				}
+			});
+		}
+	}
+
+	el.data('field', data);
+
+	return el;
+};
+
 common.queue.push(fields);

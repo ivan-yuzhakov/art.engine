@@ -280,19 +280,69 @@ class Files
 		imagedestroy($cut);
 	}
 
-	private function create($id, $w, $h, $use_crop, $watermark)
+	private function get_imageSizePreCreate($w, $h, $use_crop, $size)
 	{
-		$crop = $this->getCrop($use_crop);
+		// for name cache file
+		$cache = ['w' => 0, 'h' => 0, 'c' => 0];
 
-		$min_w = $w == 0 ? $crop['w'] : min($w, $crop['w']);
-		$min_h = $h == 0 ? $crop['h'] : min($h, $crop['h']);
+		$or = ['w' => $this->info['w'], 'h' => $this->info['h']];
 
-		$ratio_w = $min_w / $crop['w'];
-		$ratio_h = $min_h / $crop['h'];
+		if ($use_crop) {
+			$crop = explode(';', $this->file['crop']);
+			if (count($crop) == 4) {
+				$w = (int) $crop[0]; $h = (int) $crop[1];
+				$t = (int) $crop[2]; $l = (int) $crop[3];
+				if ($t !== 0 || $l !== 0 || $w !== $or['w'] || $h !== $or['h']) {
+					$or['w'] = $w;
+					$or['h'] = $h;
+					$cache['c'] = 1;
+				}
+			}
+		}
+
+		// cover
+		$min_w = $w == 0 ? $or['w'] : min($w, $or['w']);
+		$min_h = $h == 0 ? $or['h'] : min($h, $or['h']);
+
+		$ratio_w = $min_w / $or['w'];
+		$ratio_h = $min_h / $or['h'];
 		$ratio = ($w == 0 || $h == 0) ? min($ratio_w, $ratio_h) : max($ratio_w, $ratio_h);
 
-		$image_width = $crop['w'] * $ratio;
-		$image_height = $crop['h'] * $ratio;
+		$cache['w'] = $or['w'] * $ratio;
+		$cache['h'] = $or['h'] * $ratio;
+
+		if ($size === 'contain') {
+			$min_w = min($w, $or['w']);
+			$min_h = min($h, $or['h']);
+
+			$ratio_w = $min_w / $or['w'];
+			$ratio_h = $min_h / $or['h'];
+			$ratio = ($w == 0 || $h == 0) ? max($ratio_w, $ratio_h) : min($ratio_w, $ratio_h);
+
+			$w = $or['w'] * $ratio;
+			$h = $or['h'] * $ratio;
+
+			if ($cache['w'] === $w && $cache['h'] === $h) {
+				
+			} else {
+				$cache['w'] = $w;
+				$cache['h'] = $h;
+			}
+		}
+
+		$cache['w'] = floor($cache['w']);
+		$cache['h'] = floor($cache['h']);
+
+		return $cache;
+	}
+
+	private function create($id, $w, $h, $use_crop, $watermark, $size)
+	{
+		$crop = $this->getCrop($use_crop);
+		$name_cache = $this->get_imageSizePreCreate($w, $h, $use_crop, $size);
+
+		$image_width = $name_cache['w'];
+		$image_height = $name_cache['h'];
 
 		$image = imagecreatetruecolor($image_width, $image_height);
 
@@ -366,13 +416,15 @@ class Files
 		imagedestroy($image);
 	}
 
-	private function getImage($id, $w, $h, $use_crop, $watermark, $return_path = false)
+	private function getImage($id, $w, $h, $use_crop, $watermark, $size, $return_path = false)
 	{
+		$name_cache = $this->get_imageSizePreCreate($w, $h, $use_crop, $size);
+
 		$watermark_cache = $watermark === false ? 0 : md5($watermark['image'] . $watermark['padding'] . $watermark['width'] . $watermark['height'] . $watermark['opacity'] . $watermark['x_align'] . $watermark['y_align']);
 
-		$this->cache = $this->info['filename'] . '_' . $w . 'x' . $h . '_' . ($use_crop ? 1 : 0) . '_' . $watermark_cache . '.' . $this->info['extension'];
+		$this->cache = $this->info['filename'] . '_' . $name_cache['w'] . 'x' . $name_cache['h'] . '_' . $name_cache['c'] . '_' . $watermark_cache . '.' . $this->info['extension'];
 
-		if (!file_exists($this->dir_cache . $this->cache)) $this->create($id, $w, $h, $use_crop, $watermark);
+		if (!file_exists($this->dir_cache . $this->cache)) $this->create($id, $w, $h, $use_crop, $watermark, $size);
 
 		return ($return_path ? $this->dir_cache : $this->url_cache) . $this->cache;
 	}
@@ -438,13 +490,14 @@ class Files
 		}
 	}
 
-	public function getFileUrl($id = 0, $w = 0, $h = 0, $use_crop = false, $watermark = false)
+	public function getFileUrl($id = 0, $w = 0, $h = 0, $use_crop = false, $watermark = false, $size = 'cover')
 	{
 		$id = (int) $id;
 		$w = (int) $w; $w = max($w, 0);
 		$h = (int) $h; $h = max($h, 0);
 		$use_crop = !empty($use_crop);
 		$watermark = $this->verificationWatermark($watermark);
+		$size = $size === 'cover' ? $size : 'contain';
 
 		$this->file = $this->verificationFile($id);
 
@@ -461,20 +514,22 @@ class Files
 				$this->info['h'] = $info[1];
 				$this->info['mime'] = $info['mime'];
 
-				if ($w === 0 && $h === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
-					return $this->url_files . $this->file['filename'];
-				}
-				if ($w >= $this->info['w'] && $h === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
-					return $this->url_files . $this->file['filename'];
-				}
-				if ($h >= $this->info['h'] && $w === 0 && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
-					return $this->url_files . $this->file['filename'];
-				}
-				if ($w >= $this->info['w'] && $h >= $this->info['h'] && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
-					return $this->url_files . $this->file['filename'];
+				if ((!$use_crop || empty($this->file['crop'])) && $watermark === false) {
+					if ($w === 0 && $h === 0) {
+						return $this->url_files . $this->file['filename'];
+					}
+					if ($w >= $this->info['w'] && $h === 0) {
+						return $this->url_files . $this->file['filename'];
+					}
+					if ($h >= $this->info['h'] && $w === 0) {
+						return $this->url_files . $this->file['filename'];
+					}
+					if ($w >= $this->info['w'] && $h >= $this->info['h']) {
+						return $this->url_files . $this->file['filename'];
+					}
 				}
 
-				return $this->getImage($id, $w, $h, $use_crop, $watermark);
+				return $this->getImage($id, $w, $h, $use_crop, $watermark, $size);
 			break;
 
 			case 'document':
@@ -568,7 +623,7 @@ class Files
 		}
 	}
 
-	public function getFile($id = 0, $w = 0, $h = 0, $use_crop = false, $watermark = false, $use_processing = 0)
+	public function getFile($id = 0, $w = 0, $h = 0, $use_crop = false, $watermark = false, $use_processing = 0, $size = 0)
 	{
 		$id = (int) $id;
 		$w = (int) $w; $w = max($w, 0);
@@ -576,6 +631,7 @@ class Files
 		$use_crop = !empty($use_crop);
 		$watermark = $this->verificationWatermark($watermark);
 		$use_processing = (int) $use_processing;
+		$size = (int) $size === 0 ? 'cover' : 'contain';
 
 		$this->file = $this->verificationFile($id);
 
@@ -602,7 +658,7 @@ class Files
 				} else if (!$use_processing && $w >= $this->info['w'] && $h >= $this->info['h'] && (!$use_crop || empty($this->file['crop'])) && $watermark === false) {
 					$path = $this->dir_files . $this->file['filename'];
 				} else {
-					$path = $this->getImage($id, $w, $h, $use_crop, $watermark, true);
+					$path = $this->getImage($id, $w, $h, $use_crop, $watermark, $size, true);
 				}
 			break;
 

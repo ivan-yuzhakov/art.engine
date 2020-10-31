@@ -672,11 +672,11 @@ function get_files($ids = [])
 	return $cl_template->get_files($ids);
 };
 
-function get_fileUrl($id = 0, $w = 0, $h = 0, $use_crop = 0, $watermark = false)
+function get_fileUrl($id = 0, $w = 0, $h = 0, $use_crop = 0, $watermark = false, $size = 'cover')
 {
 	global $core;
 
-	return $core->files->getFileUrl($id, $w, $h, $use_crop, $watermark);
+	return $core->files->getFileUrl($id, $w, $h, $use_crop, $watermark, $size);
 };
 
 function getFileUrlDownload($id = 0)
@@ -904,6 +904,6 @@ get_fileUrl($id, $w, $h, $crop, [
 	'opacity' => 1,
 	'x_align' => 'center',
 	'y_align' => 'center'
-])
+], 'cover')
 */
 ?>
