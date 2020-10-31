@@ -368,10 +368,10 @@ class Template
 	{
 		if (!$item) return false;
 
-		$this->meta_title = empty($item['meta_title']) ? $item['public_title'] : $item['meta_title'];
-		$this->meta_image = $item['image'];
-		$this->meta_desc = $item['meta_desc'];
-		$this->meta_keys = $item['meta_keys'];
+		if (isset($item['meta_title'])) $this->meta_title = empty($item['meta_title']) ? $item['public_title'] : $item['meta_title'];
+		if (isset($item['image'])) $this->meta_image = $item['image'];
+		if (isset($item['meta_desc'])) $this->meta_desc = $item['meta_desc'];
+		if (isset($item['meta_keys'])) $this->meta_keys = $item['meta_keys'];
 	}
 
 	public function get_plugins()
