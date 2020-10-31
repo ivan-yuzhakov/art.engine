@@ -249,8 +249,8 @@ var files = {
 
 					if (th.hasClass('disabled')) return true;
 
-					var title = $('input[name="title"]').val().trim();
-					var desc = $('input[name="desc"]').val().trim();
+					var title = $('input[name="title"]', th).val().trim();
+					var desc = $('input[name="desc"]', th).val().trim();
 
 					ids.push(id);
 					info.push([title, desc]);
