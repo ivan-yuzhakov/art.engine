@@ -145,7 +145,7 @@ if ($section === 'database')
 		// dp(microtime(true) - $start);
 
 		function val(&$v, $k, $data){
-			global $helpers;
+			global $db, $helpers;
 
 			if ((empty($v) && $v !== 0 && $v !== '0') || !isset($data['fields'][$k])) {
 				$v = '';
@@ -183,6 +183,12 @@ if ($section === 'database')
 						$v = '';
 					}
 					break;
+				case 'items':
+					$v = explode(';', $v);
+					$v = $db->select('items', ['private_title'], ['id' => $v]);
+					$v = array_column($v, 'private_title');
+					$v = implode(' ', $v);
+					break;
 				case 'text':
 				case 'textarea':
 					break;
@@ -193,7 +199,6 @@ if ($section === 'database')
 				case 'calendar':
 				case 'color':
 				case 'flag':
-				case 'items':
 				case 'base':
 					$v = '';
 					break;
@@ -936,6 +941,7 @@ if ($section === 'database')
 		$config = json_decode($settings['database'], true);
 
 		$fields = ['id', 'fields'];
+		if (in_array('image', $config['display'])) $fields[] = 'image';
 		if (in_array('uid', $config['display'])) $fields[] = 'uid';
 		if (in_array('title', $config['display'])) $fields[] = 'private_title';
 		if (in_array('date_added', $config['display'])) $fields[] = 'date_added';

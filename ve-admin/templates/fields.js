@@ -1976,7 +1976,7 @@ var fields = {
 						filter_val = '';
 						filter();
 					}).on('click', '.save', function(){
-						value = new_value.slice();
+						value = new_value.slice().reverse();
 
 						start();
 
@@ -2038,7 +2038,7 @@ var fields = {
 								}).join('');
 
 								return '<div class="item' + selected + '" data="' + item.id + '">' + f + '</div>';
-							}).join('');
+							}).reverse().join('');
 
 							if (!html) html = '<div class="empty">' + lang['fields_types_base_popup_empty'] + '</div>';
 
