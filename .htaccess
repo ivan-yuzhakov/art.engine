@@ -65,6 +65,7 @@ php_flag magic_quotes_gpc 0
 php_flag magic_quotes_runtime 0
 php_value session.gc_maxlifetime 2592000
 #php_value memory_limit 150M
+php_value max_execution_time 60
 
 RewriteEngine On
 

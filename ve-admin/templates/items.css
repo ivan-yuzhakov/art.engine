@@ -105,10 +105,10 @@
 #items .form .header .actions div.menu .icon p{width:100%;height:2px;margin-top:-1px;position:absolute;top:50%;left:0;background:#fff;}
 #items .form .header .actions div.menu .icon p.p2{margin-top:-6px;}
 #items .form .header .actions div.menu .icon p.p3{margin-top:4px;}
-#items .form .header .actions div.menu .popup{padding-top:10px;position:absolute;top:45px;right:0;z-index:2;opacity:0;visibility:hidden;}
+#items .form .header .actions div.menu .popup{padding-top:10px;position:absolute;top:45px;right:-50%;z-index:2;opacity:0;visibility:hidden;}
 #items .form .header .actions div.menu:hover .popup{top:40px;opacity:1;visibility:visible;}
-#items .form .header .actions div.menu .popup .marker{position:absolute;top:-2px;right:14px;border:6px solid transparent;border-bottom-color:#333;}
-#items .form .header .actions div.menu .popup .wrapper{padding:10px 20px;background:#333;}
+#items .form .header .actions div.menu .popup .marker{position:absolute;top:-2px;right:33px;border:6px solid transparent;border-bottom-color:#333;}
+#items .form .header .actions div.menu .popup .wrapper{max-height:400px;padding:10px 20px;background:#333;}
 
 #items .form .header .actions div.menu .popup .wrapper .language{margin:0 -5px;white-space:nowrap;font-size:0;line-height:0;}
 #items .form .header .actions div.menu .popup .wrapper .language .lang{margin:0 5px;padding:0 10px;display:inline-block;cursor:pointer;font-size:16px;line-height:40px;color:#fff;}
