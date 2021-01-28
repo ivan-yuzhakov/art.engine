@@ -1063,6 +1063,8 @@ if ($section === 'database')
 			}
 		}
 
+		$core->cache->clearCache('theme_');
+
 		json(['id' => $id]);
 	}
 	if ($query === 'edition_edit_edition')
@@ -1088,6 +1090,8 @@ if ($section === 'database')
 			], 'id', $item['id'], __FILE__, __LINE__);
 		}
 
+		$core->cache->clearCache('theme_');
+
 		json(['status' => true]);
 	}
 	if ($query === 'edition_remove_edition')
@@ -1096,6 +1100,7 @@ if ($section === 'database')
 
 		$db->delete('editions', 'id', $id, __FILE__, __LINE__);
 		$db->delete('editions_items', 'edition', $id, __FILE__, __LINE__);
+		$core->cache->clearCache('theme_');
 
 		json(['status' => true]);
 	}
@@ -1135,6 +1140,7 @@ if ($section === 'database')
 		$status = (int) $_POST['status'];
 
 		$db->update('editions_items', ['status' => $status], 'id', $id, __FILE__, __LINE__);
+		$core->cache->clearCache('theme_');
 
 		json(['status' => true]);
 	}
@@ -1144,6 +1150,7 @@ if ($section === 'database')
 		$fields = $_POST['fields'];
 
 		$db->update('editions_items', ['fields' => $fields], 'id', $id, __FILE__, __LINE__);
+		$core->cache->clearCache('theme_');
 
 		json(['status' => true]);
 	}
@@ -1153,6 +1160,7 @@ if ($section === 'database')
 		$note = $_POST['note'];
 
 		$db->update('editions_items', ['note' => $note], 'id', $id, __FILE__, __LINE__);
+		$core->cache->clearCache('theme_');
 
 		json(['status' => true]);
 	}
@@ -1162,6 +1170,7 @@ if ($section === 'database')
 		$captions = $_POST['captions'];
 
 		$db->update('editions_items', ['captions' => $captions], 'id', $id, __FILE__, __LINE__);
+		$core->cache->clearCache('theme_');
 
 		json(['status' => true]);
 	}
