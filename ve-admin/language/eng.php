@@ -236,6 +236,7 @@ $lang['files_header_add_group'] = 'Add group';
 $lang['files_header_select_all'] = 'Select all';
 $lang['files_header_unselect_all'] = 'Unselect all';
 $lang['files_header_remove_selected'] = 'Remove selected';
+$lang['files_header_file_filtering'] = 'File filtering...';
 $lang['files_list_groups_empty'] = 'No groups...';
 $lang['files_list_groups_title_create'] = 'Enter the name group';
 $lang['files_list_groups_title_default'] = 'New group';

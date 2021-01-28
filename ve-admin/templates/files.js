@@ -77,15 +77,37 @@ var files = {
 			x.parent = parent.attr('parent');
 
 			if (data === 'select_all' && !files.openFiles) {
-				$('.g, .f', parent).addClass('selected');
+				$('.g, .f', parent).not('.hide').addClass('selected');
 			}
 			if (data === 'unselect_all' && !files.openFiles) {
 				$('.selected', parent).removeClass('selected');
 			}
 			if (data === 'remove_selected' && !files.openFiles) {
-				var elems = $('.selected', parent);
+				var elems = $('.selected', parent).not('.hide');
 				x.remove(elems);
 			}
+		}).on('keyup', '.header .search input', function(){
+			var th = $(this);
+			var val = th.val().trim().toLowerCase();
+			var parent = th.parents('.items');
+
+			$('.scroll .files .f', parent).each(function(){
+				var th = $(this);
+				var hide = false;
+
+				if (val) {
+					var id = +th.attr('data');
+					var str = x.arr.files[id].title.toLowerCase();
+
+					hide = val.split(' ').some(function(t){
+						return str.indexOf(t) === -1;
+					});
+				}
+
+				th.toggleClass('hide', hide);
+			});
+
+			$('.scroll', parent).data('plugin_tinyscrollbar').update('relative');
 		});
 
 		// list group
@@ -757,6 +779,8 @@ var files = {
 			});
 
 			x.el.list.append(template);
+
+			$('.items', x.el.list).last().find('.header .search input').focus();
 		});
 
 		$('.scroll', x.el.list).tinyscrollbar();

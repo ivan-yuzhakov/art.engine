@@ -15,6 +15,9 @@
 					</div>
 				</div>
 				<div class="title">{{title}}</div>
+				<div class="search">
+					<input class="box br3" type="text" placeholder="<?php echo $lang['files_header_file_filtering']; ?>">
+				</div>
 			</div>
 			<div class="scroll">
 				<div class="viewport"><div class="overview">

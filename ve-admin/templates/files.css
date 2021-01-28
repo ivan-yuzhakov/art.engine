@@ -3,7 +3,7 @@
 /* list */
 
 #files .list{min-width:100%;height:100%;position:relative;display:inline-block;overflow:hidden;font-size:0;line-height:0;white-space:nowrap;}
-#files .list .items{width:33.333%;height:100%;padding-top:80px;position:relative;display:inline-block;}
+#files .list .items{width:33.333%;height:100%;padding-top:132px;position:relative;display:inline-block;}
 #files .list .items.fade{opacity:.3;}
 #files .list .items.dragover{background:#afa;}
 #files .list .items.ui_sortable-item-drop{background:#dfd;}
@@ -32,6 +32,8 @@
 #files .list .items .header .actions .menu .popup .wrapper p.remove:hover{background:#f55;color:#fff;}
 #files .list .items .header .title{overflow:hidden;cursor:pointer;font-size:22px;line-height:40px;color:#333;text-overflow:ellipsis;white-space:nowrap;}
 #files .list .items:last-child .header .title{cursor:default;}
+#files .list .items .header .search{margin-top:20px;}
+#files .list .items .header .search input{width:100%;height:42px;padding:10px 20px;background:#dfd;border:1px solid #ddd;font-size:16px;}
 
 #files .list .items .scroll{height:100%;position:relative;}
 #files .list .items .scroll .thumb{background:#777;opacity:.3;}
@@ -66,6 +68,7 @@
 /* files */
 #files .list .files{margin:0 -5px;position:relative;}
 #files .list .f{width:25%;margin-top:10px;padding:0 5px;position:relative;float:left;}
+#files .list .f.hide{display:none;}
 #files .list.edited .f{width:50%;}
 #files .list .f.ui_sortable-item{position:absolute;}
 #files .list .f .inner{padding-top:100%;position:relative;}

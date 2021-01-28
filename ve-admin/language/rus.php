@@ -236,6 +236,7 @@ $lang['files_header_add_group'] = 'Добавить группу';
 $lang['files_header_select_all'] = 'Выбрать все';
 $lang['files_header_unselect_all'] = 'Снять выбор со всех';
 $lang['files_header_remove_selected'] = 'Удалить выбранные';
+$lang['files_header_file_filtering'] = 'Фильтрация файлов...';
 $lang['files_list_groups_empty'] = 'Нет групп...';
 $lang['files_list_groups_title_create'] = 'Введите имя папки';
 $lang['files_list_groups_title_default'] = 'Новая папка';
