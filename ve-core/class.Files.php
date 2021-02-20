@@ -162,6 +162,81 @@ class Files
 		return $json;
 	}
 
+	public function uploadFromUrl($url, $title = false, $folder = '#')
+	{
+		global $db, $core, $settings, $visitor;
+
+		if (empty($url)) {
+			return false;
+		}
+
+		$file = $db->select('files', ['id'], ['filename_original' => $url]);
+		if (count($file) > 0) {
+			return $file[0]['id'];
+		}
+
+		$info = pathinfo($url);
+		$ext = $info['extension'];
+		$info['basename'] = str_replace('_', ' ', $info['basename']);
+		$info['basename'] = str_replace('.' . $ext, '', $info['basename']);
+		if (empty($title)) $title = $info['basename'];
+		$ext = strtolower($ext);
+
+		if (!in_array($ext, $this->files_types['image'])) {
+			return false;
+		}
+
+		$id = $db->insert('files', [
+			'user' => (isset($visitor->id) ? $visitor->id : -1),
+			'filename' => 'temp.jpg',
+			'title' => $title,
+			'desc' => '',
+			'size' => '',
+			'crop' => '',
+			'filename_original' => $url
+		], __FILE__, __LINE__);
+
+		$filename = str_pad($id, 7, '0', STR_PAD_LEFT) . '.' . $ext;
+
+		$ch = curl_init($url);
+		curl_setopt($ch, CURLOPT_HEADER, false);
+		curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+		curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
+		curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+		$rawdata = curl_exec($ch);
+		curl_close($ch);
+
+		if (empty($rawdata)) return false;
+
+		$moved = file_put_contents(DIR_FILES . $filename, $rawdata);
+
+		if ($moved) {
+			$size = false;
+
+			if ((bool) $settings['imageUploadResize']) {
+				$size = $core->files->originalResize($filename);
+			} else {
+				list($w, $h) = getimagesize(DIR_FILES . $filename);
+				$size = [$w, $h];
+			}
+
+			$data = ['filename' => $filename];
+			if ($size !== false) $data['size'] = implode(';', $size);
+
+			$db->update('files', $data, 'id', $id, __FILE__, __LINE__);
+
+			$this->getFileUrl($id, 150, 150, 0, false, 'contain');
+
+			$db->query('UPDATE `ve_sorting` SET `sorting` = CONCAT("' . $id . ':' . $folder . ';", `sorting`) WHERE `section` = "files"');
+
+			return $id;
+		}
+
+		return false;
+	}
+
 	public function originalResize($filename)
 	{
 		global $settings;
