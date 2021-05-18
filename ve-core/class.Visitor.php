@@ -36,7 +36,7 @@ class Visitor
 
 				$this->id = $_SESSION['id'];
 				$this->access = (int) $arr[0]['access'];
-				$this->access2 = json_decode(@$group[0]['access']);
+				$this->access2 = json_decode(@$group[0]['access']) ?? [];
 				$this->is_guest = false;
 				$this->is_admin = $_SESSION['id'] === 1;
 				$this->is_logged = true;
