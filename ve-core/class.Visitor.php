@@ -24,7 +24,7 @@ class Visitor
 		$this->is_admin = false;
 		$this->is_logged = false;
 
-		if (isset($_SESSION['id']) && $_SESSION['id'] > 0 && isset($_SESSION['ip']) && $_SESSION['ip'] == $this->ip) {
+		if (isset($_SESSION['id']) && $_SESSION['id'] > 0) {
 			$arr = $db->select('members', ['fname', 'access', 'group'], [
 				'id' => (int) $_SESSION['id'],
 			], __FILE__, __LINE__);
@@ -132,7 +132,6 @@ class Visitor
 
 			if ($pass === $user['password']) {
 				$_SESSION['id'] = $user['id'];
-				$_SESSION['ip'] = $this->ip;
 
 				return true;
 			}
@@ -144,7 +143,6 @@ class Visitor
 	public function logout()
 	{
 		unset($_SESSION['id']);
-		unset($_SESSION['ip']);
   	}
 }
 ?>
