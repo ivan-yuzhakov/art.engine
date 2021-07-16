@@ -568,6 +568,8 @@ function get_value($arr, $key, $default_value = '')
 			$value = explode('~;~', $value);
 			$value = array_filter($value);
 			$value = array_map(function($el){
+				global $helpers;
+
 				$v = explode(';', $el);
 
 				$thumb = false;
@@ -578,15 +580,22 @@ function get_value($arr, $key, $default_value = '')
 					$link = '//www.youtube.com/embed/' . $v[1] . '?rel=0';
 				}
 				if ($v[0] == 'vimeo') {
+					$key = 'vimeo_' . $v[1] . '.json';
 					// https://vimeo.com/api/v2/video/54178821.json
-					$url = 'https://vimeo.com/api/v2/video/' . $v[1] . '.json';
-					$json = @file_get_contents($url);
-					if ($json) {
-						$thumb = json_decode($json, true)[0]['thumbnail_large'];
+					if (!file_exists(DIR_CACHE . $key)) {
+						$url = 'https://vimeo.com/api/v2/video/' . $v[1] . '.json';
+						$file = @file_get_contents($url);
+						if ($file && @json_decode($file, true)) {
+							$helpers->file_create(DIR_CACHE . $key, $file);
+						}
+					}
+
+					if (file_exists(DIR_CACHE . $key)) {
+						$file = file_get_contents(DIR_CACHE . $key);
+						$thumb = json_decode($file, true)[0]['thumbnail_large'];
 					} else {
 						$thumb = URL_SITE . 'placeholder/500/500';
 					}
-
 					$link = '//player.vimeo.com/video/' . $v[1] . '?loop=1';
 				}
 
