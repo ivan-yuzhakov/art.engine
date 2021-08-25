@@ -134,9 +134,6 @@ var files = {
 
 			if (th.hasClass('open')) return false;
 
-			th.addClass('open').siblings().removeClass('open');
-			parents.nextAll('.items').remove();
-
 			x.opened.splice(index, x.opened.length - index, id);
 			x.drawList();
 		});
@@ -730,7 +727,7 @@ var files = {
 	{
 		var x = this;
 
-		x.el.list.empty();
+		var template = '';
 
 		$.each(x.opened, function(i, id){
 			if (!x.arr.groups[id]) return false;
@@ -770,20 +767,22 @@ var files = {
 				}
 			});
 
-			var template = m.template(x.template.list, {
+			template += m.template(x.template.list, {
 				parent: id,
 				width: x.width,
 				title: x.arr.groups[id].title,
 				groups: html.groups.join('') || '<div class="g br3 empty">' + lang['files_list_groups_empty'] + '</div>',
 				files: html.files.join('') + '<div class="clr"></div>'
 			});
-
-			x.el.list.append(template);
-
-			$('.items', x.el.list).last().find('.header .search input').focus();
 		});
 
-		$('.scroll', x.el.list).tinyscrollbar();
+		x.el.list.html(template);
+
+		$('.items', x.el.list).last().find('.header .search input').focus();
+
+		$('.scroll', x.el.list).each(function(){
+			$(this).tinyscrollbar();
+		});
 
 		common.resize();
 	},
@@ -1258,7 +1257,7 @@ var files = {
 			var elems = $('.items', x.el.list).css({width: x.width});
 			var length = elems.length;
 			var left = -1 * (Math.max(count, length) - count) * x.width;
-			x.el.list.css({transform: 'translateX(' + left + 'px)'});
+			x.el.list.css({width: x.width * length, transform: 'translateX(' + left + 'px)'});
 		} else {
 			var w_form = x.el.form.outerWidth();
 			var w_list = ww - 40 - w_form;

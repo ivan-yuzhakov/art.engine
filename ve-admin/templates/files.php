@@ -1,5 +1,5 @@
 <div id="files">
-	<div class="list animate2">
+	<div class="list">
 		<div class="items animate2 box" parent="{{parent}}" style="width:{{width}}px;">
 			<div class="header">
 				<div class="actions">
