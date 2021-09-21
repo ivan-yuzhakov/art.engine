@@ -97,7 +97,7 @@ var files = {
 
 				if (val) {
 					var id = +th.attr('data');
-					var str = x.arr.files[id].title.toLowerCase();
+					var str = x.arr.files[id].title.toLowerCase() + ' ' + id;
 
 					hide = val.split(' ').some(function(t){
 						return str.indexOf(t) === -1;
@@ -1230,12 +1230,14 @@ var files = {
 			x.el.list.empty();
 			x.drawList();
 
-			var item = $('#f' + id, x.el.list).addClass('finded');
-			var top = item.position().top;
-			item.parents('.scroll').data('plugin_tinyscrollbar').update(top).update('relative');
 			setTimeout(function(){
-				item.removeClass('finded');
-			}, 5000);
+				var item = $('#f' + id, x.el.list).addClass('finded');
+				var top = item.position().top;
+				item.parents('.scroll').data('plugin_tinyscrollbar').update(top).update('relative');
+				setTimeout(function(){
+					item.removeClass('finded');
+				}, 5000);
+			}, 500);
 		});
 	},
 	reset: function()
