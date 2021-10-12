@@ -129,18 +129,28 @@ class Template
 		global $db;
 
 		$id = (int) (is_array($parent) ? $parent['id'] : $parent);
-
-		if ($id === 0) return [];
-
-		$items = $db->select('items', ['sc'], ['id' => $id], __FILE__, __LINE__);
-		$item = $items[0] ?: false;
 		$childs = [];
-		if ($item !== false) {
-			$childs = explode(',', $item['sc']);
-			$childs = array_filter($childs);
-			$childs = array_map(function($s){
-				return (int) $s;
-			}, $childs);
+
+		if ($id === 0 || $id === '#') {
+			$items = $db->select('settings', ['value'], ['variable' => 'sort_items_root'], __FILE__, __LINE__);
+			$item = $items[0] ?: false;
+			if ($item !== false) {
+				$childs = explode(',', $item['value']);
+				$childs = array_filter($childs);
+				$childs = array_map(function($s){
+					return (int) $s;
+				}, $childs);
+			}
+		} else {
+			$items = $db->select('items', ['sc'], ['id' => $id], __FILE__, __LINE__);
+			$item = $items[0] ?: false;
+			if ($item !== false) {
+				$childs = explode(',', $item['sc']);
+				$childs = array_filter($childs);
+				$childs = array_map(function($s){
+					return (int) $s;
+				}, $childs);
+			}
 		}
 
 		if (empty($childs)) return [];
