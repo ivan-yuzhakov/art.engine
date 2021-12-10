@@ -312,10 +312,18 @@ if ($section === 'database')
 					$template[$i] = $id;
 				} else {
 					$fields = json_decode($_POST['fields'], true)[$settings['langFrontDefault']];
-					if (isset($fields[$v]) && !empty($fields[$v])) $template[$i] = implode('-', explode(';', $fields[$v]));
+					$temp = false;
+					if (isset($plugin_uidgen)) {
+						$temp = $plugin_uidgen->generate($v, $fields, $config['uid']);
+					}
+					if ($temp === false) {
+						if (isset($fields[$v]) && !empty($fields[$v])) $template[$i] = implode('-', explode(';', $fields[$v]));
+					} else {
+						$template[$i] = $temp;
+					}
 				}
 			}
-			$template = implode('-', $template);
+			$template = implode($config['uid']['separate'], $template);
 			$db->update('database', ['uid' => $template], 'id', $id, __FILE__, __LINE__);
 		}
 

@@ -164,7 +164,7 @@ class Files
 
 	public function uploadFromUrl($url, $title = false, $folder = '#')
 	{
-		global $db, $core, $settings, $visitor;
+		global $db, $core, $settings, $visitor, $helpers;
 
 		if (empty($url)) {
 			return false;
@@ -174,29 +174,6 @@ class Files
 		if (count($file) > 0) {
 			return $file[0]['id'];
 		}
-
-		$info = pathinfo($url);
-		$ext = $info['extension'];
-		$info['basename'] = str_replace('_', ' ', $info['basename']);
-		$info['basename'] = str_replace('.' . $ext, '', $info['basename']);
-		if (empty($title)) $title = $info['basename'];
-		$ext = strtolower($ext);
-
-		if (!in_array($ext, $this->files_types['image'])) {
-			return false;
-		}
-
-		$id = $db->insert('files', [
-			'user' => (isset($visitor->id) ? $visitor->id : -1),
-			'filename' => 'temp.jpg',
-			'title' => $title,
-			'desc' => '',
-			'size' => '',
-			'crop' => '',
-			'filename_original' => $url
-		], __FILE__, __LINE__);
-
-		$filename = str_pad($id, 7, '0', STR_PAD_LEFT) . '.' . $ext;
 
 		$ch = curl_init($url);
 		curl_setopt($ch, CURLOPT_HEADER, false);
@@ -210,19 +187,60 @@ class Files
 
 		if (empty($rawdata)) return false;
 
+		$filename = (string) (microtime(true) * 10000);
 		$moved = file_put_contents(DIR_FILES . $filename, $rawdata);
 
 		if ($moved) {
+			$info = pathinfo($url);
+			$ext = false;
+
+			if (isset($info['extension'])) {
+				$ext = $info['extension'];
+			} else {
+				$mime = mime_content_type(DIR_FILES . $filename);
+				if ($mime === 'image/jpeg') $ext = 'jpg';
+				if ($mime === 'image/png') $ext = 'png';
+				if ($mime === 'image/gif') $ext = 'gif';
+			}
+			if ($ext === false) {
+				unlink(DIR_FILES . $filename);
+				$helpers->mail('', URL_SITE_SHORT . ' - uploadFromUrl', 'URL not extension: ' . $url);
+				return false;
+			}
+
+			$info['basename'] = str_replace('_', ' ', $info['basename']);
+			$info['basename'] = str_replace('.' . $ext, '', $info['basename']);
+			if (empty($title)) $title = $info['basename'];
+			$ext = strtolower($ext);
+
+			if (!in_array($ext, $this->files_types['image'])) {
+				unlink(DIR_FILES . $filename);
+				return false;
+			}
+
+			$id = $db->insert('files', [
+				'user' => (isset($visitor->id) ? $visitor->id : -1),
+				'filename' => $filename,
+				'title' => $title,
+				'desc' => '',
+				'size' => '',
+				'crop' => '',
+				'filename_original' => $url
+			], __FILE__, __LINE__);
+
+			$filename2 = str_pad($id, 7, '0', STR_PAD_LEFT) . '.' . $ext;
+			rename(DIR_FILES . $filename, DIR_FILES . $filename2);
+
 			$size = false;
 
 			if ((bool) $settings['imageUploadResize']) {
-				$size = $core->files->originalResize($filename);
+				$size = $core->files->originalResize($filename2);
 			} else {
-				list($w, $h) = getimagesize(DIR_FILES . $filename);
+				list($w, $h) = getimagesize(DIR_FILES . $filename2);
 				$size = [$w, $h];
 			}
 
-			$data = ['filename' => $filename];
+			$data = ['filename' => $filename2];
 			if ($size !== false) $data['size'] = implode(';', $size);
 
 			$db->update('files', $data, 'id', $id, __FILE__, __LINE__);

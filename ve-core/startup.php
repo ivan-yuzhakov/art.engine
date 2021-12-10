@@ -4,6 +4,7 @@ ini_set('error_reporting', E_ALL);
 ini_set('display_errors', '1');
 ini_set('zlib.output_compression', 'On');
 ini_set('zlib.output_compression_level', '-1');
+ini_set('session.gc_maxlifetime', 2592000);
 
 if (version_compare(PHP_VERSION, 5.5) < 0) {
 	exit('Current PHP version ' . PHP_VERSION . '. Need minimal version 5.5');

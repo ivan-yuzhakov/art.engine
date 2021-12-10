@@ -1,4 +1,11 @@
 <?php
+// setup plugins
+$plugins = $db->select('plugins', '*', ['status' => 1], __FILE__, __LINE__);
+foreach ($plugins as $plugin) {
+	$path = DIR_PLUGINS . $plugin['alias'] . '/backend/api.php';
+	if (file_exists($path)) require_once($path);
+}
+
 $get = explode('/', key($_GET));
 
 $section = $get[0];
