@@ -3726,26 +3726,30 @@ var database = {
 
 		loader.show();
 
-		var item = x.arr[id];
-
-		var data = $.extend({}, item);
-		delete data.date_change;
-		delete data.date_added;
-		delete data.id;
-		delete data.uid;
-
-		var url = '?database/items_add';
-		$.post(url, data, function(json){
+		$.post('?database/item_get_ed_fields', {id: id}, function(json){
 			if (json.status) {
-				var id = +json.id;
-				$.extend(data, {id: id, uid: json.uid, date_added: json.date_added, date_change: json.date_change});
-				x.arr[id] = data;
-				loader.hide();
-				WS.send('database/item_new');
-				if (callback) callback(id);
-			} else {
-				m.report(url, data, JSON.stringify(json));
-				loader.hide();
+				var item = x.arr[id];
+
+				var data = $.extend({}, item, json.item);
+				delete data.date_change;
+				delete data.date_added;
+				delete data.id;
+				delete data.uid;
+
+				var url = '?database/items_add';
+				$.post(url, data, function(json){
+					if (json.status) {
+						var id = +json.id;
+						$.extend(data, {id: id, uid: json.uid, date_added: json.date_added, date_change: json.date_change});
+						x.arr[id] = data;
+						loader.hide();
+						WS.send('database/item_new');
+						if (callback) callback(id);
+					} else {
+						m.report(url, data, JSON.stringify(json));
+						loader.hide();
+					}
+				}, 'json');
 			}
 		}, 'json');
 	},

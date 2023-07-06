@@ -145,7 +145,7 @@ if ($section === 'members')
 			$data = [
 				'login'     => $_POST['login'],
 				'desc'      => $_POST['desc'],
-				'image'     => $_POST['image'],
+				'image'     => (int) $_POST['image'],
 				'email'     => $_POST['email'],
 				'phone'     => $_POST['phone'],
 				'fname'     => $_POST['fname'],
@@ -153,8 +153,8 @@ if ($section === 'members')
 				'company'   => $_POST['company'],
 				'address_1' => $_POST['address_1'],
 				'address_2' => $_POST['address_2'],
-				'access'    => $_POST['access'],
-				'group'     => $_POST['group']
+				'access'    => (int) $_POST['access'],
+				'group'     => (int) $_POST['group']
 			];
 			if ($visitor->id == $id) unset($data['group']);
 			if (!empty($_POST['password'])) {

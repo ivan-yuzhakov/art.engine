@@ -17,4 +17,4 @@ $server = IoServer::factory(
 );
 
 $server->run();
-// php path_to/ve-admin/websocket.php
+// php path_to/ve-admin/websocket.php &

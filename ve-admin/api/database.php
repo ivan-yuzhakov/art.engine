@@ -508,6 +508,18 @@ if ($section === 'database')
 		json(['status' => $result]);
 	}
 
+	if ($query === 'item_get_ed_fields')
+	{
+		$id = (int) $_POST['id'];
+
+		$items = $db->select('database', ['ed_status', 'ed_fields', 'ed_note'], ['id' => $id]);
+		if (count($items) !== 1) {
+			json(['status' => false, 'error' => 'No found item']);
+		}
+
+		json(['status' => true, 'item' => $items[0]]);
+	}
+
 	if ($query === 'pdf_get_list')
 	{
 		$list = $db->select('database_pdf', '*', [], __FILE__, __LINE__);
@@ -870,6 +882,8 @@ if ($section === 'database')
 			'setAutoTopMargin' => $config['headers'] === false ? false : 'stretch',
 			'setAutoTopMargin' => $config['footers'] === false ? false : 'stretch'
 		]);
+		// $mpdf->showImageErrors = true;
+		$mpdf->curlAllowUnsafeSslRequests = true;
 
 		foreach ($config['html'] as $text) {
 			$text = preg_replace_callback('/\{\{([^}]+)\}\}/', function($matches) use($config, $fields, $items) {
